@@ -2034,5 +2034,5 @@ elif sezione == "🧠 Quiz Interattivo":
     elif score > 0:
         st.info(f"Hai ottenuto {score}/3. Riprova per fare il pieno!")
 
-    st.markdown("---")
-    st.markdown("**Liceo Leopardi Majorana** | Giornata della Scienza 2025 | Fisica delle Onde | *Alessandro Bigi*") 
+st.markdown("---")
+st.markdown("**Liceo Leopardi Majorana** | Giornata della Scienza 2025 | Fisica delle Onde | *Alessandro Bigi*") 
