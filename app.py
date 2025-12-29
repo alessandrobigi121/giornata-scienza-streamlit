@@ -247,6 +247,13 @@ if sezione == "Battimenti":
         if 'A1' not in st.session_state: st.session_state.A1 = 1.0
         if 'A2' not in st.session_state: st.session_state.A2 = 1.0
 
+        # Inizializza widget keys per evitare warning "default value"
+        for param in ['f1', 'f2', 'A1', 'A2']:
+            if f"{param}_slider" not in st.session_state: 
+                st.session_state[f"{param}_slider"] = st.session_state[param]
+            if f"{param}_input" not in st.session_state: 
+                st.session_state[f"{param}_input"] = st.session_state[param]
+
         def applica_preset():
             if st.session_state.preset_batt_k != "Personalizzato":
                 p = PRESET_FAMOSI[st.session_state.preset_batt_k]
@@ -284,12 +291,10 @@ if sezione == "Battimenti":
         with col_s1:
             st.slider("Frequenza onda 1 (Hz)", 1.0, 2000.0, 
                  key="f1_slider", 
-                 value=st.session_state.f1,
                  on_change=set_custom, args=('f1', 'f1_slider'))
         with col_i1:
             st.number_input("", min_value=1.0, max_value=2000.0, 
                            key="f1_input", 
-                           value=st.session_state.f1,
                            step=0.1, format="%.1f",
                            on_change=set_custom, args=('f1', 'f1_input'))
         
@@ -298,12 +303,10 @@ if sezione == "Battimenti":
         with col_s2:
             st.slider("Frequenza onda 2 (Hz)", 1.0, 2000.0,
                      key="f2_slider",
-                     value=st.session_state.f2,
                      on_change=set_custom, args=('f2', 'f2_slider'))
         with col_i2:
             st.number_input("", min_value=1.0, max_value=2000.0,
                            key="f2_input",
-                           value=st.session_state.f2,
                            step=0.1, format="%.1f",
                            on_change=set_custom, args=('f2', 'f2_input'))
         
@@ -312,12 +315,10 @@ if sezione == "Battimenti":
         with col_a1:
             st.slider("Ampiezza onda 1", 0.5, 2.0,
                      key="A1_slider",
-                     value=st.session_state.A1,
                      on_change=set_custom, args=('A1', 'A1_slider'))
         with col_ia1:
             st.number_input("", min_value=0.5, max_value=2.0,
                            key="A1_input",
-                           value=st.session_state.A1,
                            step=0.1, format="%.1f",
                            on_change=set_custom, args=('A1', 'A1_input'))
         
@@ -326,12 +327,10 @@ if sezione == "Battimenti":
         with col_a2:
             st.slider("Ampiezza onda 2", 0.5, 2.0,
                      key="A2_slider",
-                     value=st.session_state.A2,
                      on_change=set_custom, args=('A2', 'A2_slider'))
         with col_ia2:
             st.number_input("", min_value=0.5, max_value=2.0,
                            key="A2_input",
-                           value=st.session_state.A2,
                            step=0.1, format="%.1f",
                            on_change=set_custom, args=('A2', 'A2_input'))
         
