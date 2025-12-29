@@ -102,7 +102,7 @@ st.set_page_config(page_title="Pacchetti d'Onda - Completo", layout="wide")
 
 st.title("🌊 Giornata della Scienza: Onde, Pacchetti e Indeterminazione")
 st.markdown("**Liceo Leopardi Majorana** - Laboratorio di Fisica")
-st.markdown("🆕 **Con generazione audio, analisi multi-pacchetto e regressione lineare**")
+st.markdown("*A cura di Alessandro Bigi*")
 st.markdown("---")
 
 # ============ FUNZIONI UTILITY AVANZATE ============
@@ -224,7 +224,6 @@ sezione = st.sidebar.radio(
 mostra_parametri_acustici()  # Mostra parametri fisici
 
 st.sidebar.markdown("---")
-st.sidebar.info("💡 **Nuovo!** Audio, analisi quantitativa e regressione")
 
 # ========== SEZIONE BATTIMENTI ==========
 if sezione == "Battimenti":
@@ -2128,4 +2127,4 @@ else:  # "Confronto Scenari"
 
 st.markdown("---")
 st.markdown("**Liceo Leopardi Majorana** | Giornata della Scienza 2025 | Fisica delle Onde")
-st.markdown("🆕 **Con audio WAV, analisi multi-pacchetto e regressione lineare**")
+
