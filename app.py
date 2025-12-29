@@ -1071,7 +1071,7 @@ elif sezione == "Principio di Indeterminazione":
     st.header("⚛️ Principio di Indeterminazione di Heisenberg")
     
     st.info("""
-    📘 **Dalla Relazione**: Questa sezione verifica sperimentalmente il principio di 
+    📘 Questa sezione verifica sperimentalmente il principio di 
     indeterminazione per le onde: $\\Delta x \\cdot \\Delta k \\geq 1/2$ (forma RMS) 
     o $\\Delta x \\cdot \\Delta k = 4\\pi$ (lobi laterali, usato qui).
     
