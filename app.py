@@ -248,7 +248,7 @@ if sezione == "Battimenti":
             f1, f2, A1, A2, durata = preset["f1"], preset["f2"], preset["A1"], preset["A2"], preset["durata"]
             st.info(f"📖 **{preset_batt}**\n\n{preset['descrizione']}")
         else:
-        # Inizializza session_state se non esiste
+            # Inizializza session_state se non esiste
             if 'f1' not in st.session_state:
                 st.session_state.f1 = 440.0
             if 'f2' not in st.session_state:
@@ -263,14 +263,14 @@ if sezione == "Battimenti":
         with col_s1:
             st.slider("Frequenza onda 1 (Hz)", 1.0, 1000.0, 
                  key="f1_slider", 
-                     value=st.session_state.f1,
+                 value=st.session_state.f1,
                  on_change=lambda: setattr(st.session_state, 'f1', st.session_state.f1_slider))
         with col_i1:
             st.number_input("", min_value=1.0, max_value=1000.0, 
                            key="f1_input", 
-                       value=st.session_state.f1,
+                           value=st.session_state.f1,
                            step=0.1, format="%.1f",
-                       on_change=lambda: setattr(st.session_state, 'f1', st.session_state.f1_input))
+                           on_change=lambda: setattr(st.session_state, 'f1', st.session_state.f1_input))
         
         # Frequenza 2
         col_s2, col_i2 = st.columns([3, 1])
@@ -548,57 +548,57 @@ elif sezione == "Pacchetti d'Onda":
     with st.expander("📖 Teoria Pacchetti d'Onda", expanded=False):
         st.markdown("### 📐 Teoria Matematica")
     
-    st.markdown("**Dalla Sovrapposizione Discreta al Continuo**")
-    st.markdown("Un pacchetto d'onda è formato dalla sovrapposizione di N onde:")
-    st.latex(r"y(x,t) = \sum_{i=1}^{N} A_i \cos(k_i x - \omega_i t + \phi_i)")
+        st.markdown("**Dalla Sovrapposizione Discreta al Continuo**")
+        st.markdown("Un pacchetto d'onda è formato dalla sovrapposizione di N onde:")
+        st.latex(r"y(x,t) = \sum_{i=1}^{N} A_i \cos(k_i x - \omega_i t + \phi_i)")
     
-    st.markdown("Nel limite per N → ∞, diventa un integrale di Fourier:")
-    st.latex(r"y(x,t) = \int_{-\infty}^{\infty} A(k) e^{i(kx - \omega(k)t)} dk")
+        st.markdown("Nel limite per N → ∞, diventa un integrale di Fourier:")
+        st.latex(r"y(x,t) = \int_{-\infty}^{\infty} A(k) e^{i(kx - \omega(k)t)} dk")
     
-    st.markdown("---")
-    st.markdown("**Inviluppo Sinc**")
-    st.markdown("Per spettro uniforme:")
-    st.latex(r"\psi(x) = A_0 \Delta k \,\text{sinc}\left(\frac{\Delta k \cdot x}{2}\right)")
+        st.markdown("---")
+        st.markdown("**Inviluppo Sinc**")
+        st.markdown("Per spettro uniforme:")
+        st.latex(r"\psi(x) = A_0 \Delta k \,\text{sinc}\left(\frac{\Delta k \cdot x}{2}\right)")
     
-    st.markdown("Distanza tra i primi zeri (larghezza spaziale):")
-    st.latex(r"\Delta x = \frac{4\pi}{\Delta k}")
+        st.markdown("Distanza tra i primi zeri (larghezza spaziale):")
+        st.latex(r"\Delta x = \frac{4\pi}{\Delta k}")
     
-    st.markdown("---")
-    st.markdown("**Velocità di Propagazione**")
+        st.markdown("---")
+        st.markdown("**Velocità di Propagazione**")
     
-    col_v1, col_v2 = st.columns(2)
-    with col_v1:
-        st.markdown("Velocità di fase (fronti d'onda):")
-        st.latex(r"v_{\text{fase}} = \frac{\omega}{k}")
+        col_v1, col_v2 = st.columns(2)
+        with col_v1:
+            st.markdown("Velocità di fase (fronti d'onda):")
+            st.latex(r"v_{\text{fase}} = \frac{\omega}{k}")
     
-    with col_v2:
-        st.markdown("Velocità di gruppo (energia):") 
-        st.latex(r"v_{\text{gruppo}} = \frac{d\omega}{dk}")
+        with col_v2:
+            st.markdown("Velocità di gruppo (energia):") 
+            st.latex(r"v_{\text{gruppo}} = \frac{d\omega}{dk}")
     
-    st.markdown("---")
-    st.markdown("**Per onde sonore in aria** (mezzo non dispersivo):")
-    st.latex(r"v_{\text{fase}} = v_{\text{gruppo}} = v = 340 \text{ m/s}")
+        st.markdown("---")
+        st.markdown("**Per onde sonore in aria** (mezzo non dispersivo):")
+        st.latex(r"v_{\text{fase}} = v_{\text{gruppo}} = v = 340 \text{ m/s}")
     
-    st.info("""
-    **Caratteristiche mezzo non dispersivo:**
-    - Il pacchetto mantiene la forma propagandosi
-    - Non c'è distorsione temporale  
-    - L'inviluppo viaggia alla stessa velocità delle oscillazioni
-    """)
+        st.info("""
+        **Caratteristiche mezzo non dispersivo:**
+        - Il pacchetto mantiene la forma propagandosi
+        - Non c'è distorsione temporale  
+        - L'inviluppo viaggia alla stessa velocità delle oscillazioni
+        """)
     
-    st.markdown("**Mezzi dispersivi** (es. onde sull'acqua):")
-    st.markdown("Se ω(k) non è lineare → v_fase ≠ v_gruppo → il pacchetto si deforma nel tempo")
+        st.markdown("**Mezzi dispersivi** (es. onde sull'acqua):")
+        st.markdown("Se ω(k) non è lineare → v_fase ≠ v_gruppo → il pacchetto si deforma nel tempo")
 
 
 
+        
+        # Pacchetti d'onda
+        st.markdown("""
+        Un pacchetto d'onda si ottiene sommando molte onde con frequenze vicine. 
+        Il risultato è un segnale localizzato nello spazio (o nel tempo).
     
-    # 📚 TEORIA MATEMATICA
-    st.markdown("""
-    Un pacchetto d'onda si ottiene sommando molte onde con frequenze vicine. 
-    Il risultato è un segnale localizzato nello spazio (o nel tempo).
-    
-    **Teoria**: Al crescere di N, l'onda risultante diventa sempre più localizzata.
-    """)
+        **Teoria**: Al crescere di N, l'onda risultante diventa sempre più localizzata.
+        """)
     
     col1, col2 = st.columns([1, 2])
     
