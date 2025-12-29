@@ -448,7 +448,7 @@ if sezione == "Battimenti":
     st.markdown("---")
     st.markdown("---")
     st.header("📊 Valori Teorici Completi")
-    st.markdown("*Tutti i parametri calcolati automaticamente*")
+    
     
     st.markdown("### 🌊 Onda Portante")
     col_t1, col_t2, col_t3, col_t4 = st.columns(4)
@@ -545,65 +545,55 @@ elif sezione == "Pacchetti d'Onda":
     st.header("📦 Pacchetti d'Onda: Sovrapposizione di molte frequenze")
     
     # 📚 TEORIA MATEMATICA
-    with st.expander("📖 Teoria Pacchetti d'Onda (da relazione)", expanded=False):
-        st.markdown(r"""
-        ### Dalla Sovrapposizione Discreta al Continuo
-        
-        Un pacchetto d'onda è formato dalla sovrapposizione di N onde:
-        
-        $$y(x,t) = \sum_{i=1}^{N} A_i \cos(k_i x - \omega_i t + \phi_i)$$
-        
-        Nel limite $N 	o \infty$, diventa un integrale di Fourier:
-        
-        $$y(x,t) = \int_{-\infty}^{+\infty} A(k) e^{i(kx - \omega(k)t)} dk$$
-        
-        ### Inviluppo Sinc
-        
-        Per spettro uniforme $[k_	ext{min}, k_	ext{max}]$:
-        
-        $$|\psi(x)| = A_0 \Delta k \cdot 	ext{sinc}\left(rac{\Delta k \cdot x}{2}
-ight)$$
-        
-        ### Larghezza Spaziale
-        
-        Distanza tra i primi zeri:
-        
-        $$\Delta x = rac{4\pi}{\Delta k}$$
-        
-        ### Velocità di Propagazione
-        
-        **Velocità di fase** (propagazione fronti d'onda):
-        
-        $$v_	ext{fase} = rac{\omega}{k}$$
-        
-        **Velocità di gruppo** (propagazione energia/inviluppo):
-        
-        $$v_	ext{gruppo} = rac{d\omega}{dk}$$
-        
-        ### Mezzo Non Dispersivo
-        
-        Per onde sonore in aria: $\omega = vk$ (relazione lineare)
-        
-        $$\Rightarrow v_	ext{fase} = v_	ext{gruppo} = v = 340 	ext{ m/s}$$
-        
-        **Caratteristiche**:
-        - Il pacchetto mantiene la forma propagandosi
-        - Non c'è distorsione temporale
-        - L'inviluppo viaggia alla stessa velocità delle oscillazioni
-        
-        ### Mezzi Dispersivi
-        
-        Se $\omega(k)$ non è lineare:
-        - $v_	ext{fase} 
-eq v_	ext{gruppo}$
-        - Il pacchetto si deforma nel tempo
-        - Esempio: onde sulla superficie dell'acqua
-        """)
+    with st.expander("📖 Teoria Pacchetti d'Onda", expanded=False):
+        st.markdown("### 📐 Teoria Matematica")
+    
+    st.markdown("**Dalla Sovrapposizione Discreta al Continuo**")
+    st.markdown("Un pacchetto d'onda è formato dalla sovrapposizione di N onde:")
+    st.latex(r"y(x,t) = \sum_{i=1}^{N} A_i \cos(k_i x - \omega_i t + \phi_i)")
+    
+    st.markdown("Nel limite per N → ∞, diventa un integrale di Fourier:")
+    st.latex(r"y(x,t) = \int_{-\infty}^{\infty} A(k) e^{i(kx - \omega(k)t)} dk")
+    
+    st.markdown("---")
+    st.markdown("**Inviluppo Sinc**")
+    st.markdown("Per spettro uniforme:")
+    st.latex(r"\psi(x) = A_0 \Delta k \,\text{sinc}\left(\frac{\Delta k \cdot x}{2}\right)")
+    
+    st.markdown("Distanza tra i primi zeri (larghezza spaziale):")
+    st.latex(r"\Delta x = \frac{4\pi}{\Delta k}")
+    
+    st.markdown("---")
+    st.markdown("**Velocità di Propagazione**")
+    
+    col_v1, col_v2 = st.columns(2)
+    with col_v1:
+        st.markdown("Velocità di fase (fronti d'onda):")
+        st.latex(r"v_{\text{fase}} = \frac{\omega}{k}")
+    
+    with col_v2:
+        st.markdown("Velocità di gruppo (energia):") 
+        st.latex(r"v_{\text{gruppo}} = \frac{d\omega}{dk}")
+    
+    st.markdown("---")
+    st.markdown("**Per onde sonore in aria** (mezzo non dispersivo):")
+    st.latex(r"v_{\text{fase}} = v_{\text{gruppo}} = v = 340 \text{ m/s}")
+    
+    st.info("""
+    **Caratteristiche mezzo non dispersivo:**
+    - Il pacchetto mantiene la forma propagandosi
+    - Non c'è distorsione temporale  
+    - L'inviluppo viaggia alla stessa velocità delle oscillazioni
+    """)
+    
+    st.markdown("**Mezzi dispersivi** (es. onde sull'acqua):")
+    st.markdown("Se ω(k) non è lineare → v_fase ≠ v_gruppo → il pacchetto si deforma nel tempo")
+
 
 
     
     # 📚 TEORIA MATEMATICA
-        st.markdown("""
+    st.markdown("""
     Un pacchetto d'onda si ottiene sommando molte onde con frequenze vicine. 
     Il risultato è un segnale localizzato nello spazio (o nel tempo).
     
