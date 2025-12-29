@@ -249,31 +249,79 @@ if sezione == "Battimenti":
             f1, f2, A1, A2, durata = preset["f1"], preset["f2"], preset["A1"], preset["A2"], preset["durata"]
             st.info(f"📖 **{preset_batt}**\n\n{preset['descrizione']}")
         else:
-            col_s1, col_i1 = st.columns([3, 1])
-            with col_s1:
-                f1_slider = st.slider("Frequenza onda 1 (Hz)", 1.0, 1000.0, 440.0, 0.1, key="bat_f1_slider")
-            with col_i1:
-                f1 = st.number_input("", min_value=1.0, max_value=1000.0, value=f1_slider, step=0.1, key="bat_f1_input", format="%.1f")
-            
-            col_s2, col_i2 = st.columns([3, 1])
-            with col_s2:
-                f2_slider = st.slider("Frequenza onda 2 (Hz)", 1.0, 1000.0, 445.0, 0.1, key="bat_f2_slider")
-            with col_i2:
-                f2 = st.number_input("", min_value=1.0, max_value=1000.0, value=f2_slider, step=0.1, key="bat_f2_input", format="%.1f")
-            
-            col_a1, col_ia1 = st.columns([3, 1])
-            with col_a1:
-                A1_slider = st.slider("Ampiezza onda 1", 0.5, 2.0, 1.0, 0.1, key="bat_A1_slider")
-            with col_ia1:
-                A1 = st.number_input("", min_value=0.5, max_value=2.0, value=A1_slider, step=0.1, key="bat_A1_input", format="%.1f")
-            
-            col_a2, col_ia2 = st.columns([3, 1])
-            with col_a2:
-                A2_slider = st.slider("Ampiezza onda 2", 0.5, 2.0, 1.0, 0.1, key="bat_A2_slider")
-            with col_ia2:
-                A2 = st.number_input("", min_value=0.5, max_value=2.0, value=A2_slider, step=0.1, key="bat_A2_input", format="%.1f")
-            
-            durata = 2.0
+        # Inizializza session_state se non esiste
+            if 'f1' not in st.session_state:
+                st.session_state.f1 = 440.0
+            if 'f2' not in st.session_state:
+                st.session_state.f2 = 445.0
+            if 'A1' not in st.session_state:
+                st.session_state.A1 = 1.0
+            if 'A2' not in st.session_state:
+                st.session_state.A2 = 1.0
+        
+        # Frequenza 1
+        col_s1, col_i1 = st.columns([3, 1])
+        with col_s1:
+            st.slider("Frequenza onda 1 (Hz)", 1.0, 1000.0, 
+                 key="f1_slider", 
+                     value=st.session_state.f1,
+                 on_change=lambda: setattr(st.session_state, 'f1', st.session_state.f1_slider))
+        with col_i1:
+            st.number_input("", min_value=1.0, max_value=1000.0, 
+                           key="f1_input", 
+                       value=st.session_state.f1,
+                           step=0.1, format="%.1f",
+                       on_change=lambda: setattr(st.session_state, 'f1', st.session_state.f1_input))
+        
+        # Frequenza 2
+        col_s2, col_i2 = st.columns([3, 1])
+        with col_s2:
+            st.slider("Frequenza onda 2 (Hz)", 1.0, 1000.0,
+                     key="f2_slider",
+                     value=st.session_state.f2,
+                     on_change=lambda: setattr(st.session_state, 'f2', st.session_state.f2_slider))
+        with col_i2:
+            st.number_input("", min_value=1.0, max_value=1000.0,
+                           key="f2_input",
+                           value=st.session_state.f2,
+                           step=0.1, format="%.1f",
+                           on_change=lambda: setattr(st.session_state, 'f2', st.session_state.f2_input))
+        
+        # Ampiezza 1
+        col_a1, col_ia1 = st.columns([3, 1])
+        with col_a1:
+            st.slider("Ampiezza onda 1", 0.5, 2.0,
+                     key="A1_slider",
+                     value=st.session_state.A1,
+                     on_change=lambda: setattr(st.session_state, 'A1', st.session_state.A1_slider))
+        with col_ia1:
+            st.number_input("", min_value=0.5, max_value=2.0,
+                           key="A1_input",
+                           value=st.session_state.A1,
+                           step=0.1, format="%.1f",
+                           on_change=lambda: setattr(st.session_state, 'A1', st.session_state.A1_input))
+        
+        # Ampiezza 2
+        col_a2, col_ia2 = st.columns([3, 1])
+        with col_a2:
+            st.slider("Ampiezza onda 2", 0.5, 2.0,
+                     key="A2_slider",
+                     value=st.session_state.A2,
+                     on_change=lambda: setattr(st.session_state, 'A2', st.session_state.A2_slider))
+        with col_ia2:
+            st.number_input("", min_value=0.5, max_value=2.0,
+                           key="A2_input",
+                           value=st.session_state.A2,
+                           step=0.1, format="%.1f",
+                           on_change=lambda: setattr(st.session_state, 'A2', st.session_state.A2_input))
+        
+        # Usa i valori dal session_state
+        f1 = st.session_state.f1
+        f2 = st.session_state.f2
+        A1 = st.session_state.A1
+        A2 = st.session_state.A2
+        
+        durata = 2.0
 
         if preset_batt != "Personalizzato":
             st.info(f"✓ Preset caricato: {preset_batt}")
