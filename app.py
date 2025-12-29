@@ -260,7 +260,18 @@ if sezione == "Battimenti":
                     if f"{k}_input" in st.session_state: del st.session_state[f"{k}_input"]
 
         def set_custom(param, widget_key):
-            st.session_state[param] = st.session_state[widget_key]
+            # 1. Aggiorna il parametro principale (es. 'f1')
+            val = st.session_state[widget_key]
+            st.session_state[param] = val
+            
+            # 2. Sincronizza l'altro widget della coppia (Slider <-> Input)
+            # Se ho mosso lo slider, aggiorno l'input, e viceversa.
+            if "_slider" in widget_key:
+                st.session_state[widget_key.replace("_slider", "_input")] = val
+            elif "_input" in widget_key:
+                st.session_state[widget_key.replace("_input", "_slider")] = val
+            
+            # 3. Imposta il preset su Personalizzato
             st.session_state.preset_batt_k = "Personalizzato"
 
         preset_batt = st.selectbox("Carica preset:", list(PRESET_FAMOSI.keys()), key="preset_batt_k", on_change=applica_preset)
@@ -628,40 +639,71 @@ elif sezione == "Pacchetti d'Onda":
             durata = 1.5    # Default
             st.info(f"📖 **{preset_pkt}**\n\n{preset['descrizione']}")
         else:
+            # Funzione di sincronizzazione per i pacchetti
+            def sync_pkt(param_base):
+                # Determina quale widget ha scatenato l'evento
+                # Se param_base è 'pkt_fmin', controlliamo 'pkt_fmin_s' e 'pkt_fmin_i'
+                val_s = st.session_state.get(f"{param_base}_s")
+                val_i = st.session_state.get(f"{param_base}_i")
+                
+                # Trova il valore nuovo (non sappiamo quale dei due è cambiato, ma possiamo assumerlo o uniformarli)
+                # Per semplicità, uniformiamo basandoci su quello che esiste nello stato
+                # Streamlit aggiorna lo stato PRIMA della callback, quindi il widget toccato ha il valore nuovo.
+                # Tuttavia, per evitare complessità, usiamo una logica diretta:
+                # Se la callback è chiamata dallo slider, aggiorniamo l'input.
+                
+                # Nota: Qui usiamo una logica semplificata. Se cambiamo f_min, dobbiamo controllare f_max.
+                pass 
+
+            # Inizializza session state per pacchetti se non esiste
+            if 'pkt_fmin_s' not in st.session_state: st.session_state.pkt_fmin_s = 100.0
+            if 'pkt_fmin_i' not in st.session_state: st.session_state.pkt_fmin_i = 100.0
+            if 'pkt_fmax_s' not in st.session_state: st.session_state.pkt_fmax_s = 130.0
+            if 'pkt_fmax_i' not in st.session_state: st.session_state.pkt_fmax_i = 130.0
+            if 'pkt_n_s' not in st.session_state: st.session_state.pkt_n_s = 50
+            if 'pkt_n_i' not in st.session_state: st.session_state.pkt_n_i = 50
+
+            def update_pkt_widget(key_from, key_to):
+                st.session_state[key_to] = st.session_state[key_from]
+                
+                # Controllo di sicurezza f_min < f_max
+                if "fmin" in key_from or "fmax" in key_from:
+                    curr_min = st.session_state.pkt_fmin_s # o _i, sono sincronizzati
+                    curr_max = st.session_state.pkt_fmax_s
+                    
+                    if curr_max <= curr_min:
+                        # Se f_max è troppo basso, lo alziamo
+                        new_max = curr_min + 5.0
+                        st.session_state.pkt_fmax_s = new_max
+                        st.session_state.pkt_fmax_i = new_max
+
             col_fmin_s, col_fmin_i = st.columns([3, 1])
             with col_fmin_s:
-                f_min_slider = st.slider("Frequenza minima (Hz)", 1.0, 500.0, 100.0, 1.0, key="pkt_fmin_s")
+                f_min_slider = st.slider("Frequenza minima (Hz)", 1.0, 500.0, key="pkt_fmin_s", on_change=update_pkt_widget, args=("pkt_fmin_s", "pkt_fmin_i"))
             with col_fmin_i:
-                f_min = st.number_input("", min_value=1.0, max_value=500.0, value=f_min_slider, step=1.0, key="pkt_fmin_i", format="%.1f")
+                f_min = st.number_input("", min_value=1.0, max_value=500.0, step=1.0, key="pkt_fmin_i", format="%.1f", on_change=update_pkt_widget, args=("pkt_fmin_i", "pkt_fmin_s"))
             
             col_fmax_s, col_fmax_i = st.columns([3, 1])
             with col_fmax_s:
-                # Fix: assicura che il valore nel session_state sia valido per il nuovo min_value
+                # Calcola min value dinamico per lo slider
                 min_fmax = f_min + 1.0
-                if "pkt_fmax_s" in st.session_state and st.session_state.pkt_fmax_s < min_fmax:
-                    st.session_state.pkt_fmax_s = min_fmax
-                
-                f_max_slider = st.slider("Frequenza massima (Hz)", min_fmax, 500.0, max(130.0, min_fmax), 1.0, key="pkt_fmax_s")
+                # Assicura che lo stato sia coerente prima di renderizzare
+                if st.session_state.pkt_fmax_s < min_fmax:
+                     st.session_state.pkt_fmax_s = min_fmax
+                     st.session_state.pkt_fmax_i = min_fmax
+                     
+                f_max_slider = st.slider("Frequenza massima (Hz)", min_fmax, 500.0, key="pkt_fmax_s", on_change=update_pkt_widget, args=("pkt_fmax_s", "pkt_fmax_i"))
             with col_fmax_i:
-                f_max = st.number_input("", min_value=f_min+1, max_value=500.0, value=max(f_min+1, f_max_slider), step=1.0, key="pkt_fmax_i", format="%.1f")
+                f_max = st.number_input("", min_value=min_fmax, max_value=500.0, step=1.0, key="pkt_fmax_i", format="%.1f", on_change=update_pkt_widget, args=("pkt_fmax_i", "pkt_fmax_s"))
             
             col_n_s, col_n_i = st.columns([3, 1])
             with col_n_s:
-                n_onde_slider = st.slider("Numero di onde (N)", 5, 100, 50, 5, key="pkt_n_s")
+                n_onde_slider = st.slider("Numero di onde (N)", 5, 100, key="pkt_n_s", step=5, on_change=update_pkt_widget, args=("pkt_n_s", "pkt_n_i"))
             with col_n_i:
-                n_onde = st.number_input("", min_value=5, max_value=100, value=n_onde_slider, step=5, key="pkt_n_i")
+                n_onde = st.number_input("", min_value=5, max_value=100, key="pkt_n_i", step=5, on_change=update_pkt_widget, args=("pkt_n_i", "pkt_n_s"))
             
-            col_amp_s, col_amp_i = st.columns([3, 1])
-            with col_amp_s:
-                ampiezza_slider = st.slider("Ampiezza", 0.5, 2.0, 1.0, 0.1, key="pkt_amp_s")
-            with col_amp_i:
-                ampiezza = st.number_input("", min_value=0.5, max_value=2.0, value=ampiezza_slider, step=0.1, key="pkt_amp_i", format="%.1f")
-            
-            col_dur_s, col_dur_i = st.columns([3, 1])
-            with col_dur_s:
-                durata_slider = st.slider("Durata visualizzazione (s)", 0.5, 3.0, 1.5, 0.1, key="pkt_dur_s")
-            with col_dur_i:
-                durata = st.number_input("", min_value=0.5, max_value=3.0, value=durata_slider, step=0.1, key="pkt_dur_i", format="%.1f")
+            ampiezza = st.slider("Ampiezza", 0.5, 2.0, 1.0, 0.1, key="pkt_amp")
+            durata = st.slider("Durata visualizzazione (s)", 0.5, 3.0, 1.5, 0.1, key="pkt_dur")
         
         if preset_pkt != "Personalizzato":
             st.info(f"✓ Preset caricato: {preset_pkt}")
