@@ -1209,30 +1209,6 @@ elif sezione == "Principio di Indeterminazione":
             csv = df.to_csv(index=False)
             st.download_button("💾 Scarica CSV", csv, "pacchetto_risultati.csv", "text/csv")
             st.dataframe(df, use_container_width=True)
-        
-        # ========== VALORI TEORICI AGGIUNTIVI ==========
-        st.markdown("---")
-        st.subheader("🔢 Relazioni Teoriche Complete")
-        
-        col_rel1, col_rel2 = st.columns(2)
-        with col_rel1:
-            st.markdown("#### 📏 Dominio Spaziale")
-            st.write(f"**λ_min** = {lambda_min:.3f} m")
-            st.write(f"**λ_max** = {lambda_max:.3f} m")
-            st.write(f"**λ_medio** = {(lambda_min+lambda_max)/2:.3f} m")
-            st.write(f"**k_medio** = {k_medio:.3f} rad/m")
-            st.write(f"**v_fase** = {V_SUONO:.0f} m/s")
-        
-        with col_rel2:
-            st.markdown("#### ⏱️ Dominio Temporale")
-            T_min = 1/f_max
-            T_max = 1/f_min
-            st.write(f"**T_min** = {T_min*1000:.3f} ms")
-            st.write(f"**T_max** = {T_max*1000:.3f} ms")
-            st.write(f"**f_medio** = {(f_min+f_max)/2:.2f} Hz")
-            omega_medio = np.pi * (f_min+f_max)
-            st.write(f"**ω_medio** = {omega_medio:.2f} rad/s")
-            st.write(f"**v_gruppo** = {V_SUONO:.0f} m/s")
     
     with col2:
         # Grafico spaziale
