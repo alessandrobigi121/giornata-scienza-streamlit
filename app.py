@@ -217,7 +217,7 @@ sezione = st.sidebar.radio(
     "Scegli una sezione:",
     ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
      "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
-     "Regressione Δx vs 1/Δk", "Animazione Propagazione",
+     "Regressione Δx vs 1/Δk", "Onde Stazionarie", "Animazione Propagazione",
      "Analisi Audio Microfono", "Confronto Scenari", "Quiz Interattivo"]
 )
 
@@ -1624,6 +1624,9 @@ elif sezione == "Onde Stazionarie":
             height=500
         )
         st.plotly_chart(fig, use_container_width=True)
+        
+        st.markdown("#### Equazione d'Onda")
+        st.latex(r"y(x,t) = 2A \sin\left(\frac{n\pi}{L}x\right) \cos(\omega_n t)")
         
         st.info(f"""
         **Fisica:**
