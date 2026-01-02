@@ -218,7 +218,7 @@ sezione = st.sidebar.radio(
     ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
      "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
      "Regressione Δx vs 1/Δk", "Onde Stazionarie", "Animazione Propagazione",
-     "Analisi Audio Microfono", "Confronto Scenari", "Quiz Interattivo"]
+     "Analisi Audio Microfono", "Confronto Scenari", "Quiz Interattivo", "Modalità Mobile (Demo)"]
 )
 
 mostra_parametri_acustici()  # Mostra parametri fisici
@@ -2112,6 +2112,106 @@ elif sezione == "Quiz Interattivo":
         st.success("COMPLIMENTI! Hai ottenuto 3/3! Sei un esperto di onde!")
     elif score > 0:
         st.info(f"Hai ottenuto {score}/3. Riprova per fare il pieno!")
+
+# ========== MODALITÀ MOBILE (DEMO) ==========
+elif sezione == "Modalità Mobile (Demo)":
+    st.header("Lab Tascabile")
+    st.markdown("Esplora la fisica del suono in modo semplice e intuitivo. **Perfetto per il telefono!**")
+    
+    st.markdown("---")
+    
+    # 1. IL TONO (Frequenza)
+    st.subheader("1. Che nota vuoi sentire?")
+    st.caption("Sposta lo slider per cambiare l'altezza del suono.")
+    pitch_mob = st.select_slider(
+        "Altezza (Pitch)",
+        options=[200, 300, 440, 600, 800, 1000],
+        value=440,
+        format_func=lambda x: "Grave" if x < 300 else "Acuto" if x > 600 else f"{x} Hz (Medio)"
+    )
+    
+    st.markdown("---")
+    
+    # 2. L'EFFETTO (Fisica)
+    st.subheader("2. Scegli la forma dell'onda")
+    st.caption("Come si comportano le onde quando si incontrano?")
+    mode_mob = st.radio(
+        "Seleziona effetto:",
+        ["Onda Pura", "Battimenti (Interferenza)", "Pacchetto (Impulso)"],
+        horizontal=True
+    )
+    
+    # Logica di generazione
+    duration = 2.0
+    t = np.linspace(0, duration, int(SAMPLE_RATE * duration))
+    
+    if mode_mob == "Onda Pura":
+        y = np.sin(2 * np.pi * pitch_mob * t)
+        desc = "**Suono Puro**: Un'unica frequenza, pulita e costante. È il mattone fondamentale di tutti i suoni."
+        color_line = "#3498db" # Blue
+        view_dur = 0.02 # Zoom stretto
+        
+    elif mode_mob == "Battimenti (Interferenza)":
+        f_beat = 5 # 5 Hz beat
+        y = np.sin(2 * np.pi * pitch_mob * t) + np.sin(2 * np.pi * (pitch_mob + f_beat) * t)
+        desc = f"**Battimenti**: Due suoni vicini ({pitch_mob} Hz e {pitch_mob+f_beat} Hz). L'interferenza crea un 'wow-wow' a {f_beat} Hz."
+        color_line = "#e74c3c" # Red
+        view_dur = 0.4 # Zoom largo per vedere l'inviluppo
+        
+    else: # Pacchetto
+        # Create a packet centered at pitch_mob
+        f_span = 50
+        freqs = np.linspace(pitch_mob - f_span, pitch_mob + f_span, 30)
+        y = np.zeros_like(t)
+        for f in freqs:
+            y += np.sin(2 * np.pi * f * t)
+        y = y / 30 * 5 # Normalize visually
+        desc = "**Pacchetto**: Tante frequenze insieme creano un suono breve e concentrato. Più frequenze = durata minore."
+        color_line = "#9b59b6" # Purple
+        view_dur = 0.1 # Zoom medio
+
+    # Visualizzazione Mobile-First
+    st.markdown("### Guarda l'onda")
+    view_idx = int(view_dur * SAMPLE_RATE)
+    
+    fig_mob = go.Figure()
+    fig_mob.add_trace(go.Scatter(
+        x=t[:view_idx], y=y[:view_idx],
+        mode='lines', line=dict(color=color_line, width=3),
+        fill='tozeroy'
+    ))
+    fig_mob.update_layout(
+        margin=dict(l=10, r=10, t=10, b=10), height=200,
+        xaxis=dict(visible=False), yaxis=dict(visible=False, range=[-2.5, 2.5]),
+        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', dragmode=False 
+    )
+    st.plotly_chart(fig_mob, use_container_width=True, config={'displayModeBar': False})
+    
+    st.info(desc)
+    
+    st.markdown("### Ascolta")
+    if st.button("RIPRODUCI IL SUONO", type="primary", use_container_width=True):
+        audio_bytes = genera_audio(y)
+        st.audio(audio_bytes, format='audio/wav')
+    
+    with st.expander("Curiosità Scientifica"):
+        if mode_mob == "Onda Pura":
+            st.markdown(f"""
+            - **Frequenza**: {pitch_mob} oscillazioni al secondo.
+            - **Periodo**: {1/pitch_mob*1000:.2f} millisecondi.
+            - È il suono prodotto da un diapason ideale.
+            """)
+        elif mode_mob == "Battimenti (Interferenza)":
+            st.markdown(f"""
+            - **Frequenza media**: {pitch_mob + 2.5} Hz (il tono che senti).
+            - **Frequenza battimento**: 5 Hz (il ritmo del 'wow-wow').
+            - Usato dai musicisti per accordare gli strumenti a orecchio.
+            """)
+        else:
+            st.markdown("""
+            - **Principio di Indeterminazione**: Per fare un suono breve (localizzato nel tempo), servono molte frequenze diverse.
+            - Un suono puro (una sola frequenza) durerebbe in eterno!
+            """)
 
 st.markdown("---")
 st.markdown("**Liceo Leopardi Majorana** | Giornata della Scienza 2025 | Fisica delle Onde | *Alessandro Bigi*") 
