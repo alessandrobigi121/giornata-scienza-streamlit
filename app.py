@@ -25,31 +25,31 @@ SOGLIA_DOLORE = 1.0  # W/m²
 # ========== PRESET STORICI E FAMOSI ==========
 PRESET_FAMOSI = {
     "Personalizzato": None,
-    "🎵 Diapason Standard LA 440 Hz": {
+    "Diapason Standard LA 440 Hz": {
         "f1": 440.0, "f2": 445.0, "A1": 1.0, "A2": 1.0, "durata": 2.0,
         "descrizione": "Il LA a 440 Hz è lo standard internazionale dal 1955 (ISO 16). Usato per accordare gli strumenti."
     },
-    "🎻 Diapason Giuseppe Verdi LA 432 Hz": {
+    "Diapason Giuseppe Verdi LA 432 Hz": {
         "f1": 432.0, "f2": 437.0, "A1": 1.0, "A2": 1.0, "durata": 2.0,
         "descrizione": "Verdi sosteneva il LA a 432 Hz per motivi artistici. Detto 'accordatura scientifica'."
     },
-    "⚗️ Esperimento Helmholtz (1863)": {
+    "Esperimento Helmholtz (1863)": {
         "f1": 256.0, "f2": 261.0, "A1": 1.0, "A2": 1.0, "durata": 3.0,
         "descrizione": "Hermann von Helmholtz studiò i battimenti usando risonatori acustici a 256 Hz (DO centrale)."
     },
-    "🔬 Esperimento Heisenberg (1927)": {
+    "Esperimento Heisenberg (1927)": {
         "f1": 1000.0, "f2": 1100.0, "A1": 1.0, "A2": 1.0, "durata": 1.5,
         "descrizione": "Heisenberg usò onde sonore per dimostrare il principio di indeterminazione prima di applicarlo alla QM."
     },
-    "📻 Frequenza Radio AM (esempio)": {
+    "Frequenza Radio AM (esempio)": {
         "f1": 800.0, "f2": 810.0, "A1": 1.0, "A2": 1.0, "durata": 2.0,
         "descrizione": "Battimenti a ~10 Hz simili a quelli percepiti tra stazioni radio AM vicine."
     },
-    "🎼 Battimenti Musicali Lenti": {
+    "Battimenti Musicali Lenti": {
         "f1": 440.0, "f2": 442.0, "A1": 1.0, "A2": 1.0, "durata": 4.0,
         "descrizione": "2 battimenti/secondo: usati dai musicisti per accordare strumenti 'a orecchio'."
     },
-    "⚡ Battimenti Rapidi (interferenza)": {
+    "Battimenti Rapidi (interferenza)": {
         "f1": 1000.0, "f2": 1020.0, "A1": 1.0, "A2": 1.0, "durata": 1.0,
         "descrizione": "20 battimenti/secondo: al limite della percezione come tono separato vs. ruvidezza."
     }
@@ -57,27 +57,27 @@ PRESET_FAMOSI = {
 
 PRESET_PACCHETTI = {
     "Personalizzato": None,
-    "📦 Pacchetto Standard (Δk medio)": {
+    "Pacchetto Standard (Δk medio)": {
         "f_min": 100.0, "f_max": 130.0, "N": 50,
         "descrizione": "Configurazione equilibrata: localizzazione moderata, buona visualizzazione."
     },
-    "🎯 Super-Localizzato (Δk grande)": {
+    "Super-Localizzato (Δk grande)": {
         "f_min": 100.0, "f_max": 200.0, "N": 80,
         "descrizione": "Banda larga → pacchetto stretto (Δx piccolo). Dimostra il principio di indeterminazione."
     },
-    "🌊 Quasi-Monocromatico (Δk piccolo)": {
+    "Quasi-Monocromatico (Δk piccolo)": {
         "f_min": 100.0, "f_max": 105.0, "N": 30,
         "descrizione": "Banda stretta → pacchetto largo (Δx grande). Simile a un'onda quasi pura."
     },
-    "🔬 Esperimento Thomson (1897)": {
+    "Esperimento Thomson (1897)": {
         "f_min": 256.0, "f_max": 280.0, "N": 60,
         "descrizione": "J.J. Thomson usò pacchetti d'onda sonori per studiare la natura corpuscolare delle particelle."
     },
-    "📡 Impulso Radar (simulato)": {
+    "Impulso Radar (simulato)": {
         "f_min": 500.0, "f_max": 700.0, "N": 100,
         "descrizione": "Simula un impulso radar: breve durata, ampia banda. Trade-off range-velocità."
     },
-    "🎵 Pacchetto Audio (voce umana)": {
+    "Pacchetto Audio (voce umana)": {
         "f_min": 200.0, "f_max": 400.0, "N": 70,
         "descrizione": "Banda tipica della voce umana (formanti). Pacchetto con buona localizzazione temporale."
     }
@@ -86,8 +86,8 @@ PRESET_PACCHETTI = {
 
 def mostra_parametri_acustici():
     """Mostra tabella parametri fisici del suono (da relazione)"""
-    st.sidebar.markdown("### 📋 Parametri Fisici")
-    with st.sidebar.expander("🌡️ Proprietà aria (20°C)"):
+    st.sidebar.markdown("### Parametri Fisici")
+    with st.sidebar.expander("Proprietà aria (20°C)"):
         st.markdown(f"""
         - **Velocità suono**: {V_SUONO} m/s
         - **Densità aria**: {DENSITA_ARIA} kg/m³
@@ -98,9 +98,9 @@ def mostra_parametri_acustici():
         """)
 
 
-st.set_page_config(page_title="Pacchetti d'Onda - Completo", layout="wide")
+st.set_page_config(page_title="Giornata della Scienza - Fisica", layout="wide", page_icon="🌊")
 
-st.title("🌊 Giornata della Scienza: Onde, Pacchetti e Indeterminazione")
+st.title("Giornata della Scienza: Onde, Pacchetti e Indeterminazione")
 st.markdown("**Liceo Leopardi Majorana** - Laboratorio di Fisica")
 st.markdown("*A cura di Alessandro Bigi*")
 st.markdown("---")
@@ -118,18 +118,18 @@ def genera_audio(segnale, sample_rate=SAMPLE_RATE):
 def genera_audio_con_progress(segnale, sample_rate=SAMPLE_RATE, progress_bar=None):
     """Genera audio con progress bar per file lunghi"""
     if progress_bar and len(segnale) > 5 * sample_rate:  # > 5 secondi
-        progress_bar.progress(0.3, "🎵 Normalizzazione audio...")
+        progress_bar.progress(0.3, "Normalizzazione audio...")
     segnale_norm = segnale / (np.max(np.abs(segnale)) + 1e-10)
     
     if progress_bar and len(segnale) > 5 * sample_rate:
-        progress_bar.progress(0.6, "🔊 Conversione in WAV...")
+        progress_bar.progress(0.6, "Conversione in WAV...")
     audio_int16 = np.int16(segnale_norm * 32767 * 0.8)
     buffer = io.BytesIO()
     write(buffer, sample_rate, audio_int16)
     buffer.seek(0)
     
     if progress_bar:
-        progress_bar.progress(1.0, "✅ Audio generato!")
+        progress_bar.progress(1.0, "Audio generato!")
     return buffer.read()
 
 def calcola_larghezza_temporale(t, inviluppo, threshold=0.05):
@@ -212,13 +212,13 @@ def calcola_velocita_gruppo_fase(f_min, f_max, v_suono=V_SUONO):
 
 
 # Sidebar
-st.sidebar.title("📚 Navigazione")
+st.sidebar.title("Navigazione")
 sezione = st.sidebar.radio(
     "Scegli una sezione:",
     ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
-     "Principio di Indeterminazione", "🔬 Analisi Multi-Pacchetto", 
-     "📊 Regressione Δx vs 1/Δk", "🎬 Animazione Propagazione",
-     "🎤 Analisi Audio Microfono", "Confronto Scenari", "🧠 Quiz Interattivo"]
+     "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
+     "Regressione Δx vs 1/Δk", "Animazione Propagazione",
+     "Analisi Audio Microfono", "Confronto Scenari", "Quiz Interattivo"]
 )
 
 mostra_parametri_acustici()  # Mostra parametri fisici
@@ -227,7 +227,7 @@ st.sidebar.markdown("---")
 
 # ========== SEZIONE BATTIMENTI ==========
 if sezione == "Battimenti":
-    st.header("🎵 Battimenti: Interferenza tra due onde")
+    st.header("Battimenti: Interferenza tra due onde")
     st.markdown("""
     Quando due onde con frequenze molto vicine si sovrappongono, producono un segnale 
     la cui ampiezza varia periodicamente (battimenti).
@@ -239,7 +239,7 @@ if sezione == "Battimenti":
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader("⚙️ Parametri")
+        st.subheader("Parametri")
         
         # Inizializza session_state se non esiste
         if 'f1' not in st.session_state: st.session_state.f1 = 440.0
@@ -284,7 +284,7 @@ if sezione == "Battimenti":
         preset_batt = st.selectbox("Carica preset:", list(PRESET_FAMOSI.keys()), key="preset_batt_k", on_change=applica_preset)
         
         if preset_batt != "Personalizzato":
-            st.info(f"📖 **{preset_batt}**\n\n{PRESET_FAMOSI[preset_batt]['descrizione']}")
+            st.info(f"**{preset_batt}**\n\n{PRESET_FAMOSI[preset_batt]['descrizione']}")
         
         # Frequenza 1
         col_s1, col_i1 = st.columns([3, 1])
@@ -343,7 +343,7 @@ if sezione == "Battimenti":
         durata = 2.0
 
         if preset_batt != "Personalizzato":
-            st.info(f"✓ Preset caricato: {preset_batt}")
+            st.info(f"Preset caricato: {preset_batt}")
         
         f_media = (f1 + f2) / 2
         f_batt = abs(f1 - f2)
@@ -363,7 +363,7 @@ if sezione == "Battimenti":
             durata_auto = max(0.05, min(5.0, durata_auto))
         
         st.markdown("---")
-        usa_auto = st.checkbox("📐 Scala asse X automatica", value=True, 
+        usa_auto = st.checkbox("Scala asse X automatica", value=True, 
                               help="Adatta automaticamente l'asse tempo per mostrare 4 battimenti completi")
         
         if usa_auto:
@@ -371,31 +371,31 @@ if sezione == "Battimenti":
             if f_batt > 0.01:
                 n_batt_effettivi = durata / T_batt
                 if n_batt_effettivi > 10:
-                    st.warning(f"⚠️ Battimenti molto veloci! f_batt={f_batt:.1f} Hz → {n_batt_effettivi:.0f} battimenti in {durata:.3f}s")
+                    st.warning(f"Battimenti molto veloci! f_batt={f_batt:.1f} Hz → {n_batt_effettivi:.0f} battimenti in {durata:.3f}s")
                 elif n_batt_effettivi > 6:
-                    st.info(f"⏱️ Durata: {durata:.3f} s ≈ {n_batt_effettivi:.1f} battimenti (f_batt={f_batt:.1f} Hz)")
+                    st.info(f"Durata: {durata:.3f} s ≈ {n_batt_effettivi:.1f} battimenti (f_batt={f_batt:.1f} Hz)")
                 else:
-                    st.success(f"⏱️ Durata: {durata:.3f} s = {n_batt_effettivi:.1f} battimenti (f_batt={f_batt:.1f} Hz) ✓")
+                    st.success(f"Durata: {durata:.3f} s = {n_batt_effettivi:.1f} battimenti (f_batt={f_batt:.1f} Hz)")
             else:
                 n_periodi = durata * f_media
-                st.success(f"⏱️ Durata: {durata:.3f} s ≈ {n_periodi:.0f} periodi portante")
+                st.success(f"Durata: {durata:.3f} s ≈ {n_periodi:.0f} periodi portante")
         else:
-            durata = st.slider("⏱️ Durata manuale (s)", 0.05, 10.0, durata_auto, 0.05, key="dur_manual")
+            durata = st.slider("Durata manuale (s)", 0.05, 10.0, durata_auto, 0.05, key="dur_manual")
         
         # 🆕 GENERAZIONE AUDIO
         st.markdown("---")
-        st.subheader("🔊 Genera Audio")
-        durata_audio_batt = st.slider("⏱️ Durata audio (s)", 0.5, 30.0, min(durata*2, 10.0), 0.5, 
+        st.subheader("Genera Audio")
+        durata_audio_batt = st.slider("Durata audio (s)", 0.5, 30.0, min(durata*2, 10.0), 0.5, 
                                       key="dur_audio_batt", 
                                       help="Durata del file audio (indipendente dalla visualizzazione)")
-        if st.button("▶️ Genera battimenti audio", key="gen_batt_audio"):
+        if st.button("Genera battimenti audio", key="gen_batt_audio"):
             if durata_audio_batt > 5:
-                progress = st.progress(0, "⏳ Generazione in corso...")
+                progress = st.progress(0, "Generazione in corso...")
             else:
                 progress = None
             
             if progress:
-                progress.progress(0.2, "🔊 Calcolo segnale...")
+                progress.progress(0.2, "Calcolo segnale...")
             t_audio = np.linspace(0, durata_audio_batt, int(SAMPLE_RATE * durata_audio_batt))
             y_audio = np.sin(2 * np.pi * f1 * t_audio) + np.sin(2 * np.pi * f2 * t_audio)
             
@@ -404,12 +404,12 @@ if sezione == "Battimenti":
             if progress:
                 progress.empty()
             
-            st.success(f"✅ Audio generato: {durata_audio_batt:.1f} secondi ({len(y_audio):,} campioni)")
+            st.success(f"Audio generato: {durata_audio_batt:.1f} secondi ({len(y_audio):,} campioni)")
             st.audio(audio_bytes, format='audio/wav')
-            st.download_button("💾 Scarica WAV", audio_bytes, f"battimenti_{int(f1)}_{int(f2)}_Hz_{durata_audio_batt:.0f}s.wav", "audio/wav")
+            st.download_button("Scarica WAV", audio_bytes, f"battimenti_{int(f1)}_{int(f2)}_Hz_{durata_audio_batt:.0f}s.wav", "audio/wav")
         
         st.markdown("---")
-        if st.button("📥 Esporta dati in CSV"):
+        if st.button("Esporta dati in CSV"):
             export_data = {
                 "Parametro": ["f1 (Hz)", "f2 (Hz)", "A1", "A2", "f_media (Hz)", "f_battimento (Hz)", "T_battimento (s)"],
                 "Valore": [f1, f2, A1, A2, f_media, f_batt, T_batt if T_batt != np.inf else 0]
@@ -469,10 +469,10 @@ if sezione == "Battimenti":
 
     st.markdown("---")
     st.markdown("---")
-    st.header("📊 Valori Teorici Completi")
+    st.header("Valori Teorici Completi")
     
     
-    st.markdown("### 🌊 Onda Portante")
+    st.markdown("### Onda Portante")
     col_t1, col_t2, col_t3, col_t4 = st.columns(4)
     with col_t1:
         st.metric("f_media (portante)", f"{f_media:.2f} Hz", help="(f₁ + f₂) / 2")
@@ -486,7 +486,7 @@ if sezione == "Battimenti":
         k_media = omega_media / V_SUONO
         st.metric("k_media", f"{k_media:.4f} rad/m", help="ω_media / v")
     
-    st.markdown("### 🔊 Battimento")
+    st.markdown("### Battimento")
     col_b1, col_b2, col_b3, col_b4 = st.columns(4)
     with col_b1:
         st.metric("f_battimento", f"{f_batt:.2f} Hz", help="|f₁ - f₂|")
@@ -499,7 +499,7 @@ if sezione == "Battimenti":
         f_ampiezza = f_batt / 2 if f_batt > 0 else 0
         st.metric("f*_ampiezza", f"{f_ampiezza:.2f} Hz", help="f_batt / 2")
     
-    st.markdown("### ⚡ Pulsazioni (ω)")
+    st.markdown("### Pulsazioni (ω)")
     col_w1, col_w2, col_w3, col_w4 = st.columns(4)
     with col_w1:
         st.metric("ω₁", f"{omega1:.2f} rad/s", help="2π × f₁")
@@ -512,7 +512,7 @@ if sezione == "Battimenti":
         omega_batt = delta_omega / 2
         st.metric("ω_battimento", f"{omega_batt:.2f} rad/s", help="Δω / 2")
     
-    st.markdown("### 📏 Lunghezze d'onda (v = 340 m/s)")
+    st.markdown("### Lunghezze d'onda (v = 340 m/s)")
     col_l1, col_l2, col_l3, col_l4 = st.columns(4)
     with col_l1:
         lambda1 = V_SUONO / f1 if f1 > 0 else 0
@@ -527,7 +527,7 @@ if sezione == "Battimenti":
         delta_lambda = abs(lambda1 - lambda2)
         st.metric("Δλ", f"{delta_lambda:.4f} m", help="|λ₁ - λ₂|")
     
-    st.markdown("### 🔢 Numeri d'onda (k)")
+    st.markdown("### Numeri d'onda (k)")
     col_k1, col_k2, col_k3, col_k4 = st.columns(4)
     with col_k1:
         k1 = 2 * np.pi / lambda1 if lambda1 > 0 else 0
@@ -542,33 +542,35 @@ if sezione == "Battimenti":
         k_batt = delta_k / 2
         st.metric("k_battimento", f"{k_batt:.4f} rad/m", help="Δk / 2")
     
-    with st.expander("📐 Vedi tutte le formule teoriche (LaTeX)"):
+    with st.expander("Vedi tutte le formule teoriche (LaTeX)"):
         col_form1, col_form2 = st.columns(2)
         with col_form1:
-            st.markdown("#### 🌊 Onda risultante")
+            st.markdown("#### Onda risultante")
             st.latex(r"y(t) = y_1(t) + y_2(t)")
             st.latex(r"y(t) = A\cos(\omega_1 t) + A\cos(\omega_2 t)")
             st.latex(r"y(t) = 2A\cos\left(\frac{\omega_1 - \omega_2}{2}t\right) \cos\left(\frac{\omega_1 + \omega_2}{2}t\right)")
+            if abs(A1 - A2) > 0.01:
+                st.caption("*Nota: La formula semplificata qui sopra assume ampiezze uguali ($A_1 = A_2$). Con ampiezze diverse, l'interferenza distruttiva non è completa e il minimo dell'inviluppo non scende a zero.*")
             st.markdown("#### 📊 Frequenze")
             st.latex(r"f_{\text{media}} = \frac{f_1 + f_2}{2}")
             st.latex(r"f_{\text{batt}} = |f_1 - f_2|")
             st.latex(r"f^*_{\text{ampiezza}} = \frac{|f_1 - f_2|}{2}")
         with col_form2:
-            st.markdown("#### 🔄 Pulsazioni")
+            st.markdown("#### Pulsazioni")
             st.latex(r"\omega = 2\pi f")
             st.latex(r"\omega_{\text{media}} = \frac{\omega_1 + \omega_2}{2}")
             st.latex(r"\Delta\omega = |\omega_1 - \omega_2|")
-            st.markdown("#### 📏 Relazioni ondulatorie")
+            st.markdown("#### Relazioni ondulatorie")
             st.latex(r"\lambda = \frac{v}{f}")
             st.latex(r"k = \frac{2\pi}{\lambda}")
 
 # ========== PACCHETTI D'ONDA ==========
 elif sezione == "Pacchetti d'Onda":
-    st.header("📦 Pacchetti d'Onda: Sovrapposizione di molte frequenze")
+    st.header("Pacchetti d'Onda: Sovrapposizione di molte frequenze")
     
     # 📚 TEORIA MATEMATICA
-    with st.expander("📖 Teoria Pacchetti d'Onda", expanded=False):
-        st.markdown("### 📐 Teoria Matematica")
+    with st.expander("Teoria Pacchetti d'Onda", expanded=False):
+        st.markdown("### Teoria Matematica")
     
         st.markdown("**Dalla Sovrapposizione Discreta al Continuo**")
         st.markdown("Un pacchetto d'onda è formato dalla sovrapposizione di N onde:")
@@ -625,9 +627,9 @@ elif sezione == "Pacchetti d'Onda":
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader("⚙️ Parametri")
+        st.subheader("Parametri")
         
-        preset_pkt = st.selectbox("📱 Carica preset:", list(PRESET_PACCHETTI.keys()), key="preset_pkt_main")
+        preset_pkt = st.selectbox("Carica preset:", list(PRESET_PACCHETTI.keys()), key="preset_pkt_main")
         
         if preset_pkt != "Personalizzato":
             preset = PRESET_PACCHETTI[preset_pkt]
@@ -636,7 +638,7 @@ elif sezione == "Pacchetti d'Onda":
             n_onde = preset["N"]
             ampiezza = 1.0  # Default
             durata = 1.5    # Default
-            st.info(f"📖 **{preset_pkt}**\n\n{preset['descrizione']}")
+            st.info(f"**{preset_pkt}**\n\n{preset['descrizione']}")
         else:
             # Funzione di sincronizzazione per i pacchetti
             def sync_pkt(param_base):
@@ -705,7 +707,7 @@ elif sezione == "Pacchetti d'Onda":
             durata = st.slider("Durata visualizzazione (s)", 0.5, 3.0, 1.5, 0.1, key="pkt_dur")
         
         if preset_pkt != "Personalizzato":
-            st.info(f"✓ Preset caricato: {preset_pkt}")
+            st.info(f"Preset caricato: {preset_pkt}")
         
         mostra_componenti = st.checkbox("Mostra onde componenti (max 10)", False)
         
@@ -769,7 +771,7 @@ elif sezione == "Pacchetti d'Onda":
     
     # ========== SEZIONI A SCHERMO INTERO ==========
     st.markdown("---")
-    st.subheader("📊 Caratteristiche Pacchetto")
+    st.subheader("Caratteristiche Pacchetto")
     col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
     with col_c1:
         st.metric("Freq. centrale", f"{f_centrale:.2f} Hz")
@@ -783,18 +785,18 @@ elif sezione == "Pacchetti d'Onda":
         st.metric("N onde", n_onde)
     
     st.markdown("---")
-    st.subheader("🔊 Genera Pacchetto Audio")
-    durata_audio_pack = st.slider("⏱️ Durata audio (s)", 0.5, 30.0, min(durata*2, 10.0), 0.5, 
+    st.subheader("Genera Pacchetto Audio")
+    durata_audio_pack = st.slider("Durata audio (s)", 0.5, 30.0, min(durata*2, 10.0), 0.5, 
                                   key="dur_audio_pack",
                                   help="Durata del file audio (indipendente dalla visualizzazione)")
-    if st.button("▶️ Genera e riproduci", key="gen_pack_audio"):
+    if st.button("Genera e riproduci", key="gen_pack_audio"):
         if durata_audio_pack > 5:
-            progress = st.progress(0, "⏳ Generazione in corso...")
+            progress = st.progress(0, "Generazione in corso...")
         else:
             progress = None
         
         if progress:
-            progress.progress(0.1, f"🔊 Calcolo {n_onde} onde...")
+            progress.progress(0.1, f"Calcolo {n_onde} onde...")
         t_audio = np.linspace(0, durata_audio_pack, int(SAMPLE_RATE * durata_audio_pack))
         frequenze_audio = np.linspace(f_min, f_max, n_onde)
         y_audio = np.zeros_like(t_audio)
@@ -802,22 +804,22 @@ elif sezione == "Pacchetti d'Onda":
         for i, f in enumerate(frequenze_audio):
             y_audio += (1/n_onde) * np.sin(2 * np.pi * f * t_audio)
             if progress and i % max(1, n_onde//10) == 0:
-                progress.progress(0.1 + 0.2 * (i/n_onde), f"🌊 Onda {i+1}/{n_onde}...")
+                progress.progress(0.1 + 0.2 * (i/n_onde), f"Onda {i+1}/{n_onde}...")
         
         if np.max(np.abs(y_audio)) > 0.95:
-            st.warning("⚠️ **Clipping rilevato!** Normalizzazione attiva.")
+            st.warning("**Clipping rilevato!** Normalizzazione attiva.")
         
         audio_bytes = genera_audio_con_progress(y_audio, SAMPLE_RATE, progress)
         
         if progress:
             progress.empty()
         
-        st.success(f"✅ Audio generato: {durata_audio_pack:.1f}s, {n_onde} onde, {len(y_audio):,} campioni")
+        st.success(f"Audio generato: {durata_audio_pack:.1f}s, {n_onde} onde, {len(y_audio):,} campioni")
         st.audio(audio_bytes, format='audio/wav')
-        st.download_button("💾 Scarica WAV", audio_bytes, f"pacchetto_{int(f_min)}_{int(f_max)}_Hz_{durata_audio_pack:.0f}s.wav", "audio/wav")
+        st.download_button("Scarica WAV", audio_bytes, f"pacchetto_{int(f_min)}_{int(f_max)}_Hz_{durata_audio_pack:.0f}s.wav", "audio/wav")
     
     st.markdown("---")
-    if st.button("📥 Esporta parametri pacchetto", key="export_pkt_full"):
+    if st.button("Esporta parametri pacchetto", key="export_pkt_full"):
         export_data = {
             "Parametro": ["f_min (Hz)", "f_max (Hz)", "Δf (Hz)", "N", "f_centrale (Hz)", "Δω (rad/s)"],
             "Valore": [f_min, f_max, delta_f, n_onde, f_centrale, delta_omega]
@@ -829,7 +831,7 @@ elif sezione == "Pacchetti d'Onda":
     # 🆕 ========== VISUALIZZAZIONE SIMMETRICA COMPLETA (SCHERMO INTERO) ==========
     st.markdown("---")
     st.markdown("---")
-    st.header("🔄 Visualizzazione Simmetrica Completa")
+    st.header("Visualizzazione Simmetrica Completa")
     st.markdown("""
     **Estensione spazio-temporale**: Il pacchetto viene esteso simmetricamente per mostrare 
     il comportamento completo dell'onda, includendo sia tempi positivi che negativi.
@@ -896,7 +898,7 @@ elif sezione == "Pacchetti d'Onda":
     st.plotly_chart(fig_sim2, use_container_width=True)
     
     # 🎨 GRAFICO 3: Vista 3D (Pacchetto + Inviluppo)
-    with st.expander("🌐 Visualizzazione 3D del Pacchetto"):
+    with st.expander("Visualizzazione 3D del Pacchetto"):
         st.markdown("**Rappresentazione tridimensionale** dove l'inviluppo viene estruso nello spazio")
         
         # Crea griglia per 3D
@@ -932,7 +934,7 @@ elif sezione == "Pacchetti d'Onda":
     
     # 📊 Analisi simmetria
     st.markdown("---")
-    st.subheader("📊 Analisi di Simmetria")
+    st.subheader("Analisi di Simmetria")
     
     col_s1, col_s2, col_s3, col_s4 = st.columns(4)
     
@@ -955,9 +957,9 @@ elif sezione == "Pacchetti d'Onda":
         st.metric("Larghezza FWHM", f"{larghezza_centrale:.3f} s")
     
     # Info teorica
-    with st.expander("📖 Perché la simmetria è importante?"):
+    with st.expander("Perché la simmetria è importante?"):
         st.markdown("""
-        ### 🔬 Significato Fisico della Simmetria
+        ### Significato Fisico della Simmetria
         
         1. **Invarianza temporale**: Un pacchetto d'onda simmetrico rispetto a t=0 rappresenta
            un'onda stazionaria che si propaga sia in avanti che indietro nel tempo.
@@ -977,7 +979,7 @@ elif sezione == "Pacchetti d'Onda":
 
 # ========== SPETTRO FOURIER (COMPLETO VECCHIO) ==========
 elif sezione == "Spettro di Fourier":
-    st.header("📈 Analisi di Fourier: Dal Tempo alla Frequenza")
+    st.header("Analisi di Fourier: Dal Tempo alla Frequenza")
     st.markdown("""
     La trasformata di Fourier mostra quali frequenze compongono il segnale.
     Un pacchetto localizzato nel tempo ha uno spettro distribuito in frequenza.
@@ -986,7 +988,7 @@ elif sezione == "Spettro di Fourier":
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader("⚙️ Parametri")
+        st.subheader("Parametri")
         tipo_segnale = st.selectbox("Tipo di segnale", 
                                     ["Pacchetto d'onda", "Onda singola", "Battimenti"])
         
@@ -1020,7 +1022,7 @@ elif sezione == "Spettro di Fourier":
             titolo = f"Battimenti: {f1_bat} Hz + {f2_bat} Hz"
         
         # 🆕 AUDIO PLAYER
-        st.markdown("### 🔊 Ascolta il Segnale")
+        st.markdown("### Ascolta il Segnale")
         audio_bytes_fft = genera_audio(y, fs)
         st.audio(audio_bytes_fft, format='audio/wav')
         
@@ -1051,7 +1053,7 @@ elif sezione == "Spettro di Fourier":
         
         st.plotly_chart(fig, use_container_width=True)
         
-        st.subheader("📊 Statistiche dello Spettro")
+        st.subheader("Statistiche dello Spettro")
         from scipy.signal import find_peaks
         peaks, _ = find_peaks(potenza, height=np.max(potenza)*0.1)
         freq_picchi = xf[peaks]
@@ -1068,10 +1070,10 @@ elif sezione == "Spettro di Fourier":
     
     st.markdown("---")
     st.markdown("---")
-    st.header("📊 Valori Teorici Completi - Spettro di Fourier")
+    st.header("Valori Teorici Completi - Spettro di Fourier")
     st.markdown("*Parametri di campionamento e analisi FFT*")
     
-    st.markdown("### 🔬 Campionamento")
+    st.markdown("### Campionamento")
     col_camp1, col_camp2, col_camp3, col_camp4 = st.columns(4)
     with col_camp1:
         st.metric("Frequenza campionamento", f"{fs} Hz", help="Sample rate")
@@ -1083,7 +1085,7 @@ elif sezione == "Spettro di Fourier":
         risoluzione_freq = fs / N
         st.metric("Risoluzione Δf", f"{risoluzione_freq:.4f} Hz", help="fs / N")
     
-    st.markdown("### 📊 Analisi Spettrale")
+    st.markdown("### Analisi Spettrale")
     col_fft1, col_fft2, col_fft3, col_fft4 = st.columns(4)
     with col_fft1:
         freq_max_fft = fs / 2
@@ -1103,7 +1105,7 @@ elif sezione == "Spettro di Fourier":
         num_bins_fft = len(xf)
         st.metric("Bins FFT", f"{num_bins_fft:,}", help="N/2 frequenze")
     
-    st.markdown("### 🎯 Picchi Rilevati")
+    st.markdown("### Picchi Rilevati")
     if len(freq_picchi) > 0:
         col_pk1, col_pk2, col_pk3, col_pk4 = st.columns(4)
         with col_pk1:
@@ -1119,45 +1121,45 @@ elif sezione == "Spettro di Fourier":
                 larghezza = freq_picchi[-1] - freq_picchi[0]
                 st.metric("Larghezza banda", f"{larghezza:.2f} Hz")
     
-    with st.expander("📐 Formule Trasformata di Fourier"):
+    with st.expander("Formule Trasformata di Fourier"):
         col_fourier1, col_fourier2 = st.columns(2)
         with col_fourier1:
-            st.markdown("#### 🔄 FFT Discreta")
+            st.markdown("#### FFT Discreta")
             st.latex(r"X_k = \sum_{n=0}^{N-1} x_n e^{-i 2\pi k n / N}")
             st.latex(r"f_k = \frac{k \cdot f_s}{N}")
-            st.markdown("#### 📊 Potenza")
+            st.markdown("#### Potenza")
             st.latex(r"P_k = \frac{2}{N} |X_k|")
         with col_fourier2:
-            st.markdown("#### 🎯 Teorema Campionamento")
+            st.markdown("#### Teorema Campionamento")
             st.latex(r"f_s > 2 f_{\text{max}}")
             st.latex(r"f_{\text{Nyquist}} = \frac{f_s}{2}")
-            st.markdown("#### 🔍 Risoluzione")
+            st.markdown("#### Risoluzione")
             st.latex(r"\Delta f = \frac{f_s}{N} = \frac{1}{T}")
 
 # ========== PRINCIPIO INDETERMINAZIONE (COMPLETO) ==========
 elif sezione == "Principio di Indeterminazione":
-    st.header("⚛️ Principio di Indeterminazione di Heisenberg")
+    st.header("Principio di Indeterminazione di Heisenberg")
     
     st.info("""
-    📘 Questa sezione verifica sperimentalmente il principio di 
+    Questa sezione verifica sperimentalmente il principio di 
     indeterminazione per le onde: $\\Delta x \\cdot \\Delta k \\geq 1/2$ (forma RMS) 
     o $\\Delta x \\cdot \\Delta k = 4\\pi$ (lobi laterali, usato qui).
     
     **Valori teorici**:
     - Gaussiano (RMS): $\\Delta x \\cdot \\Delta k = 1/2$ (minimo)
     - Gaussiano (FWHM): $\\Delta x \\cdot \\Delta k \\approx 1.77$
-    - Sinc (primi zeri): $\\Delta x \\cdot \\Delta k = 4\\pi \\approx 12.57$ ✓
+    - Sinc (primi zeri): $\\Delta x \\cdot \\Delta k = 4\\pi \\approx 12.57$
     """)
 
     st.markdown("""Il principio di indeterminazione stabilisce che Δx·Δp ≥ ℏ/2""")
     st.markdown(f"Per onde: **p = ℏk = h/λ**, quindi: **Δx·Δk ≥ 1/2**")
     st.markdown(f"**Teoricamente**: Δx·Δk = 4π ≈ **12.57** (per N → ∞)")
-    st.info(f"🔊 **Velocità del suono in aria**: v = {V_SUONO} m/s (a 20°C)")
+    st.info(f"**Velocità del suono in aria**: v = {V_SUONO} m/s (a 20°C)")
     
     st.markdown("---")
-    st.subheader("⚙️ Parametri del Pacchetto")
+    st.subheader("Parametri del Pacchetto")
     
-    preset_pkt = st.selectbox("📱 Carica preset:", list(PRESET_PACCHETTI.keys()), key="preset_pkt_main")
+    preset_pkt = st.selectbox("Carica preset:", list(PRESET_PACCHETTI.keys()), key="preset_pkt_main")
     
     if preset_pkt != "Personalizzato":
         preset = PRESET_PACCHETTI[preset_pkt]
@@ -1166,7 +1168,7 @@ elif sezione == "Principio di Indeterminazione":
         n_onde = preset["N"]
         ampiezza = 1.0
         durata = 1.5
-        st.info(f"📖 **{preset_pkt}**\n\n{preset['descrizione']}")
+        st.info(f"**{preset_pkt}**\n\n{preset['descrizione']}")
     else:
         col_in1, col_in2, col_in3 = st.columns(3)
         with col_in1:
@@ -1216,24 +1218,24 @@ elif sezione == "Principio di Indeterminazione":
     delta_t_teorico = 4 * np.pi / delta_omega if delta_omega > 0 else 0
     
     st.markdown("---")
-    st.subheader("📊 Analisi Teorica")
+    st.subheader("Analisi Teorica")
     
     col_res1, col_res2, col_res3 = st.columns(3)
     
     with col_res1:
-        st.markdown("**📐 Dominio Spaziale**")
+        st.markdown("**Dominio Spaziale**")
         st.metric("Δk", f"{delta_k:.4f} rad/m")
         st.metric("Δx teorico", f"{delta_x_teorico:.3f} m")
         st.metric("λ_min", f"{lambda_min:.3f} m")
     
     with col_res2:
-        st.markdown("**⏱️ Dominio Temporale**")
+        st.markdown("**Dominio Temporale**")
         st.metric("Δf", f"{delta_f:.1f} Hz")
         st.metric("Δω", f"{delta_omega:.1f} rad/s")
         st.metric("Δt teorico", f"{delta_t_teorico*1000:.2f} ms")
     
     with col_res3:
-        st.markdown("**🎯 Principio Indeterminazione**")
+        st.markdown("**Principio Indeterminazione**")
         prodotto_xk = delta_x_teorico * delta_k
         prodotto_wt = delta_t_teorico * delta_omega
         st.metric("Δx·Δk", f"{prodotto_xk:.3f}", delta=f"4π={4*np.pi:.3f}")
@@ -1241,13 +1243,13 @@ elif sezione == "Principio di Indeterminazione":
         
         errore_perc_xk = abs(prodotto_xk - 4*np.pi) / (4*np.pi) * 100
         if errore_perc_xk < 5:
-            st.success(f"✅ Errore: {errore_perc_xk:.1f}%")
+            st.success(f"Errore: {errore_perc_xk:.1f}%")
         else:
-            st.warning(f"⚠️ Errore: {errore_perc_xk:.1f}%")
+            st.warning(f"Errore: {errore_perc_xk:.1f}%")
 
     # === GRAFICI A TUTTO SCHERMO ===
     st.markdown("---")
-    st.subheader("📈 Visualizzazione Grafica")
+    st.subheader("Visualizzazione Grafica")
     
     # Grafico spaziale
     x = np.linspace(-20, 20, 10000) # Più punti per dettaglio spaziale
@@ -1297,7 +1299,7 @@ elif sezione == "Principio di Indeterminazione":
     st.plotly_chart(fig_t, use_container_width=True)
     
     # 🆕 Grafico temporale SIMMETRICO (Doppio)
-    st.markdown("#### ⏳ Visualizzazione Temporale Simmetrica (Passato e Futuro)")
+    st.markdown("#### Visualizzazione Temporale Simmetrica (Passato e Futuro)")
     t_sim = np.linspace(-durata, durata, int(durata * 2 * 20000)) # Alta risoluzione
     y_t_sim = np.zeros_like(t_sim)
     for omega in omega_vals:
@@ -1320,7 +1322,7 @@ elif sezione == "Principio di Indeterminazione":
     
     # 🔬 VALIDAZIONE METODO
     st.markdown("---")
-    st.subheader("🔬 Validazione del Metodo (da relazione)")
+    st.subheader("Validazione del Metodo (da relazione)")
     
     st.markdown("""
     **Confronto metodi di calcolo** per $\\Delta x$ (stesso pacchetto test):
@@ -1349,12 +1351,12 @@ elif sezione == "Principio di Indeterminazione":
     st.dataframe(df_val, use_container_width=True)
     
     st.success(f"""
-    ✅ **Metodo validato**: Il metodo dei lobi laterali (soglia 5%) fornisce 
+    **Metodo validato**: Il metodo dei lobi laterali (soglia 5%) fornisce 
     Δx·Δk = {delta_x_dk_lobi:.3f}, in ottimo accordo con il valore teorico 4π = 12.566 
     (errore < 0.1%)
     """)
     
-    st.subheader("📊 Verifica Sperimentale")
+    st.subheader("Verifica Sperimentale")
     col_ver1, col_ver2 = st.columns(2)
     with col_ver1:
         st.metric("Δx misurato", f"{delta_x_mis:.3f} m")
@@ -1364,11 +1366,11 @@ elif sezione == "Principio di Indeterminazione":
         st.metric("Δω·Δt misurato", f"{delta_t_mis * delta_omega:.3f}")
     
     st.markdown("---")
-    st.subheader("🔊 Genera Audio")
-    durata_audio_pack = st.slider("⏱️ Durata audio (s)", 0.5, 30.0, 5.0, 0.5, key="dur_audio_pack")
+    st.subheader("Genera Audio")
+    durata_audio_pack = st.slider("Durata audio (s)", 0.5, 30.0, 5.0, 0.5, key="dur_audio_pack")
     
-    if st.button("▶️ Genera pacchetto audio", key="gen_pack_audio"):
-        progress = st.progress(0, "⏳ Generazione...")
+    if st.button("Genera pacchetto audio", key="gen_pack_audio"):
+        progress = st.progress(0, "Generazione...")
         t_audio = np.linspace(0, durata_audio_pack, int(SAMPLE_RATE * durata_audio_pack))
         frequenze_audio = np.linspace(f_min, f_max, n_onde)
         y_audio = np.zeros_like(t_audio)
@@ -1378,12 +1380,12 @@ elif sezione == "Principio di Indeterminazione":
         
         audio_bytes = genera_audio_con_progress(y_audio, SAMPLE_RATE, progress)
         progress.empty()
-        st.success(f"✅ Audio generato: {durata_audio_pack:.1f}s")
+        st.success(f"Audio generato: {durata_audio_pack:.1f}s")
         st.audio(audio_bytes, format='audio/wav')
-        st.download_button("💾 Scarica WAV", audio_bytes, f"pacchetto_{int(f_min)}_{int(f_max)}_Hz.wav", "audio/wav")
+        st.download_button("Scarica WAV", audio_bytes, f"pacchetto_{int(f_min)}_{int(f_max)}_Hz.wav", "audio/wav")
     
     st.markdown("---")
-    if st.button("📥 Esporta risultati", key="export_pkt"):
+    if st.button("Esporta risultati", key="export_pkt"):
         export_data = {
             "Parametro": ["f_min (Hz)", "f_max (Hz)", "Δf (Hz)", "N onde", 
                          "λ_min (m)", "λ_max (m)", "Δk (rad/m)", "Δx (m)", 
@@ -1393,30 +1395,30 @@ elif sezione == "Principio di Indeterminazione":
         }
         df = pd.DataFrame(export_data)
         csv = df.to_csv(index=False)
-        st.download_button("💾 Scarica CSV", csv, "pacchetto_risultati.csv", "text/csv")
+        st.download_button("Scarica CSV", csv, "pacchetto_risultati.csv", "text/csv")
         st.dataframe(df, use_container_width=True)
     
     # 🆕 FORMULE LATEX
     st.markdown("---")
-    with st.expander("📐 Formule del Principio di Indeterminazione (LaTeX)", expanded=False):
+    with st.expander("Formule del Principio di Indeterminazione (LaTeX)", expanded=False):
         col_lat1, col_lat2 = st.columns(2)
         with col_lat1:
-            st.markdown("#### 🌊 Pacchetto d'Onda")
+            st.markdown("#### Pacchetto d'Onda")
             st.latex(r"y(x,t) = \sum_{n=1}^{N} A_n \cos(k_n x - \omega_n t)")
-            st.markdown("#### 📏 Larghezze di Banda")
+            st.markdown("#### Larghezze di Banda")
             st.latex(r"\Delta k = k_{max} - k_{min}")
             st.latex(r"\Delta \omega = \omega_{max} - \omega_{min}")
         
         with col_lat2:
-            st.markdown("#### ⚛️ Relazioni di Indeterminazione")
+            st.markdown("#### Relazioni di Indeterminazione")
             st.latex(r"\Delta x \cdot \Delta k \approx 4\pi")
             st.latex(r"\Delta t \cdot \Delta \omega \approx 4\pi")
-            st.markdown("#### 🚀 Velocità")
+            st.markdown("#### Velocità")
             st.latex(r"v_g = \frac{\Delta \omega}{\Delta k} = v_{suono}")
 
-# 🆕 ========== ANALISI MULTI-PACCHETTO ==========
-elif sezione == "🔬 Analisi Multi-Pacchetto":
-    st.header("🔬 Analisi Quantitativa Multi-Pacchetto")
+# ========== ANALISI MULTI-PACCHETTO ==========
+elif sezione == "Analisi Multi-Pacchetto":
+    st.header("Analisi Quantitativa Multi-Pacchetto")
     st.markdown("Genera più pacchetti con diversi Δk e verifica sistematicamente Δx·Δk = 4π")
     
     n_pacchetti = st.slider("Numero pacchetti da analizzare", 3, 15, 8, key="npac")
@@ -1424,7 +1426,7 @@ elif sezione == "🔬 Analisi Multi-Pacchetto":
     delta_lambda_step = st.slider("Incremento Δλ", 0.3, 2.0, 0.8, 0.1, key="dlstep")
     n_onde_fisso = st.slider("N onde (fisso)", 30, 100, 60, 10, key="nfix")
     
-    if st.button("🚀 Genera e Analizza", key="gen_multi"):
+    if st.button("Genera e Analizza", key="gen_multi"):
         risultati = []
         for i in range(n_pacchetti):
             lambda_max = lambda_min_base + (i + 1) * delta_lambda_step
@@ -1451,7 +1453,7 @@ elif sezione == "🔬 Analisi Multi-Pacchetto":
             })
         
         df = pd.DataFrame(risultati)
-        st.subheader("📊 Tabella Risultati")
+        st.subheader("Tabella Risultati")
         st.dataframe(df.style.format({
             "Δk (rad/m)": "{:.3f}", 
             "Δx (m)": "{:.3f}", 
@@ -1476,11 +1478,11 @@ elif sezione == "🔬 Analisi Multi-Pacchetto":
         st.plotly_chart(fig_trend, use_container_width=True)
         
         csv = df.to_csv(index=False)
-        st.download_button("📥 Scarica CSV", csv, "analisi_multi_pacchetto.csv", "text/csv")
+        st.download_button("Scarica CSV", csv, "analisi_multi_pacchetto.csv", "text/csv")
 
-# 🆕 ========== REGRESSIONE ==========
-elif sezione == "📊 Regressione Δx vs 1/Δk":
-    st.header("📊 Regressione Lineare: Δx vs 1/Δk")
+# ========== REGRESSIONE ==========
+elif sezione == "Regressione Δx vs 1/Δk":
+    st.header("Regressione Lineare: Δx vs 1/Δk")
     st.markdown("**Teoria:** Δx = 4π · (1/Δk) → pendenza attesa ≈ 12.57")
     
     n_punti = st.slider("Numero punti", 5, 25, 12, key="npt")
@@ -1489,7 +1491,7 @@ elif sezione == "📊 Regressione Δx vs 1/Δk":
     lambda_max_max = st.slider("λ_max massimo (m)", lambda_max_min+2, 12.0, 9.0, 0.5, key="lmaxmax")
     n_onde_reg = st.slider("N onde", 40, 100, 70, 10, key="noreg")
     
-    if st.button("📈 Calcola Regressione", key="calc_reg"):
+    if st.button("Calcola Regressione", key="calc_reg"):
         lambda_max_vals = np.linspace(lambda_max_min, lambda_max_max, n_punti)
         dati = []
         for lmax in lambda_max_vals:
@@ -1543,22 +1545,96 @@ elif sezione == "📊 Regressione Δx vs 1/Δk":
         st.dataframe(df, use_container_width=True)
         
         if r_value**2 > 0.95:
-            st.success(f"✓ Ottimo fit! R²={r_value**2:.4f}")
+            st.success(f"Ottimo fit! R²={r_value**2:.4f}")
         else:
-            st.warning(f"⚠ Fit migliorabile (R²={r_value**2:.4f}). Aumenta N onde.")
+            st.warning(f"Fit migliorabile (R²={r_value**2:.4f}). Aumenta N onde.")
         
         if errore_p < 5:
-            st.success(f"✓ Pendenza in ottimo accordo con 4π! ({errore_p:.2f}%)")
+            st.success(f"Pendenza in ottimo accordo con 4π! ({errore_p:.2f}%)")
         else:
             st.info(f"Pendenza discosta da 4π di {errore_p:.2f}%")
         
         csv = df.to_csv(index=False)
-        st.download_button("📥 Scarica dati", csv, "regressione.csv", "text/csv")
+        st.download_button("Scarica dati", csv, "regressione.csv", "text/csv")
 
+# ========== ONDE STAZIONARIE ==========
+elif sezione == "Onde Stazionarie":
+    st.header("Onde Stazionarie: Armoniche e Quantizzazione")
+    st.markdown("""
+    Le onde stazionarie rappresentano stati in cui l'energia rimane confinata in una regione
+    (es. corda di chitarra). Sono fondamentali per capire la musica e, in meccanica quantistica, 
+    gli stati energetici discreti (quantizzazione).
+    """)
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.subheader("Parametri Sistema")
+        L = st.slider("Lunghezza L (m)", 0.5, 5.0, 1.0, 0.1, key="sw_L")
+        n_armonica = st.slider("Numero Armonica n", 1, 10, 1, key="sw_n")
+        v_onda = st.number_input("Velocità onda (m/s)", 100.0, 1000.0, 340.0, 10.0, key="sw_v", help="Es. 340 m/s per aria, variabile per corde")
+        
+        # Calcoli
+        lambda_n = 2 * L / n_armonica
+        freq_n = v_onda / lambda_n
+        
+        st.markdown("---")
+        st.metric("Lunghezza d'onda λ", f"{lambda_n:.3f} m")
+        st.metric("Frequenza f", f"{freq_n:.2f} Hz")
+        
+        st.markdown("---")
+        if st.button("Genera Tono"):
+            # Generazione audio con inviluppo morbido per evitare 'click'
+            duration = 2.0
+            t_audio = np.linspace(0, duration, int(SAMPLE_RATE * duration))
+            envelope = np.concatenate([np.linspace(0, 1, 1000), np.ones(len(t_audio)-2000), np.linspace(1, 0, 1000)])
+            y_audio = np.sin(2 * np.pi * freq_n * t_audio) * envelope
+            audio_bytes = genera_audio(y_audio)
+            st.audio(audio_bytes, format='audio/wav')
+
+    with col2:
+        # Visualizzazione
+        x = np.linspace(0, L, 500)
+        y_shape = np.sin(n_armonica * np.pi * x / L)
+        
+        fig = go.Figure()
+        
+        # Inviluppo (positivo e negativo)
+        fig.add_trace(go.Scatter(x=x, y=y_shape, mode='lines', 
+                                line=dict(color='red', width=2, dash='dash'), name="Inviluppo"))
+        fig.add_trace(go.Scatter(x=x, y=-y_shape, mode='lines', 
+                                line=dict(color='red', width=2, dash='dash'), showlegend=False))
+        
+        # Area riempita per rappresentare l'oscillazione rapida
+        fig.add_trace(go.Scatter(x=x, y=y_shape, fill='tonexty', fillcolor='rgba(0, 0, 255, 0.1)',
+                                line=dict(width=0), showlegend=False))
+        fig.add_trace(go.Scatter(x=x, y=-y_shape, fill='tonexty', fillcolor='rgba(0, 0, 255, 0.1)',
+                                line=dict(width=0), showlegend=False))
+                                
+        # Annotazione Nodi
+        for i in range(n_armonica + 1):
+            pos_x = i * L / n_armonica
+            fig.add_annotation(x=pos_x, y=0, text="N", showarrow=True, arrowhead=2, ax=0, ay=20)
+
+        fig.update_layout(
+            title=f"Modo Normale n={n_armonica} (f={freq_n:.1f} Hz)",
+            xaxis_title="Posizione x (m)",
+            yaxis_title="Ampiezza",
+            yaxis=dict(range=[-1.5, 1.5]),
+            height=500
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.info(f"""
+        **Fisica:**
+        - **Nodi (N)**: Punti dove l'ampiezza è sempre zero.
+        - **Ventri**: Punti di massima oscillazione.
+        - In una corda di lunghezza L, sono permesse solo le lunghezze d'onda tali che $L = n \cdot \lambda/2$.
+        """)
 
 # ========== ANIMAZIONE PROPAGAZIONE (VERSIONE CORRETTA) ==========
-elif sezione == "🎬 Animazione Propagazione":
-    st.header("🎬 Animazione Propagazione Onde")
+elif sezione == "Animazione Propagazione":
+    st.header("Animazione Propagazione Onde")
     st.markdown("""
     Visualizza la propagazione di pacchetti d'onda o battimenti nello spazio-tempo.
     L'animazione mostra come l'onda si muove mantenendo la forma (mezzo non dispersivo).
@@ -1567,7 +1643,7 @@ elif sezione == "🎬 Animazione Propagazione":
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.subheader("⚙️ Parametri Animazione")
+        st.subheader("Parametri Animazione")
         
         tipo_onda_anim = st.selectbox("Tipo di onda", 
                                        ["Pacchetto d'onda", "Battimenti", "Onda singola"],
@@ -1584,7 +1660,7 @@ elif sezione == "🎬 Animazione Propagazione":
             freq_anim = st.slider("Frequenza (Hz)", 50.0, 500.0, 100.0, 10.0, key="anim_freq")
         
         st.markdown("---")
-        st.subheader("🎥 Controlli Animazione")
+        st.subheader("Controlli Animazione")
         
         lunghezza_spazio = st.slider("Lunghezza spaziale (m)", 5.0, 50.0, 20.0, 5.0, key="anim_lung")
         durata_anim = st.slider("Durata animazione (s)", 0.5, 3.0, 1.5, 0.1, key="anim_dur")
@@ -1595,12 +1671,12 @@ elif sezione == "🎬 Animazione Propagazione":
         st.metric("Velocità propagazione", f"{velocita} m/s")
         st.metric("Spostamento totale", f"{velocita * durata_anim:.1f} m")
         
-        if st.button("🎬 Genera Animazione", key="gen_anim"):
+        if st.button("Genera Animazione", key="gen_anim"):
             st.session_state.anim_ready = True
     
     with col2:
         if st.session_state.get("anim_ready", False):
-            progress = st.progress(0, "🎬 Generazione animazione...")
+            progress = st.progress(0, "Generazione animazione...")
             
             # Griglia spaziale
             x = np.linspace(-lunghezza_spazio/2, lunghezza_spazio/2, 500)
@@ -1658,13 +1734,13 @@ elif sezione == "🎬 Animazione Propagazione":
                         direction="left",
                         showactive=False,
                         buttons=[
-                            dict(label="▶️ Play",
+                            dict(label="Play",
                                  method="animate",
                                  args=[None, {"frame": {"duration": int(durata_anim*1000/n_frame), 
                                                        "redraw": True},
                                             "fromcurrent": True,
                                             "mode": "immediate"}]),
-                            dict(label="⏸️ Pause",
+                            dict(label="Pause",
                                  method="animate",
                                  args=[[None], {"frame": {"duration": 0, "redraw": False},
                                                "mode": "immediate",
@@ -1705,12 +1781,12 @@ elif sezione == "🎬 Animazione Propagazione":
             fig_anim.update_layout(height=700, hovermode='x')
             st.plotly_chart(fig_anim, use_container_width=True)
             
-            st.success(f"✅ Animazione generata: {n_frame} frame, durata {durata_anim:.1f}s")
+            st.success(f"Animazione generata: {n_frame} frame, durata {durata_anim:.1f}s")
             
             # Spiegazione fisica
-            with st.expander("📖 Fisica della Propagazione"):
+            with st.expander("Fisica della Propagazione"):
                 st.markdown(f"""
-                ### 🌊 Equazione dell'Onda
+                ### Equazione dell'Onda
                 
                 **Onda generica**: y(x,t) = A·cos(kx - ωt + φ)
                 
@@ -1718,13 +1794,13 @@ elif sezione == "🎬 Animazione Propagazione":
                 - **ω** = 2πf (pulsazione): {2*np.pi*100:.2f} rad/s (esempio a 100 Hz)
                 - **v = ω/k** = λf = {velocita} m/s (velocità di fase)
                 
-                ### 🚀 Direzione Propagazione
+                ### Direzione Propagazione
                 
                 Il segno **negativo** in (kx - ωt) indica propagazione verso **destra** (x crescenti).
                 
                 Al tempo t, il massimo dell'onda si trova dove: kx - ωt = 0 → x = (ω/k)·t = v·t
                 
-                ### 🎯 Mezzo Non Dispersivo
+                ### Mezzo Non Dispersivo
                 
                 Per il suono in aria:
                 - Tutte le frequenze viaggiano alla stessa velocità ({velocita} m/s)
@@ -1732,14 +1808,14 @@ elif sezione == "🎬 Animazione Propagazione":
                 - v_fase = v_gruppo = {velocita} m/s
                 """)
         else:
-            st.info("👆 Clicca su '🎬 Genera Animazione' per visualizzare la propagazione")
+            st.info("Clicca su 'Genera Animazione' per visualizzare la propagazione")
 
 
 # ========== ANALISI AUDIO MICROFONO ==========
-elif sezione == "🎤 Analisi Audio Microfono":
-    st.header("🎤 Analisi Audio: Registra e Analizza")
+elif sezione == "Analisi Audio Microfono":
+    st.header("Analisi Audio: Registra e Analizza")
     st.markdown("""
-    Carica un file audio (WAV/MP3) o registra dal microfono e analizza:
+    Carica un file audio (WAV) o registra dal microfono e analizza:
     - Spettro di frequenza (FFT)
     - Spettrogramma (tempo-frequenza)
     - Frequenze dominanti
@@ -1749,11 +1825,11 @@ elif sezione == "🎤 Analisi Audio Microfono":
     col_in1, col_in2 = st.columns(2)
     
     with col_in1:
-        st.subheader("📂 Carica File Audio")
-        uploaded_file = st.file_uploader("Carica file WAV o MP3", type=['wav', 'mp3'], key="audio_upload")
+        st.subheader("Carica File Audio")
+        uploaded_file = st.file_uploader("Carica file WAV", type=['wav'], key="audio_upload")
         
     with col_in2:
-        st.subheader("🔴 Registra Audio")
+        st.subheader("Registra Audio")
         audio_bytes_rec = None
         try:
             from audio_recorder_streamlit import audio_recorder
@@ -1767,7 +1843,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
             )
         except ImportError:
             st.error("""
-            ❌ **Libreria mancante!** Installa:
+            **Libreria mancante!** Installa:
             ```
             pip install audio-recorder-streamlit
             ```
@@ -1788,7 +1864,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
         
     if audio_source:
         st.markdown("---")
-        st.success(f"✅ Analisi in corso: **{nome_sorgente}**")
+        st.success(f"Analisi in corso: **{nome_sorgente}**")
         st.audio(audio_source, format='audio/wav')
         
         try:
@@ -1801,7 +1877,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
                 # Streamlit audio_recorder restituisce WAV
                 sample_rate, audio_data = wavfile.read(io.BytesIO(audio_source))
             except Exception as e:
-                st.error(f"❌ Errore lettura audio (assicurati sia WAV): {str(e)}")
+                st.error(f"Errore lettura audio (assicurati sia WAV): {str(e)}")
                 st.stop()
             
             # Se stereo, prendi solo canale sinistro
@@ -1829,7 +1905,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
                 st.metric("RMS", f"{rms:.4f}")
             
             # Grafico Forma d'Onda
-            st.subheader("🌊 Forma d'Onda")
+            st.subheader("Forma d'Onda")
             max_samples_plot = 50000
             if len(audio_data) > max_samples_plot:
                 step = len(audio_data) // max_samples_plot
@@ -1848,7 +1924,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
             
             # FFT e Analisi Spettrale
             st.markdown("---")
-            st.subheader("📈 Analisi Spettrale (FFT)")
+            st.subheader("Analisi Spettrale (FFT)")
             
             window_size = min(len(audio_data), 65536)
             audio_window = audio_data[:window_size]
@@ -1874,7 +1950,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
             
             # Riconoscimento Note
             if len(top_freqs) > 0:
-                st.markdown("### 🎵 Riconoscimento Note")
+                st.markdown("### Riconoscimento Note")
                 col_freqs = st.columns(min(5, len(top_freqs)))
                 for i, (col, f, a) in enumerate(zip(col_freqs, top_freqs, top_amps)):
                     with col:
@@ -1885,7 +1961,7 @@ elif sezione == "🎤 Analisi Audio Microfono":
 
             # Spettrogramma
             st.markdown("---")
-            st.subheader("🌈 Spettrogramma")
+            st.subheader("Spettrogramma")
             with st.spinner("Calcolo spettrogramma..."):
                 nperseg = min(2048, len(audio_data)//10)
                 f_spec, t_spec, Sxx = signal.spectrogram(audio_data, sample_rate, nperseg=nperseg)
@@ -1896,17 +1972,17 @@ elif sezione == "🎤 Analisi Audio Microfono":
                 st.plotly_chart(fig_spec, use_container_width=True)
 
         except Exception as e:
-            st.error(f"❌ Errore durante l'analisi: {e}")
+            st.error(f"Errore durante l'analisi: {e}")
 
 # ========== CONFRONTO SCENARI (COMPLETO) ==========
 elif sezione == "Confronto Scenari":
-    st.header("🔄 Confronto tra Scenari")
+    st.header("Confronto tra Scenari")
     st.markdown("Confronta due configurazioni differenti fianco a fianco")
     
     col_a, col_b = st.columns(2)
     
     with col_a:
-        st.subheader("📦 Scenario A")
+        st.subheader("Scenario A")
         f_min_a = st.slider("f_min (Hz)", 1.0, 500.0, 20.0, 1.0, key="comp_fmin_a")
         f_max_a = st.slider("f_max (Hz)", f_min_a+1, 500.0, 30.0, 1.0, key="comp_fmax_a")
         n_a = st.slider("N onde", 10, 100, 40, 5, key="comp_n_a")
@@ -1920,7 +1996,7 @@ elif sezione == "Confronto Scenari":
         st.metric("Δx·Δk", f"{delta_x_a * delta_k_a:.3f}")
     
     with col_b:
-        st.subheader("📦 Scenario B")
+        st.subheader("Scenario B")
         f_min_b = st.slider("f_min (Hz)", 1.0, 500.0, 20.0, 1.0, key="comp_fmin_b")
         f_max_b = st.slider("f_max (Hz)", f_min_b+1, 500.0, 50.0, 1.0, key="comp_fmax_b")
         n_b = st.slider("N onde", 10, 100, 60, 5, key="comp_n_b")
@@ -1963,7 +2039,7 @@ elif sezione == "Confronto Scenari":
     st.plotly_chart(fig_comp, use_container_width=True)
     
     st.markdown("---")
-    st.subheader("📊 Tabella Comparativa")
+    st.subheader("Tabella Comparativa")
     comp_df = pd.DataFrame({
         "Parametro": ["f_min (Hz)", "f_max (Hz)", "Δf (Hz)", "N onde", "Δk (rad/m)", "Δx (m)", "Δx·Δk"],
         "Scenario A": [f_min_a, f_max_a, delta_f_a, n_a, delta_k_a, delta_x_a, delta_x_a*delta_k_a],
@@ -1971,9 +2047,9 @@ elif sezione == "Confronto Scenari":
     })
     st.dataframe(comp_df, use_container_width=True)
 
-# 🆕 ========== QUIZ INTERATTIVO ==========
-elif sezione == "🧠 Quiz Interattivo":
-    st.header("🧠 Mettiti alla Prova!")
+# ========== QUIZ INTERATTIVO ==========
+elif sezione == "Quiz Interattivo":
+    st.header("Mettiti alla Prova!")
     st.markdown("Rispondi alle domande per verificare cosa hai imparato sulle onde.")
     
     score = 0
@@ -1988,10 +2064,10 @@ elif sezione == "🧠 Quiz Interattivo":
                   key="q1")
     
     if q1 == "Il pacchetto diventa più stretto":
-        st.success("✅ Corretto! Δx e Δk sono inversamente proporzionali (Principio di Indeterminazione).")
+        st.success("Corretto! Δx e Δk sono inversamente proporzionali (Principio di Indeterminazione).")
         score += 1
     elif q1 is not None:
-        st.error("❌ Sbagliato. Ricorda: Δx · Δk ≈ costante.")
+        st.error("Sbagliato. Ricorda: Δx · Δk ≈ costante.")
         
     st.markdown("---")
     
@@ -2005,10 +2081,10 @@ elif sezione == "🧠 Quiz Interattivo":
                   key="q2")
     
     if q2 == "Due onde con frequenze molto vicine":
-        st.success("✅ Esatto! La differenza di frequenza crea l'inviluppo pulsante.")
+        st.success("Esatto! La differenza di frequenza crea l'inviluppo pulsante.")
         score += 1
     elif q2 is not None:
-        st.error("❌ No. Se sono troppo diverse si sentono due suoni distinti.")
+        st.error("No. Se sono troppo diverse si sentono due suoni distinti.")
 
     st.markdown("---")
 
@@ -2022,15 +2098,15 @@ elif sezione == "🧠 Quiz Interattivo":
                   key="q3")
     
     if q3 == "Tutte le frequenze viaggiano alla stessa velocità":
-        st.success("✅ Bravissimo! Per questo il pacchetto non si deforma.")
+        st.success("Bravissimo! Per questo il pacchetto non si deforma.")
         score += 1
     elif q3 is not None:
-        st.error("❌ Errato. Se fosse così, ascoltando un'orchestra da lontano i suoni arriverebbero sfasati!")
+        st.error("Errato. Se fosse così, ascoltando un'orchestra da lontano i suoni arriverebbero sfasati!")
 
     st.markdown("---")
     if score == 3:
         st.balloons()
-        st.success("🏆 COMPLIMENTI! Hai ottenuto 3/3! Sei un esperto di onde! 🌊")
+        st.success("COMPLIMENTI! Hai ottenuto 3/3! Sei un esperto di onde!")
     elif score > 0:
         st.info(f"Hai ottenuto {score}/3. Riprova per fare il pieno!")
 
