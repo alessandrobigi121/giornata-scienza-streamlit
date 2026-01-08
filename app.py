@@ -1170,35 +1170,55 @@ elif sezione == "Principio di Indeterminazione":
         durata = 1.5
         st.info(f"**{preset_pkt}**\n\n{preset['descrizione']}")
     else:
+        # Inizializzazione Session State per sincronizzazione
+        if 'indet_fmin_s' not in st.session_state: st.session_state.indet_fmin_s = 100.0
+        if 'indet_fmin_i' not in st.session_state: st.session_state.indet_fmin_i = 100.0
+        if 'indet_fmax_s' not in st.session_state: st.session_state.indet_fmax_s = 130.0
+        if 'indet_fmax_i' not in st.session_state: st.session_state.indet_fmax_i = 130.0
+        if 'indet_n_s' not in st.session_state: st.session_state.indet_n_s = 50
+        if 'indet_n_i' not in st.session_state: st.session_state.indet_n_i = 50
+
+        def update_indet_widget(key_from, key_to):
+            st.session_state[key_to] = st.session_state[key_from]
+            # Logica di sicurezza f_max > f_min
+            if "fmin" in key_from or "fmax" in key_from:
+                curr_min = st.session_state.indet_fmin_s
+                curr_max = st.session_state.indet_fmax_s
+                if curr_max <= curr_min + 5.0:
+                    new_max = curr_min + 5.0
+                    st.session_state.indet_fmax_s = new_max
+                    st.session_state.indet_fmax_i = new_max
+
         col_in1, col_in2, col_in3 = st.columns(3)
         with col_in1:
             # Frequenza minima
             col_fmin_s, col_fmin_i = st.columns([3, 1])
             with col_fmin_s:
                 # Chiavi rinominate (indet_*) per evitare conflitti con la sezione Pacchetti
-                f_min_slider = st.slider("Frequenza minima (Hz)", 1.0, 500.0, 100.0, 1.0, key="indet_fmin_s")
+                f_min_slider = st.slider("Frequenza minima (Hz)", 1.0, 500.0, key="indet_fmin_s", on_change=update_indet_widget, args=("indet_fmin_s", "indet_fmin_i"))
             with col_fmin_i:
-                f_min = st.number_input("", min_value=1.0, max_value=500.0, value=f_min_slider, step=1.0, key="indet_fmin_i", format="%.1f")
+                f_min = st.number_input("", min_value=1.0, max_value=500.0, step=1.0, key="indet_fmin_i", format="%.1f", on_change=update_indet_widget, args=("indet_fmin_i", "indet_fmin_s"))
         
         with col_in2:
             # Frequenza massima
             col_fmax_s, col_fmax_i = st.columns([3, 1])
             with col_fmax_s:
                 min_fmax = f_min + 5.0
-                if "indet_fmax_s" in st.session_state and st.session_state.indet_fmax_s < min_fmax:
+                if st.session_state.indet_fmax_s < min_fmax:
                     st.session_state.indet_fmax_s = min_fmax
+                    st.session_state.indet_fmax_i = min_fmax
                     
-                f_max_slider = st.slider("Frequenza massima (Hz)", min_fmax, 1000.0, max(130.0, min_fmax), 1.0, key="indet_fmax_s")
+                f_max_slider = st.slider("Frequenza massima (Hz)", min_fmax, 1000.0, key="indet_fmax_s", on_change=update_indet_widget, args=("indet_fmax_s", "indet_fmax_i"))
             with col_fmax_i:
-                f_max = st.number_input("", min_value=f_min+5, max_value=1000.0, value=f_max_slider, step=1.0, key="indet_fmax_i", format="%.1f")
+                f_max = st.number_input("", min_value=min_fmax, max_value=1000.0, step=1.0, key="indet_fmax_i", format="%.1f", on_change=update_indet_widget, args=("indet_fmax_i", "indet_fmax_s"))
         
         with col_in3:
             # Numero onde
             col_n_s, col_n_i = st.columns([3, 1])
             with col_n_s:
-                n_onde_slider = st.slider("Numero di onde N", 5, 100, 50, 1, key="indet_n_s")
+                n_onde_slider = st.slider("Numero di onde N", 5, 100, key="indet_n_s", on_change=update_indet_widget, args=("indet_n_s", "indet_n_i"))
             with col_n_i:
-                n_onde = st.number_input("", min_value=5, max_value=100, value=n_onde_slider, step=1, key="indet_n_i")
+                n_onde = st.number_input("", min_value=5, max_value=100, step=1, key="indet_n_i", on_change=update_indet_widget, args=("indet_n_i", "indet_n_s"))
             
             ampiezza = st.slider("Ampiezza", 0.1, 2.0, 1.0, 0.1, key="indet_amp")
             durata = st.slider("Durata (s)", 0.1, 5.0, 1.5, 0.1, key="indet_dur")
@@ -1252,7 +1272,8 @@ elif sezione == "Principio di Indeterminazione":
     st.subheader("Visualizzazione Grafica")
     
     # Grafico spaziale
-    x = np.linspace(-20, 20, 10000) # Più punti per dettaglio spaziale
+    range_x = max(50.0, delta_x_teorico * 2.0) # Adatta la scala alla larghezza del pacchetto
+    x = np.linspace(-range_x, range_x, 10000) # Più punti per dettaglio spaziale
     k_values = np.linspace(k_min, k_max, n_onde)
     y_pacchetto_spazio = np.zeros_like(x)
     for k in k_values:
@@ -1350,12 +1371,20 @@ elif sezione == "Principio di Indeterminazione":
     df_val = pd.DataFrame(val_data)
     st.dataframe(df_val, use_container_width=True)
     
-    st.success(f"""
-    **Metodo validato**: Il metodo dei lobi laterali (soglia 5%) fornisce 
-    Δx·Δk = {delta_x_dk_lobi:.3f}, in ottimo accordo con il valore teorico 4π = 12.566 
-    (errore < 0.1%)
-    """)
+    errore_perc = abs(delta_x_dk_lobi - delta_x_dk_teorico)/delta_x_dk_teorico*100
     
+    if errore_perc < 10.0: # Tolleranza 10%
+        st.success(f"""
+        **Metodo validato**: Il metodo dei lobi laterali (soglia 5%) fornisce 
+        Δx·Δk = {delta_x_dk_lobi:.3f}, in ottimo accordo con il valore teorico 4π ≈ 12.57 
+        (errore {errore_perc:.2f}%)
+        """)
+    else:
+        st.error(f"""
+        **Discrepanza Rilevata**: Il valore misurato Δx·Δk = {delta_x_dk_lobi:.3f} si discosta dal teorico (errore {errore_perc:.2f}%).
+        Possibili cause: il pacchetto potrebbe essere troppo largo per la finestra o il metodo ha usato il fallback FWHM.
+        """)
+
     st.subheader("Verifica Sperimentale")
     col_ver1, col_ver2 = st.columns(2)
     with col_ver1:
