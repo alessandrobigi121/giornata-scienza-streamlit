@@ -215,8 +215,12 @@ def gestisci_zoom_globale():
     """Gestisce i controlli di zoom manuale nella sidebar"""
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🔍 Controllo Grafici")
-    usa_zoom = st.sidebar.checkbox("Sincronizza/Forza Assi", value=False, 
-                                  help="Disabilita l'autoscale e usa i range definiti qui sotto per tutti i grafici della pagina.")
+    
+    unisci_viste = st.sidebar.checkbox("Unifica grafici (Zoom interattivo)", value=False,
+                                      help="Raggruppa i grafici temporali in un'unica figura per permettere lo zoom sincronizzato direttamente col mouse.")
+    
+    usa_zoom = st.sidebar.checkbox("Forza Assi Manualmente", value=False, 
+                                  help="Disabilita l'autoscale e usa i range definiti qui sotto.")
     
     range_x = None
     range_y = None
@@ -233,7 +237,7 @@ def gestisci_zoom_globale():
         # Range Y opzionale (spesso l'ampiezza varia molto, ma lo mettiamo per completezza)
         # range_y = [y_min, y_max] 
         
-    return range_x, range_y
+    return range_x, range_y, unisci_viste
 
 def applica_zoom(fig, range_x, range_y=None):
     """Applica i range di zoom se definiti"""
@@ -255,7 +259,7 @@ sezione = st.sidebar.radio(
 mostra_parametri_acustici()  # Mostra parametri fisici
 
 # Attiva Zoom Globale
-range_x_glob, range_y_glob = gestisci_zoom_globale()
+range_x_glob, range_y_glob, unisci_viste_glob = gestisci_zoom_globale()
 
 st.sidebar.markdown("---")
 
@@ -470,7 +474,8 @@ if sezione == "Battimenti":
         fig = make_subplots(rows=3, cols=1, 
                            subplot_titles=(f"Onda 1: {f1} Hz", f"Onda 2: {f2} Hz", 
                                          f"Sovrapposizione (f_batt = {f_batt:.2f} Hz)"),
-                           vertical_spacing=0.1)
+                           vertical_spacing=0.1,
+                           shared_xaxes=True) # Sincronizza zoom X tra i subplot
         
         fig.add_trace(go.Scatter(x=t, y=y1, name=f"Onda 1", 
                                 line=dict(color='blue', width=1.5)), row=1, col=1)
@@ -767,43 +772,86 @@ elif sezione == "Pacchetti d'Onda":
         inviluppo = np.abs(analytic_signal)[pad_len:-pad_len]
         intensita = inviluppo**2
         
-        # 🆕 GRAFICO CON INTENSITÀ
-        fig = make_subplots(rows=2, cols=1,
-                           subplot_titles=(f"Pacchetto: {n_onde} onde ({f_min}-{f_max} Hz)", 
-                                         "Intensità |A(t)|² (Figura di Diffrazione)"))
+        # Calcoli per visualizzazione simmetrica (anticipati per eventuale unificazione)
+        t_sim = np.linspace(-durata, durata, int(durata * 2 * 20000))
+        y_pacchetto_sim = np.zeros_like(t_sim)
+        for f in frequenze:
+            y_comp = (ampiezza / n_onde) * np.cos(2 * np.pi * f * t_sim)
+            y_pacchetto_sim += y_comp
         
-        if mostra_componenti and n_onde <= 50:
-            step = max(1, n_onde // 10)
-            for i, f in enumerate(frequenze[::step]):
-                y_comp = (ampiezza / n_onde) * np.cos(2 * np.pi * f * t)
-                fig.add_trace(go.Scatter(x=t, y=y_comp, name=f"f={f:.1f} Hz",
-                                        line=dict(width=0.5), opacity=0.3), row=1, col=1)
-        
-        fig.add_trace(go.Scatter(x=t, y=y_pacchetto, name="Pacchetto d'onda",
-                                line=dict(color='darkblue', width=2.5)), row=1, col=1)
-        fig.add_trace(go.Scatter(x=t, y=inviluppo, name="Inviluppo +",
-                                line=dict(color='red', width=2, dash='dash')), row=1, col=1)
-        fig.add_trace(go.Scatter(x=t, y=-inviluppo, showlegend=False,
-                                line=dict(color='red', width=2, dash='dash')), row=1, col=1)
-        
-        fig.add_trace(go.Scatter(x=t, y=intensita, fill='tozeroy', 
-                                line=dict(color='orange', width=2), name="|A(t)|²"), row=2, col=1)
-        
-        fig.update_xaxes(title_text="Tempo (s)", row=2, col=1)
-        fig.update_yaxes(title_text="Ampiezza", row=1, col=1)
-        fig.update_yaxes(title_text="|A(t)|²", row=2, col=1)
-        
-        fig.update_layout(
-            height=800,
-            hovermode='x unified',
-            dragmode='zoom',
-            xaxis=dict(autorange=True),
-            yaxis=dict(autorange=True, scaleanchor=None),
-            modebar_add=['resetScale2d']
-        )
-        
-        applica_zoom(fig, range_x_glob)
-        st.plotly_chart(fig, use_container_width=True)
+        analytic_sim = signal.hilbert(y_pacchetto_sim)
+        inviluppo_sim = np.abs(analytic_sim)
+        intensita_sim = inviluppo_sim**2
+
+        if unisci_viste_glob:
+            # MODALITÀ UNIFICATA: Tutti i grafici in un'unica figura con assi condivisi
+            st.info("Modalità Vista Unificata attiva: lo zoom su un grafico si applica a tutti.")
+            
+            fig_tot = make_subplots(rows=4, cols=1, shared_xaxes=True,
+                                   subplot_titles=(f"Pacchetto (0-{durata}s)", 
+                                                 "Intensità |A(t)|²",
+                                                 "Pacchetto Simmetrico Completo",
+                                                 "Intensità Simmetrica"),
+                                   vertical_spacing=0.05)
+            
+            # Row 1: Pacchetto Standard
+            fig_tot.add_trace(go.Scatter(x=t, y=y_pacchetto, name="Pacchetto", line=dict(color='darkblue')), row=1, col=1)
+            fig_tot.add_trace(go.Scatter(x=t, y=inviluppo, name="Env", line=dict(color='red', dash='dash')), row=1, col=1)
+            
+            # Row 2: Intensità Standard
+            fig_tot.add_trace(go.Scatter(x=t, y=intensita, fill='tozeroy', line=dict(color='orange'), name="|A|²"), row=2, col=1)
+            
+            # Row 3: Simmetrico
+            fig_tot.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacc. Simm.", line=dict(color='darkblue')), row=3, col=1)
+            fig_tot.add_trace(go.Scatter(x=t_sim, y=inviluppo_sim, name="Env Simm.", line=dict(color='red', dash='dash')), row=3, col=1)
+            
+            # Row 4: Intensità Simmetrica
+            fig_tot.add_trace(go.Scatter(x=t_sim, y=intensita_sim, fill='tozeroy', line=dict(color='orange'), name="|A|² Simm."), row=4, col=1)
+            
+            fig_tot.update_layout(height=1000, hovermode='x unified', modebar_add=['resetScale2d'])
+            applica_zoom(fig_tot, range_x_glob)
+            st.plotly_chart(fig_tot, use_container_width=True)
+            
+        else:
+            # MODALITÀ STANDARD: Grafici separati
+            # 🆕 GRAFICO CON INTENSITÀ
+            fig = make_subplots(rows=2, cols=1,
+                               subplot_titles=(f"Pacchetto: {n_onde} onde ({f_min}-{f_max} Hz)", 
+                                             "Intensità |A(t)|² (Figura di Diffrazione)"),
+                               shared_xaxes=True) # Sync interno
+            
+            if mostra_componenti and n_onde <= 50:
+                step = max(1, n_onde // 10)
+                for i, f in enumerate(frequenze[::step]):
+                    y_comp = (ampiezza / n_onde) * np.cos(2 * np.pi * f * t)
+                    fig.add_trace(go.Scatter(x=t, y=y_comp, name=f"f={f:.1f} Hz",
+                                            line=dict(width=0.5), opacity=0.3), row=1, col=1)
+            
+            fig.add_trace(go.Scatter(x=t, y=y_pacchetto, name="Pacchetto d'onda",
+                                    line=dict(color='darkblue', width=2.5)), row=1, col=1)
+            fig.add_trace(go.Scatter(x=t, y=inviluppo, name="Inviluppo +",
+                                    line=dict(color='red', width=2, dash='dash')), row=1, col=1)
+            fig.add_trace(go.Scatter(x=t, y=-inviluppo, showlegend=False,
+                                    line=dict(color='red', width=2, dash='dash')), row=1, col=1)
+            
+            fig.add_trace(go.Scatter(x=t, y=intensita, fill='tozeroy', 
+                                    line=dict(color='orange', width=2), name="|A(t)|²"), row=2, col=1)
+            
+            fig.update_xaxes(title_text="Tempo (s)", row=2, col=1)
+            fig.update_yaxes(title_text="Ampiezza", row=1, col=1)
+            fig.update_yaxes(title_text="|A(t)|²", row=2, col=1)
+            
+            fig.update_layout(
+                height=800,
+                hovermode='x unified',
+                dragmode='zoom',
+                xaxis=dict(autorange=True),
+                yaxis=dict(autorange=True, scaleanchor=None),
+                modebar_add=['resetScale2d']
+            )
+            
+            applica_zoom(fig, range_x_glob)
+            st.plotly_chart(fig, use_container_width=True)
     
     # ========== SEZIONI A SCHERMO INTERO ==========
     st.markdown("---")
@@ -874,66 +922,59 @@ elif sezione == "Pacchetti d'Onda":
     Questa rappresentazione è utile per comprendere la natura periodica e simmetrica delle onde.
     """)
     
-    # Estendi il tempo simmetricamente
-    t_sim = np.linspace(-durata, durata, int(durata * 2 * 20000)) # Alta risoluzione
-    y_pacchetto_sim = np.zeros_like(t_sim)
-    for f in frequenze:
-        y_comp = (ampiezza / n_onde) * np.cos(2 * np.pi * f * t_sim)
-        y_pacchetto_sim += y_comp
-    
-    analytic_sim = signal.hilbert(y_pacchetto_sim)
-    inviluppo_sim = np.abs(analytic_sim)
-    intensita_sim = inviluppo_sim**2
-    
-    # 🎨 GRAFICO 1: Pacchetto simmetrico con inviluppo
-    fig_sim1 = go.Figure()
-    
-    fig_sim1.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacchetto d'onda",
-                                 line=dict(color='darkblue', width=2)))
-    fig_sim1.add_trace(go.Scatter(x=t_sim, y=inviluppo_sim, name="Inviluppo +",
-                                 line=dict(color='red', width=2, dash='dash')))
-    fig_sim1.add_trace(go.Scatter(x=t_sim, y=-inviluppo_sim, name="Inviluppo -",
-                                 line=dict(color='red', width=2, dash='dash')))
-    
-    # Linea verticale a t=0
-    fig_sim1.add_vline(x=0, line_dash="dot", line_color="green", 
-                      annotation_text="t = 0", annotation_position="top")
-    
-    fig_sim1.update_layout(
-        title=f"Pacchetto Simmetrico Completo: {n_onde} onde ({f_min}-{f_max} Hz)",
-        xaxis_title="Tempo (s)",
-        yaxis_title="Ampiezza",
-        height=600,
-        hovermode='x unified',
-        dragmode='zoom',
-        modebar_add=['resetScale2d']
-    )
-    
-    applica_zoom(fig_sim1, range_x_glob)
-    st.plotly_chart(fig_sim1, use_container_width=True)
-    
-    # 🎨 GRAFICO 2: Intensità simmetrica |A(t)|²
-    fig_sim2 = go.Figure()
-    
-    fig_sim2.add_trace(go.Scatter(x=t_sim, y=intensita_sim, fill='tozeroy',
-                                 line=dict(color='orange', width=2),
-                                 name="Intensità |A(t)|²"))
-    
-    fig_sim2.add_vline(x=0, line_dash="dot", line_color="green",
-                      annotation_text="t = 0", annotation_position="top")
-    
-    fig_sim2.update_layout(
-        title="Intensità Simmetrica |A(t)|² - Figura di Diffrazione Completa",
-        xaxis_title="Tempo (s)",
-        yaxis_title="|A(t)|²",
-        height=500,
-        hovermode='x unified',
-        dragmode='zoom',
-        modebar_add=['resetScale2d']
-    )
-    
-    applica_zoom(fig_sim2, range_x_glob)
-    st.plotly_chart(fig_sim2, use_container_width=True)
+    if not unisci_viste_glob:
+        # Se non unificati, mostra i grafici simmetrici qui
+        # 🎨 GRAFICO 1: Pacchetto simmetrico con inviluppo
+        fig_sim1 = go.Figure()
+        
+        fig_sim1.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacchetto d'onda",
+                                     line=dict(color='darkblue', width=2)))
+        fig_sim1.add_trace(go.Scatter(x=t_sim, y=inviluppo_sim, name="Inviluppo +",
+                                     line=dict(color='red', width=2, dash='dash')))
+        fig_sim1.add_trace(go.Scatter(x=t_sim, y=-inviluppo_sim, name="Inviluppo -",
+                                     line=dict(color='red', width=2, dash='dash')))
+        
+        # Linea verticale a t=0
+        fig_sim1.add_vline(x=0, line_dash="dot", line_color="green", 
+                          annotation_text="t = 0", annotation_position="top")
+        
+        fig_sim1.update_layout(
+            title=f"Pacchetto Simmetrico Completo: {n_onde} onde ({f_min}-{f_max} Hz)",
+            xaxis_title="Tempo (s)",
+            yaxis_title="Ampiezza",
+            height=600,
+            hovermode='x unified',
+            dragmode='zoom',
+            modebar_add=['resetScale2d']
+        )
+        
+        applica_zoom(fig_sim1, range_x_glob)
+        st.plotly_chart(fig_sim1, use_container_width=True)
+        
+        # 🎨 GRAFICO 2: Intensità simmetrica |A(t)|²
+        fig_sim2 = go.Figure()
+        
+        fig_sim2.add_trace(go.Scatter(x=t_sim, y=intensita_sim, fill='tozeroy',
+                                     line=dict(color='orange', width=2),
+                                     name="Intensità |A(t)|²"))
+        
+        fig_sim2.add_vline(x=0, line_dash="dot", line_color="green",
+                          annotation_text="t = 0", annotation_position="top")
+        
+        fig_sim2.update_layout(
+            title="Intensità Simmetrica |A(t)|² - Figura di Diffrazione Completa",
+            xaxis_title="Tempo (s)",
+            yaxis_title="|A(t)|²",
+            height=500,
+            hovermode='x unified',
+            dragmode='zoom',
+            modebar_add=['resetScale2d']
+        )
+        
+        applica_zoom(fig_sim2, range_x_glob)
+        st.plotly_chart(fig_sim2, use_container_width=True)
+    else:
+        st.info("I grafici simmetrici sono visualizzati sopra nella vista unificata.")
     
     # 🎨 GRAFICO 3: Vista 3D (Pacchetto + Inviluppo)
     with st.expander("Visualizzazione 3D del Pacchetto"):
