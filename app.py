@@ -1951,68 +1951,33 @@ elif sezione == "Animazione Propagazione":
 
 # ========== ANALISI AUDIO MICROFONO ==========
 elif sezione == "Analisi Audio Microfono":
-    # Header con gradiente
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                padding: 2rem; border-radius: 15px; margin-bottom: 2rem; 
-                box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);">
-        <h1 style="color: white; margin: 0; font-size: 2.2rem;">🎙️ Analisi Audio</h1>
-        <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1.1rem;">
-            Registra o carica un file audio per analizzare spettro, frequenze e caratteristiche del segnale
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Card per input audio
-    st.markdown("""
-    <style>
-    .audio-card {
-        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-        border-radius: 12px;
-        padding: 1.5rem;
-        border-left: 4px solid;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        margin-bottom: 1rem;
-    }
-    .audio-card-upload { border-left-color: #3498db; }
-    .audio-card-record { border-left-color: #e74c3c; }
-    </style>
-    """, unsafe_allow_html=True)
+    st.header("🎙️ Analisi Audio")
+    st.markdown("Registra o carica un file audio per analizzare spettro, frequenze e caratteristiche del segnale.")
     
     col_in1, col_in2 = st.columns(2)
     
     with col_in1:
-        st.markdown('<div class="audio-card audio-card-upload">', unsafe_allow_html=True)
-        st.markdown("### 📂 Carica File")
+        st.subheader("📂 Carica File")
         st.caption("Formati supportati: WAV")
         uploaded_file = st.file_uploader("Seleziona file audio", type=['wav'], key="audio_upload", label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
         
     with col_in2:
-        st.markdown('<div class="audio-card audio-card-record">', unsafe_allow_html=True)
-        st.markdown("### 🎤 Registra dal Vivo")
+        st.subheader("🎤 Registra dal Vivo")
         # AVVISO IMPORTANTE sulla latenza
-        st.markdown("""
-        <div style="background: #fff3cd; border-radius: 8px; padding: 0.8rem; margin-bottom: 0.8rem; 
-                    border-left: 4px solid #ffc107; font-size: 0.85rem;">
-            ⚠️ <strong>Attenzione:</strong> La registrazione parte 1-2 secondi dopo il click. 
-            Aspetta che l'icona diventi <span style="color: #e74c3c; font-weight: bold;">ROSSA</span> prima di iniziare!
-        </div>
-        """, unsafe_allow_html=True)
+        st.warning("⚠️ **Attenzione:** La registrazione parte 1-2 sec dopo il click. Aspetta che l'icona diventi **ROSSA** prima di iniziare!")
         audio_bytes_rec = None
         try:
             from audio_recorder_streamlit import audio_recorder
             audio_bytes_rec = audio_recorder(
                 text="",
                 recording_color="#e74c3c",
-                neutral_color="#667eea",
+                neutral_color="#3498db",
                 icon_name="microphone",
                 icon_size="3x",
                 key="audio_rec"
             )
         except ImportError:
-            st.error("Libreria mancante! Installa: `pip install audio-recorder-streamlit`")
-        st.markdown('</div>', unsafe_allow_html=True) 
+            st.error("Libreria mancante! Installa: `pip install audio-recorder-streamlit`") 
 
     # Logica unificata selezione sorgente
     audio_source = None
@@ -2143,68 +2108,35 @@ elif sezione == "Analisi Audio Microfono":
 
 # ========== RICONOSCIMENTO BATTIMENTI ==========
 elif sezione == "Riconoscimento Battimenti":
-    # Header con gradiente
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
-                padding: 2rem; border-radius: 15px; margin-bottom: 2rem; 
-                box-shadow: 0 10px 40px rgba(0, 184, 148, 0.3);">
-        <h1 style="color: white; margin: 0; font-size: 2.2rem;">🎵 Riconoscimento Battimenti</h1>
-        <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1.1rem;">
-            Registra due diapason e analizza automaticamente frequenze e battimenti
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.header("🎵 Riconoscimento Battimenti")
+    st.markdown("Registra due diapason e analizza automaticamente frequenze e battimenti.")
     
-    # Card stile per input
-    st.markdown("""
-    <style>
-    .beat-card {
-        background: linear-gradient(145deg, #ffffff, #f5f6fa);
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        border-top: 4px solid;
-        margin-bottom: 1rem;
-    }
-    .beat-card-upload { border-top-color: #0984e3; }
-    .beat-card-record { border-top-color: #00b894; }
-    </style>
-    """, unsafe_allow_html=True)
+    st.info("💡 **Suggerimento**: Per un buon riconoscimento, registra per almeno 2-3 secondi e assicurati che i diapason suonino insieme.")
     
     col_rec1, col_rec2 = st.columns(2)
     
     with col_rec1:
-        st.markdown('<div class="beat-card beat-card-upload">', unsafe_allow_html=True)
-        st.markdown("### 📂 Carica File Audio")
+        st.subheader("📂 Carica File Audio")
         st.caption("Formati supportati: WAV")
         uploaded_beat_file = st.file_uploader("Seleziona file", type=['wav'], key="beat_audio_upload", label_visibility="collapsed")
-        st.markdown('</div>', unsafe_allow_html=True)
         
     with col_rec2:
-        st.markdown('<div class="beat-card beat-card-record">', unsafe_allow_html=True)
-        st.markdown("### 🎤 Registra dal Vivo")
+        st.subheader("🎤 Registra dal Vivo")
         # AVVISO IMPORTANTE sulla latenza
-        st.markdown("""
-        <div style="background: #fff3cd; border-radius: 8px; padding: 0.8rem; margin-bottom: 0.8rem; 
-                    border-left: 4px solid #ffc107; font-size: 0.85rem;">
-            ⚠️ <strong>Attenzione:</strong> La registrazione parte 1-2 secondi dopo il click. 
-            Aspetta che l'icona diventi <span style="color: #d63031; font-weight: bold;">ROSSA</span> prima di suonare i diapason!
-        </div>
-        """, unsafe_allow_html=True)
+        st.warning("⚠️ **Attenzione:** La registrazione parte 1-2 sec dopo il click. Aspetta che l'icona diventi **ROSSA** prima di suonare i diapason!")
         beat_audio_bytes = None
         try:
             from audio_recorder_streamlit import audio_recorder
             beat_audio_bytes = audio_recorder(
                 text="",
                 recording_color="#d63031",
-                neutral_color="#00b894",
+                neutral_color="#27ae60",
                 icon_name="microphone",
                 icon_size="3x",
                 key="beat_audio_rec"
             )
         except ImportError:
             st.error("Libreria mancante! Installa: `pip install audio-recorder-streamlit`")
-        st.markdown('</div>', unsafe_allow_html=True)
     
     # Selezione sorgente audio
     beat_audio_source = None
