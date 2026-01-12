@@ -1951,42 +1951,68 @@ elif sezione == "Animazione Propagazione":
 
 # ========== ANALISI AUDIO MICROFONO ==========
 elif sezione == "Analisi Audio Microfono":
-    st.header("Analisi Audio: Registra e Analizza")
+    # Header con gradiente
     st.markdown("""
-    Carica un file audio (WAV) o registra dal microfono e analizza:
-    - Spettro di frequenza (FFT)
-    - Spettrogramma (tempo-frequenza)
-    - Frequenze dominanti
-    - Caratteristiche del segnale
-    """)
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                padding: 2rem; border-radius: 15px; margin-bottom: 2rem; 
+                box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);">
+        <h1 style="color: white; margin: 0; font-size: 2.2rem;">🎙️ Analisi Audio</h1>
+        <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1.1rem;">
+            Registra o carica un file audio per analizzare spettro, frequenze e caratteristiche del segnale
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Card per input audio
+    st.markdown("""
+    <style>
+    .audio-card {
+        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
+    }
+    .audio-card-upload { border-left-color: #3498db; }
+    .audio-card-record { border-left-color: #e74c3c; }
+    </style>
+    """, unsafe_allow_html=True)
     
     col_in1, col_in2 = st.columns(2)
     
     with col_in1:
-        st.subheader("Carica File Audio")
-        uploaded_file = st.file_uploader("Carica file WAV", type=['wav'], key="audio_upload")
+        st.markdown('<div class="audio-card audio-card-upload">', unsafe_allow_html=True)
+        st.markdown("### 📂 Carica File")
+        st.caption("Formati supportati: WAV")
+        uploaded_file = st.file_uploader("Seleziona file audio", type=['wav'], key="audio_upload", label_visibility="collapsed")
+        st.markdown('</div>', unsafe_allow_html=True)
         
     with col_in2:
-        st.subheader("Registra Audio")
+        st.markdown('<div class="audio-card audio-card-record">', unsafe_allow_html=True)
+        st.markdown("### 🎤 Registra dal Vivo")
+        # AVVISO IMPORTANTE sulla latenza
+        st.markdown("""
+        <div style="background: #fff3cd; border-radius: 8px; padding: 0.8rem; margin-bottom: 0.8rem; 
+                    border-left: 4px solid #ffc107; font-size: 0.85rem;">
+            ⚠️ <strong>Attenzione:</strong> La registrazione parte 1-2 secondi dopo il click. 
+            Aspetta che l'icona diventi <span style="color: #e74c3c; font-weight: bold;">ROSSA</span> prima di iniziare!
+        </div>
+        """, unsafe_allow_html=True)
         audio_bytes_rec = None
         try:
             from audio_recorder_streamlit import audio_recorder
             audio_bytes_rec = audio_recorder(
-                text="Clicca per registrare",
+                text="",
                 recording_color="#e74c3c",
-                neutral_color="#3498db",
+                neutral_color="#667eea",
                 icon_name="microphone",
                 icon_size="3x",
                 key="audio_rec"
             )
         except ImportError:
-            st.error("""
-            **Libreria mancante!** Installa:
-            ```
-            pip install audio-recorder-streamlit
-            ```
-            Poi riavvia l'app con `streamlit run app.py`
-            """) 
+            st.error("Libreria mancante! Installa: `pip install audio-recorder-streamlit`")
+        st.markdown('</div>', unsafe_allow_html=True) 
 
     # Logica unificata selezione sorgente
     audio_source = None
@@ -2117,40 +2143,68 @@ elif sezione == "Analisi Audio Microfono":
 
 # ========== RICONOSCIMENTO BATTIMENTI ==========
 elif sezione == "Riconoscimento Battimenti":
-    st.header("🎵 Riconoscimento Battimenti dal Vivo")
+    # Header con gradiente
     st.markdown("""
-    **Registra il suono di due diapason** (o carica un file audio) per analizzare i battimenti.
+    <div style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); 
+                padding: 2rem; border-radius: 15px; margin-bottom: 2rem; 
+                box-shadow: 0 10px 40px rgba(0, 184, 148, 0.3);">
+        <h1 style="color: white; margin: 0; font-size: 2.2rem;">🎵 Riconoscimento Battimenti</h1>
+        <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1.1rem;">
+            Registra due diapason e analizza automaticamente frequenze e battimenti
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    L'app rileverà automaticamente:
-    - Le **due frequenze** presenti (f₁ e f₂)
-    - La **frequenza di battimento teorica**: f_batt = |f₁ - f₂|
-    - La **frequenza di battimento misurata** dall'inviluppo del segnale
-    - Il **confronto** tra teoria e misura
-    """)
-    
-    st.info("💡 **Suggerimento**: Per un buon riconoscimento, registra per almeno 2-3 secondi e assicurati che i diapason suonino insieme.")
+    # Card stile per input
+    st.markdown("""
+    <style>
+    .beat-card {
+        background: linear-gradient(145deg, #ffffff, #f5f6fa);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border-top: 4px solid;
+        margin-bottom: 1rem;
+    }
+    .beat-card-upload { border-top-color: #0984e3; }
+    .beat-card-record { border-top-color: #00b894; }
+    </style>
+    """, unsafe_allow_html=True)
     
     col_rec1, col_rec2 = st.columns(2)
     
     with col_rec1:
-        st.subheader("📂 Carica File Audio")
-        uploaded_beat_file = st.file_uploader("Carica file WAV", type=['wav'], key="beat_audio_upload")
+        st.markdown('<div class="beat-card beat-card-upload">', unsafe_allow_html=True)
+        st.markdown("### 📂 Carica File Audio")
+        st.caption("Formati supportati: WAV")
+        uploaded_beat_file = st.file_uploader("Seleziona file", type=['wav'], key="beat_audio_upload", label_visibility="collapsed")
+        st.markdown('</div>', unsafe_allow_html=True)
         
     with col_rec2:
-        st.subheader("🎤 Registra Audio")
+        st.markdown('<div class="beat-card beat-card-record">', unsafe_allow_html=True)
+        st.markdown("### 🎤 Registra dal Vivo")
+        # AVVISO IMPORTANTE sulla latenza
+        st.markdown("""
+        <div style="background: #fff3cd; border-radius: 8px; padding: 0.8rem; margin-bottom: 0.8rem; 
+                    border-left: 4px solid #ffc107; font-size: 0.85rem;">
+            ⚠️ <strong>Attenzione:</strong> La registrazione parte 1-2 secondi dopo il click. 
+            Aspetta che l'icona diventi <span style="color: #d63031; font-weight: bold;">ROSSA</span> prima di suonare i diapason!
+        </div>
+        """, unsafe_allow_html=True)
         beat_audio_bytes = None
         try:
             from audio_recorder_streamlit import audio_recorder
             beat_audio_bytes = audio_recorder(
-                text="Clicca per registrare",
-                recording_color="#e74c3c",
-                neutral_color="#27ae60",
+                text="",
+                recording_color="#d63031",
+                neutral_color="#00b894",
                 icon_name="microphone",
                 icon_size="3x",
                 key="beat_audio_rec"
             )
         except ImportError:
             st.error("Libreria mancante! Installa: `pip install audio-recorder-streamlit`")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Selezione sorgente audio
     beat_audio_source = None
@@ -2181,10 +2235,22 @@ elif sezione == "Riconoscimento Battimenti":
             if len(audio_data_beat.shape) == 2:
                 audio_data_beat = audio_data_beat[:, 0]
             
+            # VERIFICA ARRAY NON VUOTO (fix errore numpy)
+            if len(audio_data_beat) == 0:
+                st.error("""
+                <div style="background: linear-gradient(90deg, #e74c3c, #c0392b); border-radius: 10px; 
+                            padding: 1rem 1.5rem; margin: 1rem 0;">
+                    <span style="font-size: 1.5rem;">❌</span>
+                    <span style="color: white; font-weight: 600;">File audio vuoto o non valido. Riprova con un altro file o registrazione.</span>
+                </div>
+                """)
+                st.stop()
+            
             # Normalizza
             audio_data_beat = audio_data_beat.astype(float)
-            if np.max(np.abs(audio_data_beat)) > 0:
-                audio_data_beat = audio_data_beat / np.max(np.abs(audio_data_beat))
+            max_val = np.max(np.abs(audio_data_beat))
+            if max_val > 0:
+                audio_data_beat = audio_data_beat / max_val
             
             durata_beat = len(audio_data_beat) / sample_rate_beat
             t_beat = np.linspace(0, durata_beat, len(audio_data_beat))
