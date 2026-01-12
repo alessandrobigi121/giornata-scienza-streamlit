@@ -105,6 +105,85 @@ st.markdown("**Liceo Leopardi Majorana** - Laboratorio di Fisica")
 st.markdown("*A cura di Alessandro Bigi*")
 st.markdown("---")
 
+# ============ STILE GRAFICO PROFESSIONALE ============
+def styled_header(icon: str, title: str, subtitle: str = "", color: str = "#3498db"):
+    """
+    Crea un header di sezione con stile professionale.
+    Funziona sia in light che dark mode.
+    
+    Args:
+        icon: Emoji da mostrare
+        title: Titolo principale
+        subtitle: Descrizione sotto il titolo (opzionale)
+        color: Colore accento (default: blu)
+    """
+    st.markdown(f"""
+    <div style="
+        border-left: 4px solid {color};
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        border-radius: 0 8px 8px 0;
+        background: linear-gradient(90deg, rgba(52,152,219,0.08) 0%, transparent 100%);
+    ">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.8rem;">{icon}</span>
+            <span>{title}</span>
+        </h2>
+        {f'<p style="margin: 0.5rem 0 0 0; opacity: 0.8; font-size: 1rem;">{subtitle}</p>' if subtitle else ''}
+    </div>
+    """, unsafe_allow_html=True)
+
+def styled_metric_row(metrics: list):
+    """
+    Crea una riga di metriche stilizzate.
+    metrics: lista di tuple (label, value, icon, color)
+    """
+    cols = st.columns(len(metrics))
+    for i, (label, value, icon, color) in enumerate(metrics):
+        with cols[i]:
+            st.markdown(f"""
+            <div style="
+                text-align: center;
+                padding: 1rem;
+                border-radius: 10px;
+                border: 1px solid rgba(128,128,128,0.2);
+                background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(128,128,128,0.05));
+            ">
+                <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">{icon}</div>
+                <div style="font-size: 1.4rem; font-weight: 700; color: {color};">{value}</div>
+                <div style="font-size: 0.85rem; opacity: 0.7;">{label}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+def styled_info_box(text: str, icon: str = "💡", box_type: str = "info"):
+    """
+    Crea un box informativo stilizzato.
+    box_type: "info" (blu), "success" (verde), "warning" (arancione), "tip" (viola)
+    """
+    colors = {
+        "info": ("#3498db", "rgba(52,152,219,0.1)"),
+        "success": ("#27ae60", "rgba(39,174,96,0.1)"),
+        "warning": ("#f39c12", "rgba(243,156,18,0.1)"),
+        "tip": ("#9b59b6", "rgba(155,89,182,0.1)")
+    }
+    border_color, bg_color = colors.get(box_type, colors["info"])
+    st.markdown(f"""
+    <div style="
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 1rem 1.2rem;
+        border-radius: 8px;
+        border-left: 4px solid {border_color};
+        background: {bg_color};
+        margin: 1rem 0;
+    ">
+        <span style="font-size: 1.3rem;">{icon}</span>
+        <div style="flex: 1;">{text}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 # ============ FUNZIONI UTILITY AVANZATE ============
 def genera_audio(segnale, sample_rate=SAMPLE_RATE):
     """Genera file audio WAV da un segnale"""
@@ -265,13 +344,13 @@ st.sidebar.markdown("---")
 
 # ========== SEZIONE BATTIMENTI ==========
 if sezione == "Battimenti":
-    st.header("Battimenti: Interferenza tra due onde")
-    st.markdown("""
-    Quando due onde con frequenze molto vicine si sovrappongono, producono un segnale 
-    la cui ampiezza varia periodicamente (battimenti).
-    
-    **Teoria**: f_media = (f₁+f₂)/2, f_battimento = |f₁-f₂|
-    """)
+    styled_header(
+        "🎵", 
+        "Battimenti: Interferenza tra due onde",
+        "Quando due onde con frequenze vicine si sovrappongono, l'ampiezza varia periodicamente. Formula: f_batt = |f₁ - f₂|",
+        "#3498db"
+    )
+
 
     
     col1, col2 = st.columns([1, 2])
@@ -606,7 +685,12 @@ if sezione == "Battimenti":
 
 # ========== PACCHETTI D'ONDA ==========
 elif sezione == "Pacchetti d'Onda":
-    st.header("Pacchetti d'Onda: Sovrapposizione di molte frequenze")
+    styled_header(
+        "🌊", 
+        "Pacchetti d'Onda",
+        "Sovrapposizione di molte frequenze che crea un impulso localizzato nello spazio e nel tempo",
+        "#9b59b6"
+    )
     
     # 📚 TEORIA MATEMATICA
     with st.expander("Teoria Pacchetti d'Onda", expanded=False):
@@ -1050,11 +1134,12 @@ elif sezione == "Pacchetti d'Onda":
 
 # ========== SPETTRO FOURIER (COMPLETO VECCHIO) ==========
 elif sezione == "Spettro di Fourier":
-    st.header("Analisi di Fourier: Dal Tempo alla Frequenza")
-    st.markdown("""
-    La trasformata di Fourier mostra quali frequenze compongono il segnale.
-    Un pacchetto localizzato nel tempo ha uno spettro distribuito in frequenza.
-    """)
+    styled_header(
+        "📊", 
+        "Analisi di Fourier",
+        "Trasformata di Fourier: dal dominio del tempo al dominio della frequenza",
+        "#e74c3c"
+    )
     
     col1, col2 = st.columns([1, 2])
     
@@ -1210,7 +1295,12 @@ elif sezione == "Spettro di Fourier":
 
 # ========== PRINCIPIO INDETERMINAZIONE (COMPLETO) ==========
 elif sezione == "Principio di Indeterminazione":
-    st.header("Principio di Indeterminazione di Heisenberg")
+    styled_header(
+        "⚠️", 
+        "Principio di Indeterminazione",
+        "Relazione fondamentale di Heisenberg: Δx · Δk ≥ 1/2",
+        "#f39c12"
+    )
     
     st.info("""
     Questa sezione verifica sperimentalmente il principio di 
@@ -1551,8 +1641,12 @@ elif sezione == "Principio di Indeterminazione":
 
 # ========== ANALISI MULTI-PACCHETTO ==========
 elif sezione == "Analisi Multi-Pacchetto":
-    st.header("Analisi Quantitativa Multi-Pacchetto")
-    st.markdown("Genera più pacchetti con diversi Δk e verifica sistematicamente Δx·Δk = 4π")
+    styled_header(
+        "📋", 
+        "Analisi Multi-Pacchetto",
+        "Genera più pacchetti con diversi Δk e verifica sistematicamente Δx·Δk = 4π",
+        "#1abc9c"
+    )
     
     n_pacchetti = st.slider("Numero pacchetti da analizzare", 3, 15, 8, key="npac")
     lambda_min_base = st.slider("λ_min base (m)", 1.5, 4.0, 2.0, 0.1, key="lminbase")
@@ -1615,8 +1709,12 @@ elif sezione == "Analisi Multi-Pacchetto":
 
 # ========== REGRESSIONE ==========
 elif sezione == "Regressione Δx vs 1/Δk":
-    st.header("Regressione Lineare: Δx vs 1/Δk")
-    st.markdown("**Teoria:** Δx = 4π · (1/Δk) → pendenza attesa ≈ 12.57")
+    styled_header(
+        "📈", 
+        "Regressione Lineare: Δx vs 1/Δk",
+        "Teoria: Δx = 4π · (1/Δk) → pendenza attesa ≈ 12.57",
+        "#e67e22"
+    )
     
     n_punti = st.slider("Numero punti", 5, 25, 12, key="npt")
     lambda_min_reg = st.slider("λ_min (m)", 1.5, 4.0, 2.0, 0.1, key="lminreg")
@@ -1692,12 +1790,12 @@ elif sezione == "Regressione Δx vs 1/Δk":
 
 # ========== ONDE STAZIONARIE ==========
 elif sezione == "Onde Stazionarie":
-    st.header("Onde Stazionarie: Armoniche e Quantizzazione")
-    st.markdown("""
-    Le onde stazionarie rappresentano stati in cui l'energia rimane confinata in una regione
-    (es. corda di chitarra). Sono fondamentali per capire la musica e, in meccanica quantistica, 
-    gli stati energetici discreti (quantizzazione).
-    """)
+    styled_header(
+        "🎸", 
+        "Onde Stazionarie",
+        "Armoniche e quantizzazione: come vibra una corda di chitarra e l'origine degli stati discreti",
+        "#2ecc71"
+    )
     
     col1, col2 = st.columns([1, 2])
     
@@ -1771,11 +1869,12 @@ elif sezione == "Onde Stazionarie":
 
 # ========== ANIMAZIONE PROPAGAZIONE (VERSIONE CORRETTA) ==========
 elif sezione == "Animazione Propagazione":
-    st.header("Animazione Propagazione Onde")
-    st.markdown("""
-    Visualizza la propagazione di pacchetti d'onda o battimenti nello spazio-tempo.
-    L'animazione mostra come l'onda si muove mantenendo la forma (mezzo non dispersivo).
-    """)
+    styled_header(
+        "🎬", 
+        "Animazione Propagazione",
+        "Visualizza la propagazione di pacchetti d'onda o battimenti nello spazio-tempo",
+        "#3498db"
+    )
     
     col1, col2 = st.columns([1, 2])
     
@@ -1951,8 +2050,12 @@ elif sezione == "Animazione Propagazione":
 
 # ========== ANALISI AUDIO MICROFONO ==========
 elif sezione == "Analisi Audio Microfono":
-    st.header("🎙️ Analisi Audio")
-    st.markdown("Registra o carica un file audio per analizzare spettro, frequenze e caratteristiche del segnale.")
+    styled_header(
+        "🎙️", 
+        "Analisi Audio",
+        "Registra o carica un file audio per analizzare spettro, frequenze e caratteristiche del segnale",
+        "#9b59b6"
+    )
     
     col_in1, col_in2 = st.columns(2)
     
@@ -2117,10 +2220,18 @@ elif sezione == "Analisi Audio Microfono":
 
 # ========== RICONOSCIMENTO BATTIMENTI ==========
 elif sezione == "Riconoscimento Battimenti":
-    st.header("🎵 Riconoscimento Battimenti")
-    st.markdown("Registra due diapason e analizza automaticamente frequenze e battimenti.")
+    styled_header(
+        "🎵", 
+        "Riconoscimento Battimenti",
+        "Registra due diapason e analizza automaticamente frequenze e battimenti",
+        "#27ae60"
+    )
     
-    st.info("💡 **Suggerimento**: Per un buon riconoscimento, registra per almeno 2-3 secondi e assicurati che i diapason suonino insieme.")
+    styled_info_box(
+        "<strong>Suggerimento:</strong> Per un buon riconoscimento, registra per almeno 2-3 secondi e assicurati che i diapason suonino insieme.",
+        "💡",
+        "tip"
+    )
     
     col_rec1, col_rec2 = st.columns(2)
     
@@ -2446,8 +2557,12 @@ elif sezione == "Riconoscimento Battimenti":
 
 
 elif sezione == "Confronto Scenari":
-    st.header("Confronto tra Scenari")
-    st.markdown("Confronta due configurazioni differenti fianco a fianco")
+    styled_header(
+        "⚖️", 
+        "Confronto Scenari",
+        "Confronta due configurazioni differenti fianco a fianco",
+        "#e74c3c"
+    )
     
     col_a, col_b = st.columns(2)
     
@@ -2520,8 +2635,12 @@ elif sezione == "Confronto Scenari":
 
 # ========== QUIZ INTERATTIVO ==========
 elif sezione == "Quiz Interattivo":
-    st.header("Mettiti alla Prova!")
-    st.markdown("Rispondi alle domande per verificare cosa hai imparato sulle onde.")
+    styled_header(
+        "🎯", 
+        "Quiz Interattivo",
+        "Mettiti alla prova! Rispondi alle domande per verificare cosa hai imparato sulle onde",
+        "#e67e22"
+    )
     
     score = 0
     
@@ -2583,8 +2702,12 @@ elif sezione == "Quiz Interattivo":
 
 # ========== MODALITÀ MOBILE (DEMO) ==========
 elif sezione == "Modalità Mobile (Demo)":
-    st.header("Lab Tascabile")
-    st.markdown("Esplora la fisica del suono in modo semplice e intuitivo. **Perfetto per il telefono!**")
+    styled_header(
+        "📱", 
+        "Lab Tascabile",
+        "Esplora la fisica del suono in modo semplice e intuitivo. Perfetto per il telefono!",
+        "#1abc9c"
+    )
     
     st.markdown("---")
     
