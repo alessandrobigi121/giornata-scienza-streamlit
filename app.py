@@ -2826,4 +2826,22 @@ elif sezione == "Modalità Mobile (Demo)":
             """)
 
 st.markdown("---")
-st.markdown("**Liceo Leopardi Majorana** | Giornata della Scienza 2025 | Fisica delle Onde | *Alessandro Bigi*") 
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    margin-top: 2rem;
+    text-align: center;
+">
+    <div style="color: white; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.8rem;">
+        🎓 Liceo Leopardi Majorana
+    </div>
+    <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 0.5rem;">
+        Giornata della Scienza 2025 • Laboratorio di Fisica
+    </div>
+    <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
+        👨‍🔬 Sviluppato da <strong>Alessandro Bigi</strong> | 🌊 Onde, Pacchetti e Indeterminazione
+    </div>
+</div>
+""", unsafe_allow_html=True) 
