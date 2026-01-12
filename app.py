@@ -2620,14 +2620,14 @@ elif sezione == "Confronto Scenari":
     styled_header(
         "⚖️", 
         "Confronto Scenari",
-        "Confronta due configurazioni differenti fianco a fianco",
+        "Confronta due configurazioni differenti con grafici separati per vedere chiaramente le differenze",
         "#e74c3c"
     )
     
     col_a, col_b = st.columns(2)
     
     with col_a:
-        st.subheader("Scenario A")
+        st.subheader("🔵 Scenario A")
         f_min_a = st.slider("f_min (Hz)", 1.0, 500.0, 20.0, 1.0, key="comp_fmin_a")
         f_max_a = st.slider("f_max (Hz)", f_min_a+1, 500.0, 30.0, 1.0, key="comp_fmax_a")
         n_a = st.slider("N onde", 10, 100, 40, 5, key="comp_n_a")
@@ -2641,7 +2641,7 @@ elif sezione == "Confronto Scenari":
         st.metric("Δx·Δk", f"{delta_x_a * delta_k_a:.3f}")
     
     with col_b:
-        st.subheader("Scenario B")
+        st.subheader("🔴 Scenario B")
         f_min_b = st.slider("f_min (Hz)", 1.0, 500.0, 20.0, 1.0, key="comp_fmin_b")
         f_max_b = st.slider("f_max (Hz)", f_min_b+1, 500.0, 50.0, 1.0, key="comp_fmax_b")
         n_b = st.slider("N onde", 10, 100, 60, 5, key="comp_n_b")
@@ -2654,9 +2654,21 @@ elif sezione == "Confronto Scenari":
         st.metric("Δx", f"{delta_x_b:.3f} m")
         st.metric("Δx·Δk", f"{delta_x_b * delta_k_b:.3f}")
     
-    durata_comp = 1.5
-    t_comp = np.linspace(0, durata_comp, int(durata_comp * 20000))
+    # Calcola il periodo di ripetizione e limita la visualizzazione al primo picco
+    # Per pacchetti d'onda, la ripetizione avviene ogni T = 1/Δf
+    T_repeat_a = 1 / delta_f_a if delta_f_a > 0 else 1.0
+    T_repeat_b = 1 / delta_f_b if delta_f_b > 0 else 1.0
     
+    # Usa il periodo più lungo per la visualizzazione (così si vede un solo picco per entrambi)
+    T_display = min(T_repeat_a, T_repeat_b) * 0.8  # 80% del periodo più breve
+    T_display = max(T_display, 0.05)  # Minimo 50ms
+    T_display = min(T_display, 0.5)   # Massimo 500ms
+    
+    # Tempo specchiato: da -T a +T (simmetrico rispetto a t=0)
+    n_points = 10000
+    t_comp = np.linspace(-T_display, T_display, n_points)
+    
+    # Genera pacchetti (simmetrici nel tempo)
     freq_a = np.linspace(f_min_a, f_max_a, n_a)
     y_a = np.zeros_like(t_comp)
     for f in freq_a:
@@ -2667,31 +2679,75 @@ elif sezione == "Confronto Scenari":
     for f in freq_b:
         y_b += (1/n_b) * np.cos(2 * np.pi * f * t_comp)
     
-    fig_comp = go.Figure()
-    fig_comp.add_trace(go.Scatter(x=t_comp, y=y_a, name=f"Scenario A (Δf={delta_f_a:.1f} Hz)",
-                                  line=dict(color='blue', width=2)))
-    fig_comp.add_trace(go.Scatter(x=t_comp, y=y_b, name=f"Scenario B (Δf={delta_f_b:.1f} Hz)",
-                                  line=dict(color='red', width=2)))
-    
-    fig_comp.update_layout(
-        title="Confronto Pacchetti d'Onda",
-        xaxis_title="Tempo (s)",
-        yaxis_title="Ampiezza",
-        height=500,
-        hovermode='x unified'
+    # Due grafici separati con make_subplots
+    fig_comp = make_subplots(
+        rows=2, cols=1,
+        subplot_titles=[
+            f"🔵 Scenario A: Δf = {delta_f_a:.1f} Hz, Δx = {delta_x_a:.3f} m",
+            f"🔴 Scenario B: Δf = {delta_f_b:.1f} Hz, Δx = {delta_x_b:.3f} m"
+        ],
+        vertical_spacing=0.12,
+        shared_xaxes=True  # Stessa scala temporale!
     )
     
-    applica_zoom(fig_comp, range_x_glob)
+    # Scenario A (sopra) - blu con riempimento
+    fig_comp.add_trace(
+        go.Scatter(
+            x=t_comp, y=y_a, 
+            name="Scenario A",
+            line=dict(color='#3498db', width=1.5),
+            fill='tozeroy',
+            fillcolor='rgba(52, 152, 219, 0.2)'
+        ),
+        row=1, col=1
+    )
+    
+    # Scenario B (sotto) - rosso con riempimento
+    fig_comp.add_trace(
+        go.Scatter(
+            x=t_comp, y=y_b, 
+            name="Scenario B",
+            line=dict(color='#e74c3c', width=1.5),
+            fill='tozeroy',
+            fillcolor='rgba(231, 76, 60, 0.2)'
+        ),
+        row=2, col=1
+    )
+    
+    # Linea verticale a t=0 per riferimento
+    fig_comp.add_vline(x=0, line_dash="dash", line_color="gray", opacity=0.5, row=1, col=1)
+    fig_comp.add_vline(x=0, line_dash="dash", line_color="gray", opacity=0.5, row=2, col=1)
+    
+    fig_comp.update_layout(
+        height=600,
+        showlegend=False,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    
+    fig_comp.update_xaxes(title_text="Tempo (s)", row=2, col=1, gridcolor='rgba(128,128,128,0.2)')
+    fig_comp.update_xaxes(gridcolor='rgba(128,128,128,0.2)', row=1, col=1)
+    fig_comp.update_yaxes(title_text="Ampiezza", gridcolor='rgba(128,128,128,0.2)', row=1, col=1)
+    fig_comp.update_yaxes(title_text="Ampiezza", gridcolor='rgba(128,128,128,0.2)', row=2, col=1)
+    
     st.plotly_chart(fig_comp, use_container_width=True)
     
+    # Info box esplicativo
+    styled_info_box(
+        f"<strong>Osservazione:</strong> Lo scenario con Δf maggiore ({max(delta_f_a, delta_f_b):.1f} Hz) produce un pacchetto più stretto (Δx minore). Questo dimostra il principio di indeterminazione: <strong>Δx · Δk ≈ costante</strong>.",
+        "🔍",
+        "info"
+    )
+    
     st.markdown("---")
-    st.subheader("Tabella Comparativa")
+    st.subheader("📊 Tabella Comparativa")
     comp_df = pd.DataFrame({
         "Parametro": ["f_min (Hz)", "f_max (Hz)", "Δf (Hz)", "N onde", "Δk (rad/m)", "Δx (m)", "Δx·Δk"],
-        "Scenario A": [f_min_a, f_max_a, delta_f_a, n_a, delta_k_a, delta_x_a, delta_x_a*delta_k_a],
-        "Scenario B": [f_min_b, f_max_b, delta_f_b, n_b, delta_k_b, delta_x_b, delta_x_b*delta_k_b]
+        "🔵 Scenario A": [f"{f_min_a:.1f}", f"{f_max_a:.1f}", f"{delta_f_a:.2f}", f"{n_a}", f"{delta_k_a:.4f}", f"{delta_x_a:.4f}", f"{delta_x_a*delta_k_a:.3f}"],
+        "🔴 Scenario B": [f"{f_min_b:.1f}", f"{f_max_b:.1f}", f"{delta_f_b:.2f}", f"{n_b}", f"{delta_k_b:.4f}", f"{delta_x_b:.4f}", f"{delta_x_b*delta_k_b:.3f}"]
     })
-    st.dataframe(comp_df, use_container_width=True)
+    st.dataframe(comp_df, use_container_width=True, hide_index=True)
+
 
 # ========== QUIZ INTERATTIVO ==========
 elif sezione == "Quiz Interattivo":
