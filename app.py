@@ -346,8 +346,47 @@ def applica_zoom(fig, range_x, range_y=None):
     if range_y:
         fig.update_yaxes(range=range_y, autorange=False)
 
-# Sidebar
-st.sidebar.title("Navigazione")
+# ============ SIDEBAR HEADER + ANIMAZIONI CSS ============
+st.markdown("""
+<style>
+/* Animazioni hover per bottoni e elementi interattivi */
+.stButton > button {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.stDownloadButton > button {
+    transition: all 0.3s ease;
+}
+.stDownloadButton > button:hover {
+    transform: scale(1.02);
+}
+/* Sidebar styling */
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 0;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Sidebar Header
+st.sidebar.markdown("""
+<div style="
+    background: linear-gradient(135deg, #3498db 0%, #9b59b6 100%);
+    padding: 1.2rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: center;
+">
+    <div style="font-size: 2rem; margin-bottom: 0.3rem;">🌊</div>
+    <div style="color: white; font-weight: 600; font-size: 1rem;">Fisica delle Onde</div>
+    <div style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">Giornata della Scienza 2026</div>
+</div>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("### 📍 Navigazione")
 sezione = st.sidebar.radio(
     "Scegli una sezione:",
     ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
@@ -2826,22 +2865,45 @@ elif sezione == "Modalità Mobile (Demo)":
             """)
 
 st.markdown("---")
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    padding: 1.5rem 2rem;
-    border-radius: 12px;
-    margin-top: 2rem;
-    text-align: center;
-">
-    <div style="color: white; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.8rem;">
-        🎓 Liceo Leopardi Majorana
+
+# Footer con QR Code
+footer_col1, footer_col2 = st.columns([3, 1])
+
+with footer_col1:
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+    ">
+        <div style="color: white; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.8rem;">
+            🎓 Liceo Leopardi Majorana
+        </div>
+        <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 0.5rem;">
+            Giornata della Scienza 2026 • Laboratorio di Fisica
+        </div>
+        <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
+            👨‍🔬 Sviluppato da <strong>Alessandro Bigi</strong> | 🌊 Onde, Pacchetti e Indeterminazione
+        </div>
     </div>
-    <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 0.5rem;">
-        Giornata della Scienza 2026 • Laboratorio di Fisica
+    """, unsafe_allow_html=True)
+
+with footer_col2:
+    # QR Code per condividere l'app
+    app_url = "https://bigi-giornata-della-scienza.streamlit.app"
+    qr_api_url = f"https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={app_url}&bgcolor=2c3e50&color=ffffff"
+    st.markdown(f"""
+    <div style="
+        background: #2c3e50;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-top: 1rem;
+        text-align: center;
+    ">
+        <img src="{qr_api_url}" alt="QR Code" style="border-radius: 8px;">
+        <div style="color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-top: 0.5rem;">
+            📱 Scansiona per aprire
+        </div>
     </div>
-    <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
-        👨‍🔬 Sviluppato da <strong>Alessandro Bigi</strong> | 🌊 Onde, Pacchetti e Indeterminazione
-    </div>
-</div>
-""", unsafe_allow_html=True) 
+    """, unsafe_allow_html=True) 
