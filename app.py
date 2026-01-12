@@ -2850,38 +2850,36 @@ elif sezione == "Analogia Quantistica":
         if value == 0: return "0"
         exponent = int(np.floor(np.log10(abs(value))))
         mantissa = value / 10**exponent
-        # Fix: costrisci la stringa senza backslash dentro l'espressione f-string
+        # Uso LaTeX standard compatibile con st.latex
         return f"{mantissa:.2f} \\cdot 10^{{{exponent}}} \\text{{ {unit}}}"
 
-    # Visualizzazione risultati in colonne ben evidenziate
+    # Visualizzazione risultati con st.metric modificato o markdown puro
+    # Usiamo colonne classiche con markdown per evitare problemi di rendering HTML+LaTeX misto
     res_col1, res_col2, res_col3 = st.columns(3)
     
     with res_col1:
-        val_p = format_latex_sci(p, "kg\\cdot m/s")
         st.markdown(f"""
-        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #3498db;">
-            <div style="font-size: 0.9rem; color: #3498db; font-weight: bold;">Quantità di moto ($p$)</div>
-            <div style="font-size: 1.3rem;">$${val_p}$$</div>
+        <div style="background-color: rgba(52, 152, 219, 0.1); padding: 10px; border-radius: 8px; border-left: 5px solid #3498db; margin-bottom: 10px;">
+            <strong style="color: #3498db;">Quantità di moto (p)</strong>
         </div>
         """, unsafe_allow_html=True)
+        st.latex(format_latex_sci(p, "kg\\cdot m/s"))
         
     with res_col2:
-        val_lambda = format_latex_sci(lambda_db, "m")
         st.markdown(f"""
-        <div style="background: rgba(155, 89, 182, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #9b59b6;">
-            <div style="font-size: 0.9rem; color: #9b59b6; font-weight: bold;">Lunghezza d'onda ($\\lambda$)</div>
-            <div style="font-size: 1.3rem;">$${val_lambda}$$</div>
+        <div style="background-color: rgba(155, 89, 182, 0.1); padding: 10px; border-radius: 8px; border-left: 5px solid #9b59b6; margin-bottom: 10px;">
+            <strong style="color: #9b59b6;">Lunghezza d'onda (λ)</strong>
         </div>
         """, unsafe_allow_html=True)
+        st.latex(format_latex_sci(lambda_db, "m"))
 
     with res_col3:
-        val_k = format_latex_sci(k_db, "rad/m")
         st.markdown(f"""
-        <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #e74c3c;">
-            <div style="font-size: 0.9rem; color: #e74c3c; font-weight: bold;">Numero d'onda ($k$)</div>
-            <div style="font-size: 1.3rem;">$${val_k}$$</div>
+        <div style="background-color: rgba(231, 76, 60, 0.1); padding: 10px; border-radius: 8px; border-left: 5px solid #e74c3c; margin-bottom: 10px;">
+            <strong style="color: #e74c3c;">Numero d'onda (k)</strong>
         </div>
         """, unsafe_allow_html=True)
+        st.latex(format_latex_sci(k_db, "rad/m"))
 
     
     st.markdown("---")
@@ -2923,7 +2921,7 @@ elif sezione == "Analogia Quantistica":
                                subplot_titles=["Funzione d'Onda ψ(x) - Parte Reale"] + 
                                             (["Densità di Probabilità |ψ(x)|²"] if mostra_prob else []),
                                shared_xaxes=True,
-                               vertical_spacing=0.15)
+                               vertical_spacing=0.3)  # Aumentato vertical_spacing da 0.15 a 0.3
         
         # Funzione d'onda
         fig_psi.add_trace(go.Scatter(x=x, y=psi_real, name="Re[ψ(x)]",
@@ -2944,7 +2942,10 @@ elif sezione == "Analogia Quantistica":
             fig_psi.add_vline(x=-sigma_x, line_dash="dot", line_color="green", row=2, col=1)
             fig_psi.add_vline(x=sigma_x, line_dash="dot", line_color="green", row=2, col=1)
         
-        fig_psi.update_layout(height=450 if mostra_prob else 300,
+        # Sposta i titoli verso l'alto
+        fig_psi.update_annotations(yshift=20)
+        
+        fig_psi.update_layout(height=500 if mostra_prob else 300,
                              plot_bgcolor='rgba(0,0,0,0)',
                              paper_bgcolor='rgba(0,0,0,0)',
                              margin=dict(l=20, r=20, t=40, b=20))
