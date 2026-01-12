@@ -2838,7 +2838,7 @@ st.markdown("""
         🎓 Liceo Leopardi Majorana
     </div>
     <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 0.5rem;">
-        Giornata della Scienza 2025 • Laboratorio di Fisica
+        Giornata della Scienza 2026 • Laboratorio di Fisica
     </div>
     <div style="color: rgba(255,255,255,0.6); font-size: 0.85rem;">
         👨‍🔬 Sviluppato da <strong>Alessandro Bigi</strong> | 🌊 Onde, Pacchetti e Indeterminazione
