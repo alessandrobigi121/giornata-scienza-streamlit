@@ -1101,8 +1101,10 @@ elif sezione == "Pacchetti d'Onda":
         fig_sim.update_yaxes(title_text="Ampiezza", row=1, col=1)
         fig_sim.update_yaxes(title_text="|A(t)|²", row=2, col=1)
         
-        # Sposta i titoli dei subplot più in alto per evitare sovrapposizione
-        fig_sim.update_annotations(yshift=20)  # Sposta tutti i titoli 20 pixel più in alto
+        # Sposta SOLO i titoli dei subplot più in alto (non le annotazioni t=0)
+        for annotation in fig_sim.layout.annotations:
+            if "t = 0" not in annotation.text:
+                annotation.y = annotation.y + 0.03  # Sposta solo i titoli
         
         fig_sim.update_layout(
             height=800, # Altezza generosa per mantenere i grafici grandi
