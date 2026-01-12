@@ -2846,12 +2846,12 @@ elif sezione == "Analogia Quantistica":
     st.markdown("### 📊 Risultati")
     
     # Formattazione scientifica LaTeX per i risultati
-    def format_latex_sci(value, unit=""):
+    def format_latex_sci(value, unit_latex=""):
         if value == 0: return "0"
         exponent = int(np.floor(np.log10(abs(value))))
         mantissa = value / 10**exponent
-        # Uso LaTeX standard compatibile con st.latex
-        return f"{mantissa:.2f} \\cdot 10^{{{exponent}}} \\text{{ {unit}}}"
+        # Fix: separate unit from text parsing to allow math symbols like \cdot
+        return f"{mantissa:.2f} \\cdot 10^{{{exponent}}} \\; {unit_latex}"
 
     # Visualizzazione risultati con st.metric modificato o markdown puro
     # Usiamo colonne classiche con markdown per evitare problemi di rendering HTML+LaTeX misto
@@ -2863,7 +2863,8 @@ elif sezione == "Analogia Quantistica":
             <strong style="color: #3498db;">Quantità di moto (p)</strong>
         </div>
         """, unsafe_allow_html=True)
-        st.latex(format_latex_sci(p, "kg\\cdot m/s"))
+        # Fix: kg \cdot m/s scritto correttamente in LaTeX mode
+        st.latex(format_latex_sci(p, r"\text{kg} \cdot \text{m/s}"))
         
     with res_col2:
         st.markdown(f"""
@@ -2871,7 +2872,7 @@ elif sezione == "Analogia Quantistica":
             <strong style="color: #9b59b6;">Lunghezza d'onda (λ)</strong>
         </div>
         """, unsafe_allow_html=True)
-        st.latex(format_latex_sci(lambda_db, "m"))
+        st.latex(format_latex_sci(lambda_db, r"\text{m}"))
 
     with res_col3:
         st.markdown(f"""
@@ -2879,7 +2880,7 @@ elif sezione == "Analogia Quantistica":
             <strong style="color: #e74c3c;">Numero d'onda (k)</strong>
         </div>
         """, unsafe_allow_html=True)
-        st.latex(format_latex_sci(k_db, "rad/m"))
+        st.latex(format_latex_sci(k_db, r"\text{rad/m}"))
 
     
     st.markdown("---")
@@ -2900,10 +2901,10 @@ elif sezione == "Analogia Quantistica":
         
         st.markdown(f"""
         <div style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-            <div><strong>Incertezza $\\Delta k$:</strong></div>
-            <div style="font-size: 1.1rem;">${sigma_k:.3f}$ rad/u</div>
-            <div style="margin-top: 10px;"><strong>Prodotto $\\sigma_x \\cdot \\sigma_k$:</strong></div>
-            <div style="font-size: 1.1rem; color: #2ecc71;">${sigma_x * sigma_k:.3f}$</div>
+            <div style="font-weight: bold; margin-bottom: 5px;">Incertezza Δk:</div>
+            <div style="font-size: 1.1rem; margin-bottom: 10px;">{sigma_k:.3f} rad/u</div>
+            <div style="font-weight: bold; margin-bottom: 5px;">Prodotto σₓ·σₖ:</div>
+            <div style="font-size: 1.1rem; color: #2ecc71;">{sigma_x * sigma_k:.3f}</div>
             <div style="font-size: 0.8rem; opacity: 0.7;">Minimo Heisenberg = 0.5</div>
         </div>
         """, unsafe_allow_html=True)
