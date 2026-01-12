@@ -1074,7 +1074,7 @@ elif sezione == "Pacchetti d'Onda":
                                subplot_titles=(f"Pacchetto Simmetrico Completo: {n_onde} onde ({f_min}-{f_max} Hz)", 
                                              "Intensità Simmetrica |A(t)|² - Figura di Diffrazione Completa"),
                                shared_xaxes=True,
-                               vertical_spacing=0.5)  # Aumentato per evitare sovrapposizione con titoli
+                               vertical_spacing=0.1)  # Spacing normale
         
         # Row 1: Pacchetto
         fig_sim.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacchetto d'onda",
@@ -1100,6 +1100,9 @@ elif sezione == "Pacchetti d'Onda":
         fig_sim.update_xaxes(title_text="Tempo (s)", row=2, col=1)
         fig_sim.update_yaxes(title_text="Ampiezza", row=1, col=1)
         fig_sim.update_yaxes(title_text="|A(t)|²", row=2, col=1)
+        
+        # Sposta i titoli dei subplot più in alto per evitare sovrapposizione
+        fig_sim.update_annotations(yshift=20)  # Sposta tutti i titoli 20 pixel più in alto
         
         fig_sim.update_layout(
             height=800, # Altezza generosa per mantenere i grafici grandi
