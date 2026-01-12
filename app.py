@@ -2853,34 +2853,41 @@ elif sezione == "Analogia Quantistica":
         # Fix: separate unit from text parsing to allow math symbols like \cdot
         return f"{mantissa:.2f} \\cdot 10^{{{exponent}}} \\; {unit_latex}"
 
-    # Visualizzazione risultati con st.metric modificato o markdown puro
-    # Usiamo colonne classiche con markdown per evitare problemi di rendering HTML+LaTeX misto
+    # Visualizzazione risultati in box unici HTML + LaTeX
     res_col1, res_col2, res_col3 = st.columns(3)
     
     with res_col1:
+        val_p = format_latex_sci(p, r"\text{kg} \cdot \text{m/s}")
         st.markdown(f"""
-        <div style="background-color: rgba(52, 152, 219, 0.1); padding: 10px; border-radius: 8px; border-left: 5px solid #3498db; margin-bottom: 10px;">
-            <strong style="color: #3498db;">Quantità di moto (p)</strong>
+        <div style="background-color: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; border-left: 5px solid #3498db; text-align: center;">
+            <div style="color: #3498db; font-weight: bold; margin-bottom: 5px;">Quantità di moto (p)</div>
+            <div style="font-size: 1.2rem; font-family: 'KaTeX_Main', 'Computer Modern', serif;">
+                $${val_p}$$
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        # Fix: kg \cdot m/s scritto correttamente in LaTeX mode
-        st.latex(format_latex_sci(p, r"\text{kg} \cdot \text{m/s}"))
         
     with res_col2:
+        val_lambda = format_latex_sci(lambda_db, r"\text{m}")
         st.markdown(f"""
-        <div style="background-color: rgba(155, 89, 182, 0.1); padding: 10px; border-radius: 8px; border-left: 5px solid #9b59b6; margin-bottom: 10px;">
-            <strong style="color: #9b59b6;">Lunghezza d'onda (λ)</strong>
+        <div style="background-color: rgba(155, 89, 182, 0.1); padding: 15px; border-radius: 8px; border-left: 5px solid #9b59b6; text-align: center;">
+            <div style="color: #9b59b6; font-weight: bold; margin-bottom: 5px;">Lunghezza d'onda (λ)</div>
+            <div style="font-size: 1.2rem; font-family: 'KaTeX_Main', 'Computer Modern', serif;">
+                $${val_lambda}$$
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        st.latex(format_latex_sci(lambda_db, r"\text{m}"))
 
     with res_col3:
+        val_k = format_latex_sci(k_db, r"\text{rad/m}")
         st.markdown(f"""
-        <div style="background-color: rgba(231, 76, 60, 0.1); padding: 10px; border-radius: 8px; border-left: 5px solid #e74c3c; margin-bottom: 10px;">
-            <strong style="color: #e74c3c;">Numero d'onda (k)</strong>
+        <div style="background-color: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; border-left: 5px solid #e74c3c; text-align: center;">
+            <div style="color: #e74c3c; font-weight: bold; margin-bottom: 5px;">Numero d'onda (k)</div>
+            <div style="font-size: 1.2rem; font-family: 'KaTeX_Main', 'Computer Modern', serif;">
+                $${val_k}$$
+            </div>
         </div>
         """, unsafe_allow_html=True)
-        st.latex(format_latex_sci(k_db, r"\text{rad/m}"))
 
     
     st.markdown("---")
@@ -2939,9 +2946,10 @@ elif sezione == "Analogia Quantistica":
                                         line=dict(color='#9b59b6', width=2),
                                         fillcolor='rgba(155, 89, 182, 0.3)'), row=2, col=1)
             
-            # Indicatori σ
+            # Indicatori σ con annotazioni
             fig_psi.add_vline(x=-sigma_x, line_dash="dot", line_color="green", row=2, col=1)
-            fig_psi.add_vline(x=sigma_x, line_dash="dot", line_color="green", row=2, col=1)
+            fig_psi.add_vline(x=sigma_x, line_dash="dot", line_color="green", row=2, col=1,
+                             annotation_text="Incertezza (σ)", annotation_position="top right", annotation_font_color="green")
         
         # Sposta i titoli verso l'alto
         fig_psi.update_annotations(yshift=20)
