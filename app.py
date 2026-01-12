@@ -1074,7 +1074,7 @@ elif sezione == "Pacchetti d'Onda":
                                subplot_titles=(f"Pacchetto Simmetrico Completo: {n_onde} onde ({f_min}-{f_max} Hz)", 
                                              "Intensità Simmetrica |A(t)|² - Figura di Diffrazione Completa"),
                                shared_xaxes=True,
-                               vertical_spacing=0.15)  # Aumentato per evitare sovrapposizione con titoli
+                               vertical_spacing=0.5)  # Aumentato per evitare sovrapposizione con titoli
         
         # Row 1: Pacchetto
         fig_sim.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacchetto d'onda",
