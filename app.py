@@ -253,7 +253,7 @@ sezione = st.sidebar.radio(
     ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
      "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
      "Regressione Δx vs 1/Δk", "Onde Stazionarie", "Animazione Propagazione",
-     "Analisi Audio Microfono", "Confronto Scenari", "Quiz Interattivo", "Modalità Mobile (Demo)"]
+     "Analisi Audio Microfono", "Riconoscimento Battimenti", "Confronto Scenari", "Quiz Interattivo", "Modalità Mobile (Demo)"]
 )
 
 mostra_parametri_acustici()  # Mostra parametri fisici
@@ -923,56 +923,48 @@ elif sezione == "Pacchetti d'Onda":
     """)
     
     if not unisci_viste_glob:
-        # Se non unificati, mostra i grafici simmetrici qui
-        # 🎨 GRAFICO 1: Pacchetto simmetrico con inviluppo
-        fig_sim1 = go.Figure()
+        # Se non unificati, mostra i grafici simmetrici qui uniti in una figura grande
         
-        fig_sim1.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacchetto d'onda",
-                                     line=dict(color='darkblue', width=2)))
-        fig_sim1.add_trace(go.Scatter(x=t_sim, y=inviluppo_sim, name="Inviluppo +",
-                                     line=dict(color='red', width=2, dash='dash')))
-        fig_sim1.add_trace(go.Scatter(x=t_sim, y=-inviluppo_sim, name="Inviluppo -",
-                                     line=dict(color='red', width=2, dash='dash')))
+        fig_sim = make_subplots(rows=2, cols=1,
+                               subplot_titles=(f"Pacchetto Simmetrico Completo: {n_onde} onde ({f_min}-{f_max} Hz)", 
+                                             "Intensità Simmetrica |A(t)|² - Figura di Diffrazione Completa"),
+                               shared_xaxes=True,
+                               vertical_spacing=0.1)
         
-        # Linea verticale a t=0
-        fig_sim1.add_vline(x=0, line_dash="dot", line_color="green", 
-                          annotation_text="t = 0", annotation_position="top")
+        # Row 1: Pacchetto
+        fig_sim.add_trace(go.Scatter(x=t_sim, y=y_pacchetto_sim, name="Pacchetto d'onda",
+                                     line=dict(color='darkblue', width=2)), row=1, col=1)
+        fig_sim.add_trace(go.Scatter(x=t_sim, y=inviluppo_sim, name="Inviluppo +",
+                                     line=dict(color='red', width=2, dash='dash')), row=1, col=1)
+        fig_sim.add_trace(go.Scatter(x=t_sim, y=-inviluppo_sim, name="Inviluppo -",
+                                     line=dict(color='red', width=2, dash='dash')), row=1, col=1)
         
-        fig_sim1.update_layout(
-            title=f"Pacchetto Simmetrico Completo: {n_onde} onde ({f_min}-{f_max} Hz)",
-            xaxis_title="Tempo (s)",
-            yaxis_title="Ampiezza",
-            height=600,
-            hovermode='x unified',
-            dragmode='zoom',
-            modebar_add=['resetScale2d']
-        )
+        # Linea verticale a t=0 (Row 1)
+        fig_sim.add_vline(x=0, line_dash="dot", line_color="green", 
+                          annotation_text="t = 0", annotation_position="top", row=1, col=1)
         
-        applica_zoom(fig_sim1, range_x_glob)
-        st.plotly_chart(fig_sim1, use_container_width=True)
-        
-        # 🎨 GRAFICO 2: Intensità simmetrica |A(t)|²
-        fig_sim2 = go.Figure()
-        
-        fig_sim2.add_trace(go.Scatter(x=t_sim, y=intensita_sim, fill='tozeroy',
+        # Row 2: Intensità
+        fig_sim.add_trace(go.Scatter(x=t_sim, y=intensita_sim, fill='tozeroy',
                                      line=dict(color='orange', width=2),
-                                     name="Intensità |A(t)|²"))
+                                     name="Intensità |A(t)|²"), row=2, col=1)
         
-        fig_sim2.add_vline(x=0, line_dash="dot", line_color="green",
-                          annotation_text="t = 0", annotation_position="top")
+        # Linea verticale a t=0 (Row 2)
+        fig_sim.add_vline(x=0, line_dash="dot", line_color="green",
+                          annotation_text="t = 0", annotation_position="top", row=2, col=1)
         
-        fig_sim2.update_layout(
-            title="Intensità Simmetrica |A(t)|² - Figura di Diffrazione Completa",
-            xaxis_title="Tempo (s)",
-            yaxis_title="|A(t)|²",
-            height=500,
+        fig_sim.update_xaxes(title_text="Tempo (s)", row=2, col=1)
+        fig_sim.update_yaxes(title_text="Ampiezza", row=1, col=1)
+        fig_sim.update_yaxes(title_text="|A(t)|²", row=2, col=1)
+        
+        fig_sim.update_layout(
+            height=800, # Altezza generosa per mantenere i grafici grandi
             hovermode='x unified',
             dragmode='zoom',
             modebar_add=['resetScale2d']
         )
         
-        applica_zoom(fig_sim2, range_x_glob)
-        st.plotly_chart(fig_sim2, use_container_width=True)
+        applica_zoom(fig_sim, range_x_glob)
+        st.plotly_chart(fig_sim, use_container_width=True)
     else:
         st.info("I grafici simmetrici sono visualizzati sopra nella vista unificata.")
     
@@ -1249,6 +1241,19 @@ elif sezione == "Principio di Indeterminazione":
         ampiezza = 1.0
         durata = 1.5
         st.info(f"**{preset_pkt}**\n\n{preset['descrizione']}")
+        
+        # Mostra i valori del preset
+        col_p1, col_p2, col_p3, col_p4, col_p5 = st.columns(5)
+        with col_p1:
+            st.metric("f_min", f"{f_min:.1f} Hz")
+        with col_p2:
+            st.metric("f_max", f"{f_max:.1f} Hz")
+        with col_p3:
+            st.metric("Δf", f"{f_max - f_min:.1f} Hz")
+        with col_p4:
+            st.metric("N onde", f"{n_onde}")
+        with col_p5:
+            st.metric("Durata", f"{durata} s")
     else:
         # Inizializzazione Session State per sincronizzazione
         if 'indet_fmin_s' not in st.session_state: st.session_state.indet_fmin_s = 100.0
@@ -1380,13 +1385,28 @@ elif sezione == "Principio di Indeterminazione":
     st.plotly_chart(fig_x, use_container_width=True)
     
     # 🆕 Grafico temporale
-    t = np.linspace(0, durata, int(durata * 20000)) # Alta risoluzione temporale
+    # CORREZIONE: Limita la durata per evitare ripetizioni periodiche
+    # Un pacchetto di N onde con frequenze equispaziate si ripete con periodo T_rep = (N-1) / Δf
+    delta_f = f_max - f_min
+    if n_onde > 1 and delta_f > 0:
+        T_ripetizione = (n_onde - 1) / delta_f
+    else:
+        T_ripetizione = durata * 10  # Nessun limite se n_onde = 1
+    
+    # Limita la durata visualizzata a 80% del periodo di ripetizione per evitare artefatti
+    durata_effettiva = min(durata, T_ripetizione * 0.8)
+    
+    t = np.linspace(0, durata_effettiva, int(durata_effettiva * 20000)) # Alta risoluzione temporale
     omega_vals = 2 * np.pi * np.linspace(f_min, f_max, n_onde)
     y_t = np.zeros_like(t)
     for omega in omega_vals:
         y_t += (1/n_onde) * np.cos(omega * t)
     env_t = np.abs(signal.hilbert(y_t))
     delta_t_mis, idx1_t, idx2_t = calcola_larghezza_temporale(t, env_t)
+    
+    # Info sulla correzione
+    if durata > T_ripetizione * 0.8:
+        st.caption(f"⚠️ Durata limitata a {durata_effettiva*1000:.0f} ms per evitare ripetizioni periodiche (T_rep = {T_ripetizione*1000:.0f} ms)")
     
     fig_t = go.Figure()
     fig_t.add_trace(go.Scatter(x=t*1000, y=y_t, line=dict(color='purple', width=2), name="Pacchetto"))
@@ -1396,21 +1416,16 @@ elif sezione == "Principio di Indeterminazione":
     fig_t.add_vline(x=t[idx2_t]*1000, line_dash="dot", line_color="green")
     fig_t.update_layout(title=f"Tempo: Δω·Δt = {delta_t_mis*delta_omega:.2f} (target: 12.57)",
                        xaxis_title="t (ms)", yaxis_title="A(t)", 
-                       height=600, # Aumentata altezza
+                       height=600,
                        hovermode='x unified')
-    # Nota: range_x_glob è in secondi, qui x è in ms (t*1000). 
-    # Se l'utente usa lo zoom globale (secondi), questo grafico sembrerà "sbagliato" se non converte.
-    # Per coerenza, applichiamo lo zoom solo se l'utente lo sa, o lasciamo libero questo grafico specifico se necessario.
-    # Ma per rispettare la richiesta "tutti i grafici", lo applichiamo (l'utente metterà 0.002 se vuole vedere ms).
-    # ATTENZIONE: Qui x è t*1000. Se range_x_glob è [0, 2] (secondi), qui diventa [0, 2] (millisecondi).
-    # È meglio NON applicare lo zoom globale qui se le unità sono diverse, oppure convertire.
-    # Dato che è un lab didattico, meglio lasciare l'autoscale qui o richiedere input in ms.
-    # Per ora lo lascio libero per evitare confusione sulle unità, o lo applico se richiesto esplicitamente.
     st.plotly_chart(fig_t, use_container_width=True)
     
     # 🆕 Grafico temporale SIMMETRICO (Doppio)
     st.markdown("#### Visualizzazione Temporale Simmetrica (Passato e Futuro)")
-    t_sim = np.linspace(-durata, durata, int(durata * 2 * 20000)) # Alta risoluzione
+    
+    # Usa la stessa durata effettiva per evitare ripetizioni
+    durata_sim = durata_effettiva
+    t_sim = np.linspace(-durata_sim, durata_sim, int(durata_sim * 2 * 20000)) # Alta risoluzione
     y_t_sim = np.zeros_like(t_sim)
     for omega in omega_vals:
         y_t_sim += (1/n_onde) * np.cos(omega * t_sim)
@@ -2100,7 +2115,318 @@ elif sezione == "Analisi Audio Microfono":
         except Exception as e:
             st.error(f"Errore durante l'analisi: {e}")
 
-# ========== CONFRONTO SCENARI (COMPLETO) ==========
+# ========== RICONOSCIMENTO BATTIMENTI ==========
+elif sezione == "Riconoscimento Battimenti":
+    st.header("🎵 Riconoscimento Battimenti dal Vivo")
+    st.markdown("""
+    **Registra il suono di due diapason** (o carica un file audio) per analizzare i battimenti.
+    
+    L'app rileverà automaticamente:
+    - Le **due frequenze** presenti (f₁ e f₂)
+    - La **frequenza di battimento teorica**: f_batt = |f₁ - f₂|
+    - La **frequenza di battimento misurata** dall'inviluppo del segnale
+    - Il **confronto** tra teoria e misura
+    """)
+    
+    st.info("💡 **Suggerimento**: Per un buon riconoscimento, registra per almeno 2-3 secondi e assicurati che i diapason suonino insieme.")
+    
+    col_rec1, col_rec2 = st.columns(2)
+    
+    with col_rec1:
+        st.subheader("📂 Carica File Audio")
+        uploaded_beat_file = st.file_uploader("Carica file WAV", type=['wav'], key="beat_audio_upload")
+        
+    with col_rec2:
+        st.subheader("🎤 Registra Audio")
+        beat_audio_bytes = None
+        try:
+            from audio_recorder_streamlit import audio_recorder
+            beat_audio_bytes = audio_recorder(
+                text="Clicca per registrare",
+                recording_color="#e74c3c",
+                neutral_color="#27ae60",
+                icon_name="microphone",
+                icon_size="3x",
+                key="beat_audio_rec"
+            )
+        except ImportError:
+            st.error("Libreria mancante! Installa: `pip install audio-recorder-streamlit`")
+    
+    # Selezione sorgente audio
+    beat_audio_source = None
+    beat_nome_sorgente = ""
+    
+    if beat_audio_bytes:
+        beat_audio_source = beat_audio_bytes
+        beat_nome_sorgente = "Registrazione Microfono"
+    elif uploaded_beat_file:
+        uploaded_beat_file.seek(0)
+        beat_audio_source = uploaded_beat_file.read()
+        beat_nome_sorgente = f"File: {uploaded_beat_file.name}"
+    
+    if beat_audio_source:
+        st.markdown("---")
+        st.success(f"**Analisi in corso**: {beat_nome_sorgente}")
+        st.audio(beat_audio_source, format='audio/wav')
+        
+        try:
+            from scipy.io import wavfile
+            from scipy.signal import find_peaks, hilbert
+            import io
+            
+            # Lettura audio
+            sample_rate_beat, audio_data_beat = wavfile.read(io.BytesIO(beat_audio_source))
+            
+            # Se stereo, prendi canale sinistro
+            if len(audio_data_beat.shape) == 2:
+                audio_data_beat = audio_data_beat[:, 0]
+            
+            # Normalizza
+            audio_data_beat = audio_data_beat.astype(float)
+            if np.max(np.abs(audio_data_beat)) > 0:
+                audio_data_beat = audio_data_beat / np.max(np.abs(audio_data_beat))
+            
+            durata_beat = len(audio_data_beat) / sample_rate_beat
+            t_beat = np.linspace(0, durata_beat, len(audio_data_beat))
+            
+            # Info base
+            col_i1, col_i2, col_i3 = st.columns(3)
+            with col_i1:
+                st.metric("Durata", f"{durata_beat:.2f} s")
+            with col_i2:
+                st.metric("Sample Rate", f"{sample_rate_beat} Hz")
+            with col_i3:
+                st.metric("Campioni", f"{len(audio_data_beat):,}")
+            
+            # ========== ANALISI FFT ==========
+            st.markdown("---")
+            st.subheader("📊 Analisi Spettrale (FFT)")
+            
+            # FFT
+            window_size_beat = min(len(audio_data_beat), 65536)
+            audio_window_beat = audio_data_beat[:window_size_beat]
+            yf_beat = fft(audio_window_beat)
+            xf_beat = fftfreq(window_size_beat, 1/sample_rate_beat)[:window_size_beat//2]
+            potenza_beat = 2.0/window_size_beat * np.abs(yf_beat[:window_size_beat//2])
+            
+            # Trova picchi (frequenze dominanti)
+            # Filtro solo frequenze > 50 Hz per evitare rumore basso
+            mask_freq = xf_beat > 50
+            potenza_filtered = np.where(mask_freq, potenza_beat, 0)
+            
+            peaks_beat, props_beat = find_peaks(potenza_filtered, 
+                                                 height=np.max(potenza_filtered)*0.15, 
+                                                 distance=int(10 * window_size_beat / sample_rate_beat))
+            
+            if len(peaks_beat) >= 2:
+                # Ordina per ampiezza e prendi i top 2
+                sorted_peak_idx = np.argsort(potenza_beat[peaks_beat])[::-1]
+                top_2_peaks = peaks_beat[sorted_peak_idx[:2]]
+                
+                f1_rilevata = min(xf_beat[top_2_peaks])
+                f2_rilevata = max(xf_beat[top_2_peaks])
+                f_batt_teorica = abs(f2_rilevata - f1_rilevata)
+                
+                st.success(f"✅ Rilevate **2 frequenze dominanti**: {f1_rilevata:.1f} Hz e {f2_rilevata:.1f} Hz")
+                
+                col_f1, col_f2, col_fb = st.columns(3)
+                with col_f1:
+                    st.metric("f₁ (Diapason 1)", f"{f1_rilevata:.1f} Hz")
+                with col_f2:
+                    st.metric("f₂ (Diapason 2)", f"{f2_rilevata:.1f} Hz")
+                with col_fb:
+                    st.metric("f_batt TEORICA", f"{f_batt_teorica:.2f} Hz", 
+                             help="|f₂ - f₁|")
+                
+                # Grafico FFT
+                fig_fft_beat = go.Figure()
+                fig_fft_beat.add_trace(go.Scatter(x=xf_beat, y=potenza_beat, 
+                                                  mode='lines', line=dict(color='blue', width=1), 
+                                                  name="Spettro"))
+                fig_fft_beat.add_trace(go.Scatter(x=[f1_rilevata, f2_rilevata], 
+                                                  y=[potenza_beat[top_2_peaks[0]], potenza_beat[top_2_peaks[1]]], 
+                                                  mode='markers', 
+                                                  marker=dict(size=15, color='red', symbol='star'),
+                                                  name="Frequenze Rilevate"))
+                fig_fft_beat.update_layout(
+                    title="Spettro di Frequenza (FFT)",
+                    xaxis_title="Frequenza (Hz)",
+                    yaxis_title="Ampiezza",
+                    xaxis=dict(range=[0, max(f2_rilevata * 1.5, 600)]),
+                    height=400
+                )
+                st.plotly_chart(fig_fft_beat, use_container_width=True)
+                
+                # ========== ESTRAZIONE INVILUPPO ==========
+                st.markdown("---")
+                st.subheader("📈 Estrazione Inviluppo (Hilbert)")
+                
+                # Trasformata di Hilbert per estrarre l'inviluppo
+                analytic_beat = hilbert(audio_data_beat)
+                inviluppo_beat = np.abs(analytic_beat)
+                
+                # Smoothing dell'inviluppo per ridurre rumore
+                from scipy.ndimage import uniform_filter1d
+                inviluppo_smooth = uniform_filter1d(inviluppo_beat, size=int(sample_rate_beat * 0.01))
+                
+                # ========== MISURA f_batt DALL'INVILUPPO ==========
+                # Metodo 1: FFT dell'inviluppo
+                inviluppo_centered = inviluppo_smooth - np.mean(inviluppo_smooth)
+                yf_env = fft(inviluppo_centered)
+                xf_env = fftfreq(len(inviluppo_centered), 1/sample_rate_beat)[:len(inviluppo_centered)//2]
+                potenza_env = 2.0/len(inviluppo_centered) * np.abs(yf_env[:len(inviluppo_centered)//2])
+                
+                # Cerca picco nella banda 0.5-30 Hz (range battimenti udibili)
+                mask_env = (xf_env > 0.5) & (xf_env < 30)
+                potenza_env_filtered = np.where(mask_env, potenza_env, 0)
+                
+                if np.max(potenza_env_filtered) > 0:
+                    idx_peak_env = np.argmax(potenza_env_filtered)
+                    f_batt_misurata = xf_env[idx_peak_env]
+                else:
+                    # Fallback: conta i picchi dell'inviluppo
+                    peaks_env, _ = find_peaks(inviluppo_smooth, distance=int(sample_rate_beat * 0.05))
+                    if len(peaks_env) > 1:
+                        # Tempo medio tra picchi
+                        dt_picchi = np.diff(t_beat[peaks_env])
+                        T_medio = np.mean(dt_picchi)
+                        f_batt_misurata = 1.0 / T_medio if T_medio > 0 else 0
+                    else:
+                        f_batt_misurata = 0
+                
+                # ========== CONFRONTO ==========
+                st.markdown("---")
+                st.subheader("⚖️ Confronto: Teoria vs Misura")
+                
+                if f_batt_teorica > 0:
+                    errore_perc = abs(f_batt_misurata - f_batt_teorica) / f_batt_teorica * 100
+                else:
+                    errore_perc = 0
+                
+                T_batt_teorico = 1/f_batt_teorica if f_batt_teorica > 0 else 0
+                T_batt_misurato = 1/f_batt_misurata if f_batt_misurata > 0 else 0
+                
+                col_comp1, col_comp2, col_comp3 = st.columns(3)
+                with col_comp1:
+                    st.metric("f_batt TEORICA", f"{f_batt_teorica:.2f} Hz",
+                             help="|f₂ - f₁| calcolato dalla FFT")
+                with col_comp2:
+                    st.metric("f_batt MISURATA", f"{f_batt_misurata:.2f} Hz",
+                             help="Misurata dall'inviluppo del segnale")
+                with col_comp3:
+                    delta_str = f"{errore_perc:.1f}% errore"
+                    st.metric("Errore", delta_str,
+                             delta_color="inverse" if errore_perc < 15 else "off")
+                
+                col_t1, col_t2 = st.columns(2)
+                with col_t1:
+                    st.metric("T_batt TEORICO", f"{T_batt_teorico:.3f} s")
+                with col_t2:
+                    st.metric("T_batt MISURATO", f"{T_batt_misurato:.3f} s")
+                
+                # Valutazione risultato
+                if errore_perc < 10:
+                    st.success("🎉 **Ottimo!** La misura è in eccellente accordo con la teoria!")
+                elif errore_perc < 20:
+                    st.info("👍 **Buono!** La misura è ragionevolmente vicina alla teoria.")
+                else:
+                    st.warning("⚠️ **Discrepanza significativa.** Prova a registrare con meno rumore di fondo.")
+                
+                # ========== GRAFICI FINALI ==========
+                st.markdown("---")
+                st.subheader("📉 Visualizzazione Battimenti")
+                
+                # Grafico forma d'onda + inviluppo
+                # Zoom su una porzione per vedere bene i battimenti
+                zoom_start = 0
+                zoom_end = min(durata_beat, 2.0)  # Primi 2 secondi
+                mask_zoom = (t_beat >= zoom_start) & (t_beat <= zoom_end)
+                
+                fig_wave_env = make_subplots(rows=2, cols=1, 
+                                             subplot_titles=["Forma d'Onda con Inviluppo", "Inviluppo (Battimenti)"],
+                                             vertical_spacing=0.12)
+                
+                # Sottocampionamento per performance
+                step_plot = max(1, len(audio_data_beat[mask_zoom]) // 10000)
+                
+                fig_wave_env.add_trace(
+                    go.Scatter(x=t_beat[mask_zoom][::step_plot], 
+                              y=audio_data_beat[mask_zoom][::step_plot],
+                              mode='lines', line=dict(color='blue', width=0.5),
+                              name="Segnale"),
+                    row=1, col=1
+                )
+                fig_wave_env.add_trace(
+                    go.Scatter(x=t_beat[mask_zoom][::step_plot], 
+                              y=inviluppo_smooth[mask_zoom][::step_plot],
+                              mode='lines', line=dict(color='red', width=2),
+                              name="Inviluppo"),
+                    row=1, col=1
+                )
+                fig_wave_env.add_trace(
+                    go.Scatter(x=t_beat[mask_zoom][::step_plot], 
+                              y=-inviluppo_smooth[mask_zoom][::step_plot],
+                              mode='lines', line=dict(color='red', width=2),
+                              showlegend=False),
+                    row=1, col=1
+                )
+                
+                # Solo inviluppo
+                fig_wave_env.add_trace(
+                    go.Scatter(x=t_beat[mask_zoom][::step_plot], 
+                              y=inviluppo_smooth[mask_zoom][::step_plot],
+                              mode='lines', line=dict(color='orange', width=2),
+                              name="Inviluppo", fill='tozeroy'),
+                    row=2, col=1
+                )
+                
+                fig_wave_env.update_layout(height=600, showlegend=True)
+                fig_wave_env.update_xaxes(title_text="Tempo (s)", row=2, col=1)
+                fig_wave_env.update_yaxes(title_text="Ampiezza", row=1, col=1)
+                fig_wave_env.update_yaxes(title_text="Ampiezza", row=2, col=1)
+                
+                st.plotly_chart(fig_wave_env, use_container_width=True)
+                
+                # Tabella riepilogativa
+                st.markdown("---")
+                st.subheader("📋 Riepilogo Analisi")
+                riepilogo_df = pd.DataFrame({
+                    "Parametro": ["f₁ (Hz)", "f₂ (Hz)", "Δf = |f₂-f₁| (Hz)", 
+                                 "f_batt teorica (Hz)", "f_batt misurata (Hz)", 
+                                 "T_batt teorico (s)", "T_batt misurato (s)", "Errore (%)"],
+                    "Valore": [f"{f1_rilevata:.1f}", f"{f2_rilevata:.1f}", f"{f_batt_teorica:.2f}",
+                              f"{f_batt_teorica:.2f}", f"{f_batt_misurata:.2f}",
+                              f"{T_batt_teorico:.3f}", f"{T_batt_misurato:.3f}", f"{errore_perc:.1f}"]
+                })
+                st.dataframe(riepilogo_df, use_container_width=True, hide_index=True)
+                
+                # Download CSV
+                csv_beat = riepilogo_df.to_csv(index=False)
+                st.download_button("📥 Scarica Risultati (CSV)", csv_beat, 
+                                  "riconoscimento_battimenti.csv", "text/csv")
+                
+                # ========== FORMULE ==========
+                with st.expander("📚 Formule Teoriche"):
+                    st.markdown("### Battimenti")
+                    st.latex(r"y(t) = y_1(t) + y_2(t) = A_1\cos(\omega_1 t) + A_2\cos(\omega_2 t)")
+                    st.latex(r"y(t) = 2A\cos\left(\frac{\omega_1 - \omega_2}{2}t\right) \cdot \cos\left(\frac{\omega_1 + \omega_2}{2}t\right)")
+                    st.markdown("### Frequenza di Battimento")
+                    st.latex(r"f_{\text{batt}} = |f_1 - f_2|")
+                    st.markdown("### Periodo di Battimento")
+                    st.latex(r"T_{\text{batt}} = \frac{1}{f_{\text{batt}}} = \frac{1}{|f_1 - f_2|}")
+            
+            elif len(peaks_beat) == 1:
+                st.warning("⚠️ **Rilevata solo 1 frequenza dominante.** Per i battimenti servono 2 frequenze vicine.")
+                st.info(f"Frequenza rilevata: {xf_beat[peaks_beat[0]]:.1f} Hz")
+            else:
+                st.error("❌ **Nessuna frequenza dominante rilevata.** Prova a registrare con volume più alto.")
+                
+        except Exception as e:
+            st.error(f"Errore durante l'analisi: {e}")
+            import traceback
+            st.code(traceback.format_exc())
+
+
 elif sezione == "Confronto Scenari":
     st.header("Confronto tra Scenari")
     st.markdown("Confronta due configurazioni differenti fianco a fianco")
