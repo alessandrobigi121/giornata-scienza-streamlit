@@ -2773,105 +2773,149 @@ elif sezione == "Analogia Quantistica":
     Louis de Broglie (1924) propose che **ogni particella ha un comportamento ondulatorio**.
     """)
     
-    # Formula di De Broglie
-    col_theory, col_params = st.columns([1, 1])
+    st.markdown("---")
     
-    with col_theory:
+    # Formula di De Broglie e Tabella (affiancate con razionalità)
+    col_theory1, col_theory2 = st.columns([1, 1])
+    
+    with col_theory1:
         st.markdown("### 📐 Relazione di De Broglie")
         st.latex(r"\lambda = \frac{h}{p} = \frac{h}{mv}")
-        st.markdown("""
-        - **λ** = lunghezza d'onda di De Broglie
-        - **h** = costante di Planck = 6.626 × 10⁻³⁴ J·s
-        - **p** = quantità di moto = mv
-        - **m** = massa della particella
-        - **v** = velocità
+        st.info("""
+        **Leggenda:**
+        - $\\lambda$: lunghezza d'onda di De Broglie
+        - $h$: costante di Planck ($6.626 \\cdot 10^{-34}$ J·s)
+        - $p$: quantità di moto ($m \\cdot v$)
         """)
-        
+
+    with col_theory2:
         st.markdown("### 🔄 Analogia con le Onde Sonore")
         st.markdown("""
-        | Onde Sonore | Meccanica Quantistica |
-        |-------------|----------------------|
-        | Ampiezza A(x,t) | Funzione d'onda ψ(x,t) |
-        | Intensità ~ A² | Probabilità ~ \|ψ\|² |
-        | Δx · Δk ≥ 1/2 | Δx · Δp ≥ ℏ/2 |
-        | k = 2π/λ | p = ℏk = h/λ |
+        | Concetto | Onde Sonore | Meccanica Quantistica |
+        |---|---|---|
+        | **Oscillazione** | Pressione $P(x,t)$ | Funzione d'onda $\\psi(x,t)$ |
+        | **Intensità** | $\\propto A^2$ | $\\propto |\\psi|^2$ (Probabilità) |
+        | **Indeterminazione** | $\\Delta x \\cdot \\Delta k \\ge 1/2$ | $\\Delta x \\cdot \\Delta p \\ge \\hbar/2$ |
         """)
     
-    with col_params:
-        st.markdown("### ⚙️ Simula una Particella")
-        
-        tipo_particella = st.selectbox("Tipo di particella", 
+    st.markdown("---")
+    
+    # SEZIONE SIMULAZIONE (A Tutta Larghezza)
+    st.subheader("⚙️ Simula una Particella")
+    st.markdown("Scegli una particella e osserva come cambia la sua lunghezza d'onda e incertezza.")
+    
+    # Input parametri (su una riga ben spaziata)
+    col_input1, col_input2, col_input3 = st.columns([1, 1, 2])
+    
+    with col_input1:
+        tipo_particella = st.selectbox("Particella", 
                                        ["Elettrone", "Protone", "Neutrone", "Atomo di Idrogeno", "Pallina da tennis"],
                                        key="tipo_part")
-        
-        masse = {
-            "Elettrone": 9.109e-31,
-            "Protone": 1.673e-27,
-            "Neutrone": 1.675e-27,
-            "Atomo di Idrogeno": 1.674e-27,
-            "Pallina da tennis": 0.057
-        }
-        
-        massa = masse[tipo_particella]
-        
+    
+    masse = {
+        "Elettrone": 9.109e-31,
+        "Protone": 1.673e-27,
+        "Neutrone": 1.675e-27,
+        "Atomo di Idrogeno": 1.674e-27,
+        "Pallina da tennis": 0.057
+    }
+    massa = masse[tipo_particella]
+
+    with col_input2:
+        st.markdown(f"**Massa ($m$):**")
         if tipo_particella == "Pallina da tennis":
-            velocita = st.slider("Velocità (m/s)", 1.0, 50.0, 20.0, 1.0, key="v_part")
+             st.markdown(f"$5.7 \\cdot 10^{{-2}}$ kg")
         else:
-            velocita = st.slider("Velocità (m/s)", 1e3, 1e7, 1e6, 1e3, key="v_part",
-                                format="%.0e")
-        
-        # Calcoli
-        h = 6.626e-34
-        hbar = h / (2 * np.pi)
-        p = massa * velocita
-        lambda_db = h / p
-        k_db = 2 * np.pi / lambda_db
-        
-        # Incertezze (usando il minimo di Heisenberg)
-        delta_x_min = hbar / (2 * p)  # Δx minimo dato da Δx·Δp = ℏ/2
-        
-        st.markdown("### 📊 Risultati")
-        
-        if lambda_db > 1e-3:
-            lambda_str = f"{lambda_db:.3f} m"
-        elif lambda_db > 1e-9:
-            lambda_str = f"{lambda_db*1e9:.3f} nm"
-        elif lambda_db > 1e-12:
-            lambda_str = f"{lambda_db*1e12:.3f} pm"
+             esponente = int(np.floor(np.log10(massa)))
+             mantissa = massa / 10**esponente
+             st.markdown(f"${mantissa:.3f} \\cdot 10^{{{esponente}}}$ kg")
+
+    with col_input3:
+        if tipo_particella == "Pallina da tennis":
+            velocita = st.slider("Velocità ($v$)", 1.0, 50.0, 20.0, 1.0, key="v_part")
         else:
-            lambda_str = f"{lambda_db:.3e} m"
+            velocita = st.slider("Velocità ($v$)", 1e3, 1e7, 1e6, 1e3, key="v_part", format="%.0e")
+
+    # Calcoli
+    h = 6.626e-34
+    hbar = h / (2 * np.pi)
+    p = massa * velocita
+    lambda_db = h / p
+    k_db = 2 * np.pi / lambda_db
+    
+    st.markdown("### 📊 Risultati")
+    
+    # Formattazione scientifica LaTeX per i risultati
+    def format_latex_sci(value, unit=""):
+        if value == 0: return "0"
+        exponent = int(np.floor(np.log10(abs(value))))
+        mantissa = value / 10**exponent
+        # Fix: costrisci la stringa senza backslash dentro l'espressione f-string
+        return f"{mantissa:.2f} \\cdot 10^{{{exponent}}} \\text{{ {unit}}}"
+
+    # Visualizzazione risultati in colonne ben evidenziate
+    res_col1, res_col2, res_col3 = st.columns(3)
+    
+    with res_col1:
+        val_p = format_latex_sci(p, "kg\\cdot m/s")
+        st.markdown(f"""
+        <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #3498db;">
+            <div style="font-size: 0.9rem; color: #3498db; font-weight: bold;">Quantità di moto ($p$)</div>
+            <div style="font-size: 1.3rem;">$${val_p}$$</div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        styled_metric_row([
-            ("Quantità di moto p", f"{p:.2e} kg·m/s", "📐", "#3498db"),
-            ("λ di De Broglie", lambda_str, "🌊", "#9b59b6"),
-            ("k = 2π/λ", f"{k_db:.2e} rad/m", "📊", "#e74c3c")
-        ])
+    with res_col2:
+        val_lambda = format_latex_sci(lambda_db, "m")
+        st.markdown(f"""
+        <div style="background: rgba(155, 89, 182, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #9b59b6;">
+            <div style="font-size: 0.9rem; color: #9b59b6; font-weight: bold;">Lunghezza d'onda ($\\lambda$)</div>
+            <div style="font-size: 1.3rem;">$${val_lambda}$$</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with res_col3:
+        val_k = format_latex_sci(k_db, "rad/m")
+        st.markdown(f"""
+        <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #e74c3c;">
+            <div style="font-size: 0.9rem; color: #e74c3c; font-weight: bold;">Numero d'onda ($k$)</div>
+            <div style="font-size: 1.3rem;">$${val_k}$$</div>
+        </div>
+        """, unsafe_allow_html=True)
+
     
     st.markdown("---")
     
     # Visualizzazione del pacchetto d'onda quantistico
     st.markdown("### 🌊 Visualizzazione: Funzione d'Onda ψ(x)")
+    st.markdown("Modifica l'incertezza sulla posizione $\\sigma_x$ e osserva come cambia la funzione d'onda.")
     
-    col_psi1, col_psi2 = st.columns([1, 3])
+    col_vis_params, col_vis_graph = st.columns([1, 3])
     
-    with col_psi1:
-        sigma_x = st.slider("Incertezza posizione σₓ (unità arbitrarie)", 0.5, 5.0, 2.0, 0.1, key="sigma_x_q")
-        k0 = st.slider("Numero d'onda k₀", 1.0, 20.0, 10.0, 0.5, key="k0_q")
-        mostra_prob = st.checkbox("Mostra |ψ|² (probabilità)", value=True, key="show_prob")
+    with col_vis_params:
+        sigma_x = st.slider("Incertezza posizione $\\sigma_x$", 0.5, 5.0, 2.0, 0.1, key="sigma_x_q")
+        k0 = st.slider("Numero d'onda centrale $k_0$", 1.0, 20.0, 10.0, 0.5, key="k0_q")
+        mostra_prob = st.checkbox("Mostra probabilità $|\\psi|^2$", value=True, key="show_prob")
         
         # Calcolo sigma_k (incertezza nel momento)
         sigma_k = 1 / (2 * sigma_x)
-        st.metric("Incertezza Δk", f"{sigma_k:.3f} rad/u")
-        st.metric("Prodotto σₓ·σₖ", f"{sigma_x * sigma_k:.3f}", 
-                  delta="= 1/2 (minimo Heisenberg)" if abs(sigma_x * sigma_k - 0.5) < 0.01 else "")
+        
+        st.markdown(f"""
+        <div style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <div><strong>Incertezza $\\Delta k$:</strong></div>
+            <div style="font-size: 1.1rem;">${sigma_k:.3f}$ rad/u</div>
+            <div style="margin-top: 10px;"><strong>Prodotto $\\sigma_x \\cdot \\sigma_k$:</strong></div>
+            <div style="font-size: 1.1rem; color: #2ecc71;">${sigma_x * sigma_k:.3f}$</div>
+            <div style="font-size: 0.8rem; opacity: 0.7;">Minimo Heisenberg = 0.5</div>
+        </div>
+        """, unsafe_allow_html=True)
     
-    with col_psi2:
+    with col_vis_graph:
         # Genera funzione d'onda gaussiana
         x = np.linspace(-15, 15, 1000)
         
         # ψ(x) = pacchetto gaussiano
         psi_real = np.exp(-(x**2) / (4 * sigma_x**2)) * np.cos(k0 * x)
-        psi_imag = np.exp(-(x**2) / (4 * sigma_x**2)) * np.sin(k0 * x)
         psi_norm = np.exp(-(x**2) / (4 * sigma_x**2))  # Inviluppo
         psi_prob = psi_norm**2  # |ψ|²
         
@@ -2899,50 +2943,25 @@ elif sezione == "Analogia Quantistica":
             # Indicatori σ
             fig_psi.add_vline(x=-sigma_x, line_dash="dot", line_color="green", row=2, col=1)
             fig_psi.add_vline(x=sigma_x, line_dash="dot", line_color="green", row=2, col=1)
-            fig_psi.add_annotation(x=0, y=max(psi_prob)*0.8, text=f"σₓ = {sigma_x:.1f}",
-                                  showarrow=False, row=2, col=1)
         
-        fig_psi.update_layout(height=500 if mostra_prob else 300,
+        fig_psi.update_layout(height=450 if mostra_prob else 300,
                              plot_bgcolor='rgba(0,0,0,0)',
-                             paper_bgcolor='rgba(0,0,0,0)')
+                             paper_bgcolor='rgba(0,0,0,0)',
+                             margin=dict(l=20, r=20, t=40, b=20))
         fig_psi.update_xaxes(title_text="Posizione x", gridcolor='rgba(128,128,128,0.2)')
         fig_psi.update_yaxes(gridcolor='rgba(128,128,128,0.2)')
         
         st.plotly_chart(fig_psi, use_container_width=True)
     
-    # Spiegazione finale
     st.markdown("---")
     
     styled_info_box(
         """<strong>🎯 Il Messaggio Chiave:</strong><br>
-        <ul>
-        <li>Un <strong>pacchetto d'onda localizzato</strong> (piccolo Δx) richiede <strong>molte frequenze</strong> (grande Δk)</li>
-        <li>Nel mondo quantistico: <strong>posizione ben definita</strong> → <strong>momento incerto</strong></li>
-        <li>È lo stesso principio! Le onde sonore ci permettono di <strong>vedere</strong> e <strong>sentire</strong> il principio di indeterminazione</li>
-        </ul>""",
+        Le onde sonore ci permettono di <strong>vedere</strong> e <strong>sentire</strong> il principio di indeterminazione. 
+        Un suono breve (localizzato) ha uno spettro largo, proprio come una particella localizzata ha un momento incerto.""",
         "🔬",
         "tip"
     )
-    
-    # Tabella confronto finale
-    with st.expander("📚 Approfondimento: Tabella Completa delle Analogie"):
-        st.markdown("""
-        | Concetto | Onde Sonore (Classico) | Meccanica Quantistica |
-        |----------|----------------------|----------------------|
-        | **Quantità oscillante** | Pressione dell'aria | Funzione d'onda ψ |
-        | **Intensità** | ∝ A² (potenza sonora) | ∝ \|ψ\|² (probabilità) |
-        | **Lunghezza d'onda** | λ = v/f | λ = h/p (De Broglie) |
-        | **Numero d'onda** | k = 2π/λ | k = p/ℏ |
-        | **Relazione energia** | E = ℏω (fotoni) | E = ℏω |
-        | **Indeterminazione** | Δx·Δk ≥ 1/2 | Δx·Δp ≥ ℏ/2 |
-        | **Pacchetto localizzato** | Impulso sonoro | Particella localizzata |
-        | **Onda pura (singola freq)** | Suono puro | Stato di momento definito |
-        
-        ### 🏛️ Citazione Storica
-        
-        *"La natura ama nascondersi, ma si rivela a chi sa ascoltare le onde."*  
-        — Ispirato a Eraclito e alla dualità onda-particella
-        """)
 
 # ========== QUIZ INTERATTIVO ==========
 elif sezione == "Quiz Interattivo":
