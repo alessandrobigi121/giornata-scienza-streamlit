@@ -100,10 +100,31 @@ def mostra_parametri_acustici():
 
 st.set_page_config(page_title="Giornata della Scienza - Fisica", layout="wide", page_icon="🌊")
 
-st.title("Giornata della Scienza: Onde, Pacchetti e Indeterminazione")
-st.markdown("**Liceo Leopardi Majorana** - Laboratorio di Fisica")
-st.markdown("*A cura di Alessandro Bigi*")
-st.markdown("---")
+# ============ HEADER PRINCIPALE ============
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #9b59b6 100%);
+    padding: 2rem 2.5rem;
+    border-radius: 15px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+">
+    <h1 style="color: white; margin: 0; font-size: 2.4rem; font-weight: 700;">
+        🌊 Onde, Pacchetti e Indeterminazione
+    </h1>
+    <p style="color: rgba(255,255,255,0.9); margin: 0.8rem 0 0 0; font-size: 1.15rem;">
+        Giornata della Scienza • Liceo Leopardi Majorana
+    </p>
+    <div style="margin-top: 1rem; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+        <span style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+            👨‍🔬 A cura di Alessandro Bigi
+        </span>
+        <span style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+            📚 Laboratorio di Fisica
+        </span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ============ STILE GRAFICO PROFESSIONALE ============
 def styled_header(icon: str, title: str, subtitle: str = "", color: str = "#3498db"):
