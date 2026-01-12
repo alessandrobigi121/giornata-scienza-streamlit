@@ -1963,8 +1963,15 @@ elif sezione == "Analisi Audio Microfono":
         
     with col_in2:
         st.subheader("🎤 Registra dal Vivo")
-        # AVVISO IMPORTANTE sulla latenza
-        st.warning("⚠️ **Attenzione:** La registrazione parte 1-2 sec dopo il click. Aspetta che l'icona diventi **ROSSA** prima di iniziare!")
+        # Istruzioni chiare sulla procedura
+        st.markdown("""
+        **📋 Procedura:**
+        1. Clicca sull'icona del microfono
+        2. **Conta mentalmente fino a 3** ("uno, due, tre...")
+        3. Poi inizia a produrre il suono
+        4. Clicca di nuovo per fermare
+        """)
+        st.warning("⏳ **C'è un ritardo di 1-2 secondi** tra il click e l'inizio effettivo della registrazione. Questo è normale!")
         audio_bytes_rec = None
         try:
             from audio_recorder_streamlit import audio_recorder
@@ -2122,8 +2129,17 @@ elif sezione == "Riconoscimento Battimenti":
         
     with col_rec2:
         st.subheader("🎤 Registra dal Vivo")
-        # AVVISO IMPORTANTE sulla latenza
-        st.warning("⚠️ **Attenzione:** La registrazione parte 1-2 sec dopo il click. Aspetta che l'icona diventi **ROSSA** prima di suonare i diapason!")
+        # Istruzioni chiare sulla procedura
+        st.markdown("""
+        **📋 Procedura:**
+        1. Prepara i diapason (NON suonarli ancora!)
+        2. Clicca sull'icona del microfono
+        3. **Conta mentalmente fino a 3** ("uno, due, tre...")
+        4. ORA fai vibrare i diapason insieme
+        5. Registra per almeno 3-4 secondi
+        6. Clicca di nuovo per fermare
+        """)
+        st.warning("⏳ **C'è un ritardo di 1-2 secondi** tra il click e l'inizio effettivo della registrazione. Conta fino a 3 prima di suonare!")
         beat_audio_bytes = None
         try:
             from audio_recorder_streamlit import audio_recorder
