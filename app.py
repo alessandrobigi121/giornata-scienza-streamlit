@@ -1981,6 +1981,8 @@ elif sezione == "Analisi Audio Microfono":
                 neutral_color="#3498db",
                 icon_name="microphone",
                 icon_size="3x",
+                pause_threshold=60.0,  # Non fermare automaticamente (60 sec di silenzio)
+                energy_threshold=0.001,  # Sensibilità molto bassa per non rilevare "silenzio"
                 key="audio_rec"
             )
         except ImportError:
@@ -2149,6 +2151,8 @@ elif sezione == "Riconoscimento Battimenti":
                 neutral_color="#27ae60",
                 icon_name="microphone",
                 icon_size="3x",
+                pause_threshold=60.0,  # Non fermare automaticamente (60 sec di silenzio)
+                energy_threshold=0.001,  # Sensibilità molto bassa per non rilevare "silenzio"
                 key="beat_audio_rec"
             )
         except ImportError:
