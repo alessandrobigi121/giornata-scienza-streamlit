@@ -393,7 +393,8 @@ sezione = st.sidebar.radio(
     ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
      "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
      "Regressione Δx vs 1/Δk", "Onde Stazionarie", "Animazione Propagazione",
-     "Analisi Audio Microfono", "Riconoscimento Battimenti", "Confronto Scenari", "Quiz Interattivo", "Modalità Mobile (Demo)"]
+     "Analisi Audio Microfono", "Riconoscimento Battimenti", "Confronto Scenari", 
+     "Analogia Quantistica", "Quiz Interattivo", "Modalità Mobile (Demo)"]
 )
 
 mostra_parametri_acustici()  # Mostra parametri fisici
@@ -2754,6 +2755,194 @@ elif sezione == "Confronto Scenari":
     })
     st.dataframe(comp_df, use_container_width=True, hide_index=True)
 
+
+# ========== ANALOGIA QUANTISTICA ==========
+elif sezione == "Analogia Quantistica":
+    styled_header(
+        "⚛️", 
+        "Analogia Quantistica",
+        "Dal pacchetto d'onda classico alla funzione d'onda quantistica: il ponte tra due mondi",
+        "#9b59b6"
+    )
+    
+    # Intro teorica
+    st.markdown("""
+    ### 🌉 Il Ponte tra Onde Classiche e Meccanica Quantistica
+    
+    Tutto quello che hai visto con le **onde sonore** ha un corrispettivo nel mondo quantistico!
+    Louis de Broglie (1924) propose che **ogni particella ha un comportamento ondulatorio**.
+    """)
+    
+    # Formula di De Broglie
+    col_theory, col_params = st.columns([1, 1])
+    
+    with col_theory:
+        st.markdown("### 📐 Relazione di De Broglie")
+        st.latex(r"\lambda = \frac{h}{p} = \frac{h}{mv}")
+        st.markdown("""
+        - **λ** = lunghezza d'onda di De Broglie
+        - **h** = costante di Planck = 6.626 × 10⁻³⁴ J·s
+        - **p** = quantità di moto = mv
+        - **m** = massa della particella
+        - **v** = velocità
+        """)
+        
+        st.markdown("### 🔄 Analogia con le Onde Sonore")
+        st.markdown("""
+        | Onde Sonore | Meccanica Quantistica |
+        |-------------|----------------------|
+        | Ampiezza A(x,t) | Funzione d'onda ψ(x,t) |
+        | Intensità ~ A² | Probabilità ~ \|ψ\|² |
+        | Δx · Δk ≥ 1/2 | Δx · Δp ≥ ℏ/2 |
+        | k = 2π/λ | p = ℏk = h/λ |
+        """)
+    
+    with col_params:
+        st.markdown("### ⚙️ Simula una Particella")
+        
+        tipo_particella = st.selectbox("Tipo di particella", 
+                                       ["Elettrone", "Protone", "Neutrone", "Atomo di Idrogeno", "Pallina da tennis"],
+                                       key="tipo_part")
+        
+        masse = {
+            "Elettrone": 9.109e-31,
+            "Protone": 1.673e-27,
+            "Neutrone": 1.675e-27,
+            "Atomo di Idrogeno": 1.674e-27,
+            "Pallina da tennis": 0.057
+        }
+        
+        massa = masse[tipo_particella]
+        
+        if tipo_particella == "Pallina da tennis":
+            velocita = st.slider("Velocità (m/s)", 1.0, 50.0, 20.0, 1.0, key="v_part")
+        else:
+            velocita = st.slider("Velocità (m/s)", 1e3, 1e7, 1e6, 1e3, key="v_part",
+                                format="%.0e")
+        
+        # Calcoli
+        h = 6.626e-34
+        hbar = h / (2 * np.pi)
+        p = massa * velocita
+        lambda_db = h / p
+        k_db = 2 * np.pi / lambda_db
+        
+        # Incertezze (usando il minimo di Heisenberg)
+        delta_x_min = hbar / (2 * p)  # Δx minimo dato da Δx·Δp = ℏ/2
+        
+        st.markdown("### 📊 Risultati")
+        
+        if lambda_db > 1e-3:
+            lambda_str = f"{lambda_db:.3f} m"
+        elif lambda_db > 1e-9:
+            lambda_str = f"{lambda_db*1e9:.3f} nm"
+        elif lambda_db > 1e-12:
+            lambda_str = f"{lambda_db*1e12:.3f} pm"
+        else:
+            lambda_str = f"{lambda_db:.3e} m"
+        
+        styled_metric_row([
+            ("Quantità di moto p", f"{p:.2e} kg·m/s", "📐", "#3498db"),
+            ("λ di De Broglie", lambda_str, "🌊", "#9b59b6"),
+            ("k = 2π/λ", f"{k_db:.2e} rad/m", "📊", "#e74c3c")
+        ])
+    
+    st.markdown("---")
+    
+    # Visualizzazione del pacchetto d'onda quantistico
+    st.markdown("### 🌊 Visualizzazione: Funzione d'Onda ψ(x)")
+    
+    col_psi1, col_psi2 = st.columns([1, 3])
+    
+    with col_psi1:
+        sigma_x = st.slider("Incertezza posizione σₓ (unità arbitrarie)", 0.5, 5.0, 2.0, 0.1, key="sigma_x_q")
+        k0 = st.slider("Numero d'onda k₀", 1.0, 20.0, 10.0, 0.5, key="k0_q")
+        mostra_prob = st.checkbox("Mostra |ψ|² (probabilità)", value=True, key="show_prob")
+        
+        # Calcolo sigma_k (incertezza nel momento)
+        sigma_k = 1 / (2 * sigma_x)
+        st.metric("Incertezza Δk", f"{sigma_k:.3f} rad/u")
+        st.metric("Prodotto σₓ·σₖ", f"{sigma_x * sigma_k:.3f}", 
+                  delta="= 1/2 (minimo Heisenberg)" if abs(sigma_x * sigma_k - 0.5) < 0.01 else "")
+    
+    with col_psi2:
+        # Genera funzione d'onda gaussiana
+        x = np.linspace(-15, 15, 1000)
+        
+        # ψ(x) = pacchetto gaussiano
+        psi_real = np.exp(-(x**2) / (4 * sigma_x**2)) * np.cos(k0 * x)
+        psi_imag = np.exp(-(x**2) / (4 * sigma_x**2)) * np.sin(k0 * x)
+        psi_norm = np.exp(-(x**2) / (4 * sigma_x**2))  # Inviluppo
+        psi_prob = psi_norm**2  # |ψ|²
+        
+        fig_psi = make_subplots(rows=2 if mostra_prob else 1, cols=1,
+                               subplot_titles=["Funzione d'Onda ψ(x) - Parte Reale"] + 
+                                            (["Densità di Probabilità |ψ(x)|²"] if mostra_prob else []),
+                               shared_xaxes=True,
+                               vertical_spacing=0.15)
+        
+        # Funzione d'onda
+        fig_psi.add_trace(go.Scatter(x=x, y=psi_real, name="Re[ψ(x)]",
+                                    line=dict(color='#3498db', width=2)), row=1, col=1)
+        fig_psi.add_trace(go.Scatter(x=x, y=psi_norm, name="Inviluppo",
+                                    line=dict(color='#e74c3c', width=2, dash='dash')), row=1, col=1)
+        fig_psi.add_trace(go.Scatter(x=x, y=-psi_norm, name="Inviluppo",
+                                    line=dict(color='#e74c3c', width=2, dash='dash'), showlegend=False), row=1, col=1)
+        
+        if mostra_prob:
+            # Probabilità
+            fig_psi.add_trace(go.Scatter(x=x, y=psi_prob, name="|ψ|²",
+                                        fill='tozeroy',
+                                        line=dict(color='#9b59b6', width=2),
+                                        fillcolor='rgba(155, 89, 182, 0.3)'), row=2, col=1)
+            
+            # Indicatori σ
+            fig_psi.add_vline(x=-sigma_x, line_dash="dot", line_color="green", row=2, col=1)
+            fig_psi.add_vline(x=sigma_x, line_dash="dot", line_color="green", row=2, col=1)
+            fig_psi.add_annotation(x=0, y=max(psi_prob)*0.8, text=f"σₓ = {sigma_x:.1f}",
+                                  showarrow=False, row=2, col=1)
+        
+        fig_psi.update_layout(height=500 if mostra_prob else 300,
+                             plot_bgcolor='rgba(0,0,0,0)',
+                             paper_bgcolor='rgba(0,0,0,0)')
+        fig_psi.update_xaxes(title_text="Posizione x", gridcolor='rgba(128,128,128,0.2)')
+        fig_psi.update_yaxes(gridcolor='rgba(128,128,128,0.2)')
+        
+        st.plotly_chart(fig_psi, use_container_width=True)
+    
+    # Spiegazione finale
+    st.markdown("---")
+    
+    styled_info_box(
+        """<strong>🎯 Il Messaggio Chiave:</strong><br>
+        <ul>
+        <li>Un <strong>pacchetto d'onda localizzato</strong> (piccolo Δx) richiede <strong>molte frequenze</strong> (grande Δk)</li>
+        <li>Nel mondo quantistico: <strong>posizione ben definita</strong> → <strong>momento incerto</strong></li>
+        <li>È lo stesso principio! Le onde sonore ci permettono di <strong>vedere</strong> e <strong>sentire</strong> il principio di indeterminazione</li>
+        </ul>""",
+        "🔬",
+        "tip"
+    )
+    
+    # Tabella confronto finale
+    with st.expander("📚 Approfondimento: Tabella Completa delle Analogie"):
+        st.markdown("""
+        | Concetto | Onde Sonore (Classico) | Meccanica Quantistica |
+        |----------|----------------------|----------------------|
+        | **Quantità oscillante** | Pressione dell'aria | Funzione d'onda ψ |
+        | **Intensità** | ∝ A² (potenza sonora) | ∝ \|ψ\|² (probabilità) |
+        | **Lunghezza d'onda** | λ = v/f | λ = h/p (De Broglie) |
+        | **Numero d'onda** | k = 2π/λ | k = p/ℏ |
+        | **Relazione energia** | E = ℏω (fotoni) | E = ℏω |
+        | **Indeterminazione** | Δx·Δk ≥ 1/2 | Δx·Δp ≥ ℏ/2 |
+        | **Pacchetto localizzato** | Impulso sonoro | Particella localizzata |
+        | **Onda pura (singola freq)** | Suono puro | Stato di momento definito |
+        
+        ### 🏛️ Citazione Storica
+        
+        *"La natura ama nascondersi, ma si rivela a chi sa ascoltare le onde."*  
+        — Ispirato a Eraclito e alla dualità onda-particella
+        """)
 
 # ========== QUIZ INTERATTIVO ==========
 elif sezione == "Quiz Interattivo":
