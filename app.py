@@ -205,6 +205,103 @@ def styled_info_box(text: str, icon: str = "💡", box_type: str = "info"):
     """, unsafe_allow_html=True)
 
 
+# ============ DOWNLOAD GRAFICI ALTA QUALITÀ ============
+def get_download_config(filename="grafico_fisica"):
+    """
+    Configurazione per download PNG ad alta risoluzione con sfondo trasparente.
+    Cliccando l'icona 📷 nella toolbar del grafico si scarica il PNG.
+    Scale=4 → risoluzione ~4x (es. 1600x1200 → 6400x4800 px)
+    """
+    return {
+        'displaylogo': False,
+        'toImageButtonOptions': {
+            'format': 'png',
+            'filename': filename,
+            'height': 1200,
+            'width': 1600,
+            'scale': 4  # 4x resolution for print quality
+        }
+    }
+
+def applica_stile(fig, is_light_mode):
+    """Imposta sfondo trasparente per il grafico (per export PNG)."""
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)'
+    )
+    return fig
+
+
+# ============ GESTIONE TEMI (DARK/LIGHT) ============
+def get_theme_colors(is_light_mode):
+    """Restituisce il dizionario colori in base al tema selezionato."""
+    if is_light_mode:
+        return {
+            'text': '#1a1a2e',              # Testo molto scuro
+            'title': '#2c3e50',             # Titoli blu scuro
+            'axis': '#2c3e50',              # Assi scuri
+            'grid': 'rgba(0,0,0,0.08)',     # Griglia leggera scura
+            'zeroline': 'rgba(0,0,0,0.15)', # Linea zero più evidente
+            'annotation': '#2c3e50',        # Annotazioni scure
+            'subplot_title': '#34495e',     # Titoli subplot
+        }
+    else:
+        return {
+            'text': '#ffffff',
+            'title': '#ffffff',
+            'axis': '#cccccc',
+            'grid': 'rgba(128,128,128,0.2)',
+            'zeroline': 'rgba(128,128,128,0.3)',
+            'annotation': '#ffffff',
+            'subplot_title': '#ffffff',
+        }
+
+def applica_stile(fig, is_light_mode=False):
+    """
+    Applica stile al grafico: sfondo trasparente + colori tema.
+    Sostituisce apply_transparent_bg aggiungendo il supporto Light Mode.
+    """
+    tc = get_theme_colors(is_light_mode)
+    
+    # Sfondo sempre trasparente (si integra col tema Streamlit)
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color=tc['text']),
+        legend=dict(font=dict(color=tc['text'])),
+    )
+    
+    # Colore titolo SOLO se il grafico ha un titolo definito
+    # (altrimenti Plotly crea un titolo vuoto che appare come "undefined" nell'export)
+    if fig.layout.title and fig.layout.title.text:
+        fig.update_layout(title_font_color=tc['title'])
+    
+    # Aggiorna tutti gli assi (funziona anche con subplot)
+    fig.update_xaxes(
+        color=tc['axis'],
+        gridcolor=tc['grid'],
+        zerolinecolor=tc['zeroline'],
+        title_font=dict(color=tc['axis']),
+        tickfont=dict(color=tc['axis']),
+    )
+    fig.update_yaxes(
+        color=tc['axis'],
+        gridcolor=tc['grid'],
+        zerolinecolor=tc['zeroline'],
+        title_font=dict(color=tc['axis']),
+        tickfont=dict(color=tc['axis']),
+    )
+    
+    # Aggiorna colore annotazioni (titoli subplot e vline labels)
+    if fig.layout.annotations:
+        for ann in fig.layout.annotations:
+            # Non sovrascrivere annotazioni con colore specifico già impostato
+            if ann.font is None or ann.font.color is None:
+                ann.update(font=dict(color=tc['subplot_title']))
+    
+    return fig
+
+
 # ============ FUNZIONI UTILITY AVANZATE ============
 def genera_audio(segnale, sample_rate=SAMPLE_RATE):
     """Genera file audio WAV da un segnale"""
@@ -390,11 +487,12 @@ st.sidebar.markdown("""
 st.sidebar.markdown("### 📍 Navigazione")
 sezione = st.sidebar.radio(
     "Scegli una sezione:",
-    ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
+    ["🚀 Modalità Presentazione", "Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
      "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
      "Regressione Δx vs 1/Δk", "Onde Stazionarie", "Animazione Propagazione",
      "Analisi Audio Microfono", "Riconoscimento Battimenti", "Confronto Scenari", 
-     "Analogia Quantistica", "Quiz Interattivo", "Modalità Mobile (Demo)"]
+     "Analogia Quantistica", "Quiz Interattivo", "Modalità Mobile (Demo)",
+     "📥 Centro Download"]
 )
 
 mostra_parametri_acustici()  # Mostra parametri fisici
@@ -402,7 +500,407 @@ mostra_parametri_acustici()  # Mostra parametri fisici
 # Attiva Zoom Globale
 range_x_glob, range_y_glob, unisci_viste_glob = gestisci_zoom_globale()
 
+# ============ TOGGLE TEMA GRAFICI ============
 st.sidebar.markdown("---")
+st.sidebar.markdown("### 🎨 Tema Grafici")
+is_light_mode = st.sidebar.checkbox(
+    "☀️ Modalità Chiara (per stampa/sfondo bianco)", 
+    value=False,
+    help="Attiva per rendere i grafici leggibili su sfondo bianco. Titoli, assi e griglie diventano scuri."
+)
+
+st.sidebar.markdown("---")
+
+# ========== MODALITÀ PRESENTAZIONE ==========
+if sezione == "🚀 Modalità Presentazione":
+    # ========== TITOLO PRINCIPALE ==========
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 3rem 2.5rem;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    ">
+        <h1 style="
+            color: white; 
+            margin: 0; 
+            font-size: 2.8rem; 
+            font-weight: 800;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        ">🌊 La Natura Ondulatoria della Realtà</h1>
+        <p style="
+            color: rgba(255,255,255,0.85); 
+            margin: 1rem 0 0 0; 
+            font-size: 1.4rem;
+            font-weight: 300;
+        ">Dai Battimenti al Principio di Indeterminazione</p>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem;">
+            <span style="color: rgba(255,255,255,0.7); font-size: 0.95rem;">👨‍🔬 Alessandro Bigi</span>
+            <span style="color: rgba(255,255,255,0.7); font-size: 0.95rem;">📍 Giornata della Scienza 2026</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ========== SEZIONE 1: BATTIMENTI ==========
+    styled_header(
+        "🎵", 
+        "Battimenti: Interferenza tra due onde",
+        "Quando due onde con frequenze vicine si sovrappongono, l'ampiezza varia periodicamente",
+        "#3498db"
+    )
+    
+    col_beat1, col_beat2 = st.columns([1, 2])
+    
+    with col_beat1:
+        st.subheader("Parametri")
+        
+        preset_pres = st.selectbox(
+            "Configurazione:", 
+            ["Diapason Standard LA 440 Hz", "Con pesetto (+5 Hz)", "Differenza maggiore (+20 Hz)"],
+            key="pres_beat_preset"
+        )
+        
+        if preset_pres == "Diapason Standard LA 440 Hz":
+            f1_pres, f2_pres = 440.0, 440.0
+        elif preset_pres == "Con pesetto (+5 Hz)":
+            f1_pres, f2_pres = 440.0, 445.0
+        else:
+            f1_pres, f2_pres = 440.0, 460.0
+        
+        # Calcoli fisici (stesso codice della sezione Battimenti)
+        f_media_pres = (f1_pres + f2_pres) / 2
+        f_batt_pres = abs(f1_pres - f2_pres)
+        T_batt_pres = 1/f_batt_pres if f_batt_pres > 0 else np.inf
+        omega1_pres = 2 * np.pi * f1_pres
+        omega2_pres = 2 * np.pi * f2_pres
+        
+        st.markdown("#### Frequenze")
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            st.metric("f₁", f"{f1_pres:.0f} Hz")
+        with col_f2:
+            st.metric("f₂", f"{f2_pres:.0f} Hz")
+        
+        st.markdown("#### Risultato")
+        col_fb, col_tb = st.columns(2)
+        with col_fb:
+            st.metric("f_battimento", f"{f_batt_pres:.1f} Hz", help="|f₁ - f₂|")
+        with col_tb:
+            st.metric("T_battimento", f"{T_batt_pres:.3f} s" if T_batt_pres != np.inf else "∞")
+        
+        st.markdown("---")
+        st.subheader("Audio")
+        durata_audio_pres = st.slider("Durata (s)", 1.0, 5.0, 3.0, 0.5, key="pres_dur_audio")
+        if st.button("▶️ Genera Audio", key="pres_gen_audio"):
+            t_audio_pres = np.linspace(0, durata_audio_pres, int(SAMPLE_RATE * durata_audio_pres))
+            y_audio_pres = np.sin(2*np.pi*f1_pres*t_audio_pres) + np.sin(2*np.pi*f2_pres*t_audio_pres)
+            audio_pres = genera_audio(y_audio_pres)
+            st.audio(audio_pres, format='audio/wav')
+    
+    with col_beat2:
+        # Calcolo durata ottimale (stesso algoritmo della sezione Battimenti)
+        n_battimenti_target = 4
+        if f_batt_pres > 0.01:
+            durata_pres = n_battimenti_target * T_batt_pres
+            durata_pres = max(0.02, min(10.0, durata_pres))
+        else:
+            durata_pres = 10 / f_media_pres if f_media_pres > 0 else 1.0
+            durata_pres = max(0.05, min(5.0, durata_pres))
+        
+        # Generazione segnale (stesso codice della sezione Battimenti)
+        fs_plot = 20000
+        t_pres = np.linspace(0, durata_pres, int(durata_pres * fs_plot))
+        A1_pres, A2_pres = 1.0, 1.0
+        y1_pres = A1_pres * np.cos(2 * np.pi * f1_pres * t_pres)
+        y2_pres = A2_pres * np.cos(2 * np.pi * f2_pres * t_pres)
+        y_tot_pres = y1_pres + y2_pres
+        
+        # Inviluppo con padding (stesso metodo)
+        pad_len = int(len(t_pres) * 0.1)
+        y_padded = np.pad(y_tot_pres, (pad_len, pad_len), mode='reflect')
+        analytic_signal = signal.hilbert(y_padded)
+        inviluppo_sup = np.abs(analytic_signal)[pad_len:-pad_len]
+        inviluppo_inf = -inviluppo_sup
+        
+        fig_pres_beat = make_subplots(rows=3, cols=1, 
+                                      subplot_titles=(f"Onda 1: {f1_pres} Hz", f"Onda 2: {f2_pres} Hz", 
+                                                     f"Sovrapposizione (f_batt = {f_batt_pres:.2f} Hz)"),
+                                      vertical_spacing=0.1,
+                                      shared_xaxes=True)
+        
+        fig_pres_beat.add_trace(go.Scatter(x=t_pres, y=y1_pres, name="Onda 1", 
+                                           line=dict(color='blue', width=1.5)), row=1, col=1)
+        fig_pres_beat.add_trace(go.Scatter(x=t_pres, y=y2_pres, name="Onda 2", 
+                                           line=dict(color='red', width=1.5)), row=2, col=1)
+        fig_pres_beat.add_trace(go.Scatter(x=t_pres, y=y_tot_pres, name="Somma", 
+                                           line=dict(color='purple', width=2)), row=3, col=1)
+        fig_pres_beat.add_trace(go.Scatter(x=t_pres, y=inviluppo_sup, name="Inviluppo", 
+                                           line=dict(color='orange', width=2, dash='dash')), row=3, col=1)
+        fig_pres_beat.add_trace(go.Scatter(x=t_pres, y=inviluppo_inf, showlegend=False,
+                                           line=dict(color='orange', width=2, dash='dash')), row=3, col=1)
+        
+        fig_pres_beat.update_xaxes(title_text="Tempo (s)", row=3, col=1)
+        fig_pres_beat.update_yaxes(title_text="Ampiezza", row=2, col=1)
+        fig_pres_beat.update_layout(height=700, showlegend=True, hovermode='x unified')
+        applica_stile(fig_pres_beat, is_light_mode)
+        st.plotly_chart(fig_pres_beat, use_container_width=True, config=get_download_config("pres_battimenti"))
+    
+    # Formula teorica
+    with st.expander("Teoria dei Battimenti", expanded=False):
+        st.latex(r"y(t) = 2A\cos\left(\frac{\omega_1 - \omega_2}{2}t\right) \cos\left(\frac{\omega_1 + \omega_2}{2}t\right)")
+        st.latex(r"f_{\text{battimento}} = |f_1 - f_2|")
+    
+    # ========== SEZIONE 2: PACCHETTI D'ONDA ==========
+    st.markdown("---")
+    styled_header(
+        "🌊", 
+        "Pacchetti d'Onda",
+        "Sovrapposizione di molte frequenze che crea un impulso localizzato",
+        "#9b59b6"
+    )
+    
+    col_pack1, col_pack2 = st.columns([1, 2])
+    
+    with col_pack1:
+        st.subheader("Parametri")
+        
+        preset_pkt_pres = st.selectbox(
+            "Carica preset:", 
+            list(PRESET_PACCHETTI.keys()), 
+            key="pres_preset_pkt"
+        )
+        
+        if preset_pkt_pres != "Personalizzato":
+            preset = PRESET_PACCHETTI[preset_pkt_pres]
+            f_min_pres = preset["f_min"]
+            f_max_pres = preset["f_max"]
+            n_onde_pres = preset["N"]
+            st.info(f"**{preset_pkt_pres}**\n\n{preset['descrizione']}")
+        else:
+            f_min_pres = st.slider("Frequenza minima (Hz)", 10.0, 300.0, 100.0, 5.0, key="pres_fmin")
+            f_max_pres = st.slider("Frequenza massima (Hz)", f_min_pres+5, 400.0, 130.0, 5.0, key="pres_fmax")
+            n_onde_pres = st.slider("Numero di onde (N)", 5, 100, 50, 5, key="pres_n_onde")
+        
+        mostra_comp_pres = st.checkbox("Mostra onde componenti (max 10)", False, key="pres_show_comp")
+        
+        delta_f_pres = f_max_pres - f_min_pres
+        f_centrale_pres = (f_min_pres + f_max_pres) / 2
+        delta_omega_pres = 2 * np.pi * delta_f_pres
+        
+        st.markdown("#### Caratteristiche")
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            st.metric("Freq. centrale", f"{f_centrale_pres:.1f} Hz")
+            st.metric("N onde", n_onde_pres)
+        with col_c2:
+            st.metric("Δf", f"{delta_f_pres:.1f} Hz")
+            st.metric("Δω", f"{delta_omega_pres:.1f} rad/s")
+    
+    with col_pack2:
+        # Durata FISSA per confronto visivo tra preset
+        durata_pack = 0.3  # 300 ms fissi
+        
+        # Asse simmetrico centrato in t=0
+        t_pack = np.linspace(-durata_pack, durata_pack, int(durata_pack * 2 * 20000))
+        frequenze_pack = np.linspace(f_min_pres, f_max_pres, n_onde_pres)
+        
+        y_pacchetto = np.zeros_like(t_pack)
+        for f in frequenze_pack:
+            y_pacchetto += (1 / n_onde_pres) * np.cos(2 * np.pi * f * t_pack)
+        
+        # Inviluppo
+        pad_len = int(len(t_pack) * 0.1)
+        y_pad = np.pad(y_pacchetto, (pad_len, pad_len), mode='reflect')
+        analytic_pack = signal.hilbert(y_pad)
+        inviluppo_pack = np.abs(analytic_pack)[pad_len:-pad_len]
+        intensita_pack = inviluppo_pack**2
+        
+        fig_pack = make_subplots(rows=2, cols=1,
+                                 subplot_titles=(f"Pacchetto: {n_onde_pres} onde ({f_min_pres}-{f_max_pres} Hz)", 
+                                               "Intensità |A(t)|²"),
+                                 shared_xaxes=True)
+        
+        if mostra_comp_pres and n_onde_pres <= 50:
+            step = max(1, n_onde_pres // 10)
+            for i, f in enumerate(frequenze_pack[::step]):
+                y_comp = (1 / n_onde_pres) * np.cos(2 * np.pi * f * t_pack)
+                fig_pack.add_trace(go.Scatter(x=t_pack*1000, y=y_comp, name=f"f={f:.1f} Hz",
+                                              line=dict(width=0.5), opacity=0.3), row=1, col=1)
+        
+        fig_pack.add_trace(go.Scatter(x=t_pack*1000, y=y_pacchetto, name="Pacchetto",
+                                      line=dict(color='darkblue', width=2.5)), row=1, col=1)
+        fig_pack.add_trace(go.Scatter(x=t_pack*1000, y=inviluppo_pack, name="Inviluppo +",
+                                      line=dict(color='red', width=2, dash='dash')), row=1, col=1)
+        fig_pack.add_trace(go.Scatter(x=t_pack*1000, y=-inviluppo_pack, showlegend=False,
+                                      line=dict(color='red', width=2, dash='dash')), row=1, col=1)
+        
+        fig_pack.add_trace(go.Scatter(x=t_pack*1000, y=intensita_pack, fill='tozeroy', 
+                                      line=dict(color='orange', width=2), name="|A(t)|²"), row=2, col=1)
+        
+        # Aggiungi linea verticale a t=0
+        fig_pack.add_vline(x=0, line_dash="dot", line_color="green", annotation_text="t=0")
+        
+        fig_pack.update_layout(height=650, hovermode='x unified')
+        
+        # FORZA assi fissi disabilitando autorange
+        fig_pack.update_xaxes(range=[-300, 300], autorange=False, fixedrange=True, title_text="Tempo (ms)", row=2, col=1)
+        fig_pack.update_xaxes(range=[-300, 300], autorange=False, fixedrange=True, row=1, col=1)
+        fig_pack.update_yaxes(range=[-1.2, 1.2], autorange=False, fixedrange=True, title_text="Ampiezza", row=1, col=1)
+        fig_pack.update_yaxes(range=[0, 1.2], autorange=False, fixedrange=True, title_text="|A(t)|²", row=2, col=1)
+        applica_stile(fig_pack, is_light_mode)
+        st.plotly_chart(fig_pack, use_container_width=True, config=get_download_config("pres_pacchetto"))
+    
+    # ========== SEZIONE 3: PRINCIPIO DI INDETERMINAZIONE ==========
+    st.markdown("---")
+    styled_header(
+        "⚠️", 
+        "Principio di Indeterminazione",
+        "Relazione fondamentale: Δx · Δk ≥ 1/2",
+        "#f39c12"
+    )
+    
+    scenario_pres = st.radio(
+        "Seleziona scenario:",
+        ["Super-Localizzato (Δk grande)", "Quasi-Monocromatico (Δk piccolo)"],
+        key="pres_scenario",
+        horizontal=True
+    )
+    
+    if "Super-Localizzato" in scenario_pres:
+        preset_ind = PRESET_PACCHETTI["Super-Localizzato (Δk grande)"]
+    else:
+        preset_ind = PRESET_PACCHETTI["Quasi-Monocromatico (Δk piccolo)"]
+    
+    f_min_ind = preset_ind["f_min"]
+    f_max_ind = preset_ind["f_max"]
+    n_ind = preset_ind["N"]
+    
+    # Calcoli fisici (stesso codice della sezione Principio di Indeterminazione)
+    lambda_min_ind = V_SUONO / f_max_ind
+    lambda_max_ind = V_SUONO / f_min_ind
+    k_min_ind = 2 * np.pi / lambda_max_ind
+    k_max_ind = 2 * np.pi / lambda_min_ind
+    delta_k_ind = k_max_ind - k_min_ind
+    delta_x_teorico_ind = 4 * np.pi / delta_k_ind if delta_k_ind > 0 else 0
+    
+    delta_f_ind = f_max_ind - f_min_ind
+    delta_omega_ind = 2 * np.pi * delta_f_ind
+    delta_t_teorico_ind = 4 * np.pi / delta_omega_ind if delta_omega_ind > 0 else 0
+    
+    col_ind1, col_ind2 = st.columns(2)
+    
+    with col_ind1:
+        st.markdown("#### Dominio Temporale")
+        
+        # Durata FISSA - genera sempre lo stesso range di dati
+        durata_ind = 0.3  # 300 ms fissi
+        
+        # Asse simmetrico centrato in t=0
+        t_ind = np.linspace(-durata_ind, durata_ind, int(durata_ind * 2 * 20000))
+        omega_vals_ind = 2 * np.pi * np.linspace(f_min_ind, f_max_ind, n_ind)
+        y_ind = np.zeros_like(t_ind)
+        for omega in omega_vals_ind:
+            y_ind += (1/n_ind) * np.cos(omega * t_ind)
+        
+        env_ind = np.abs(signal.hilbert(y_ind))
+        
+        fig_time_ind = go.Figure()
+        fig_time_ind.add_trace(go.Scatter(x=t_ind*1000, y=y_ind, line=dict(color='purple', width=2), name="Pacchetto"))
+        fig_time_ind.add_trace(go.Scatter(x=t_ind*1000, y=env_ind, line=dict(color='orange', width=2, dash='dash'), name="Inviluppo"))
+        fig_time_ind.add_trace(go.Scatter(x=t_ind*1000, y=-env_ind, showlegend=False, line=dict(color='orange', width=2, dash='dash')))
+        fig_time_ind.add_vline(x=0, line_dash="dot", line_color="green", annotation_text="t=0")
+        
+        fig_time_ind.update_layout(
+            title=f"Pacchetto nel Tempo (Δt ≈ {delta_t_teorico_ind*1000:.1f} ms)", 
+            xaxis_title="t (ms)", 
+            yaxis_title="A(t)", 
+            height=400, 
+            hovermode='x unified'
+        )
+        # FORZA assi fissi disabilitando autorange
+        fig_time_ind.update_xaxes(range=[-300, 300], autorange=False, fixedrange=True)
+        fig_time_ind.update_yaxes(range=[-1.2, 1.2], autorange=False, fixedrange=True)
+        applica_stile(fig_time_ind, is_light_mode)
+        st.plotly_chart(fig_time_ind, use_container_width=True, config=get_download_config("pres_tempo_ind"))
+    
+    with col_ind2:
+        st.markdown("#### Spettro di Frequenze")
+        
+        freq_spectrum_ind = np.linspace(f_min_ind, f_max_ind, n_ind)
+        amplitudes_ind = np.ones(n_ind) / n_ind
+        
+        fig_freq_ind = go.Figure()
+        fig_freq_ind.add_trace(go.Bar(
+            x=freq_spectrum_ind,
+            y=amplitudes_ind,
+            marker_color='#e74c3c',
+            width=(f_max_ind - f_min_ind) / n_ind * 0.8
+        ))
+        fig_freq_ind.add_vline(x=f_min_ind, line_dash="dash", line_color="blue", annotation_text=f"f_min={f_min_ind:.0f} Hz", annotation_position="top left")
+        fig_freq_ind.add_vline(x=f_max_ind, line_dash="dash", line_color="blue", annotation_text=f"f_max={f_max_ind:.0f} Hz", annotation_position="top right")
+        
+        fig_freq_ind.update_layout(
+            title=f"Spettro: Δf = {delta_f_ind:.1f} Hz", 
+            xaxis_title="Frequenza (Hz)", 
+            yaxis_title="Ampiezza", 
+            height=400, 
+            showlegend=False
+        )
+        # FORZA assi fissi disabilitando autorange
+        fig_freq_ind.update_xaxes(range=[0, 250], autorange=False, fixedrange=True)
+        fig_freq_ind.update_yaxes(range=[0, 0.05], autorange=False, fixedrange=True)
+        applica_stile(fig_freq_ind, is_light_mode)
+        st.plotly_chart(fig_freq_ind, use_container_width=True, config=get_download_config("pres_spettro_ind"))
+    
+    # Risultato
+    st.markdown("### Analisi Teorica")
+    prodotto_xk_ind = delta_x_teorico_ind * delta_k_ind
+    prodotto_wt_ind = delta_t_teorico_ind * delta_omega_ind
+    
+    col_r1, col_r2, col_r3 = st.columns(3)
+    with col_r1:
+        st.metric("Δf", f"{delta_f_ind:.1f} Hz")
+        st.metric("Δt teorico", f"{delta_t_teorico_ind*1000:.2f} ms")
+    with col_r2:
+        st.metric("Δk", f"{delta_k_ind:.4f} rad/m")
+        st.metric("Δx teorico", f"{delta_x_teorico_ind:.3f} m")
+    with col_r3:
+        st.metric("Δx·Δk", f"{prodotto_xk_ind:.3f}", delta=f"4π={4*np.pi:.3f}")
+        st.metric("Δω·Δt", f"{prodotto_wt_ind:.3f}", delta=f"4π={4*np.pi:.3f}")
+    
+    st.latex(r"\Delta x \cdot \Delta k \geq \frac{1}{2} \quad \Rightarrow \quad \Delta x \cdot \Delta p \geq \frac{\hbar}{2}")
+    
+    # ========== CONCLUSIONE ==========
+    st.markdown("---")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
+        text-align: center;
+        margin-top: 2rem;
+    ">
+        <h2 style="color: white; margin: 0 0 1rem 0;">🎓 Conclusione</h2>
+        <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin-bottom: 1.5rem;">
+            La materia, nel profondo, non è fatta di "palline" con posizioni e velocità precise,<br>
+            ma è fatta di <strong>onde</strong> che si estendono nello spazio.
+        </p>
+        <div style="
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: inline-block;
+        ">
+            <span style="color: #f1c40f; font-size: 1.8rem; font-weight: 700;">Δx · Δp ≥ ℏ/2</span>
+        </div>
+        <p style="color: rgba(255,255,255,0.7); margin-top: 1.5rem; font-size: 1rem;">
+            Grazie per l'attenzione! 🙏
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ========== SEZIONE BATTIMENTI ==========
 if sezione == "Battimenti":
@@ -646,7 +1144,8 @@ if sezione == "Battimenti":
         )
         
         applica_zoom(fig, range_x_glob)
-        st.plotly_chart(fig, use_container_width=True)
+        applica_stile(fig, is_light_mode)
+        st.plotly_chart(fig, use_container_width=True, config=get_download_config("battimenti_tempo"))
 
     st.markdown("---")
     st.markdown("---")
@@ -956,7 +1455,8 @@ elif sezione == "Pacchetti d'Onda":
             
             fig_tot.update_layout(height=1000, hovermode='x unified', modebar_add=['resetScale2d'])
             applica_zoom(fig_tot, range_x_glob)
-            st.plotly_chart(fig_tot, use_container_width=True)
+            applica_stile(fig_tot, is_light_mode)
+            st.plotly_chart(fig_tot, use_container_width=True, config=get_download_config("pacchetto_unificato"))
             
         else:
             # MODALITÀ STANDARD: Grafici separati
@@ -997,7 +1497,8 @@ elif sezione == "Pacchetti d'Onda":
             )
             
             applica_zoom(fig, range_x_glob)
-            st.plotly_chart(fig, use_container_width=True)
+            applica_stile(fig, is_light_mode)
+            st.plotly_chart(fig, use_container_width=True, config=get_download_config("pacchetto_onda"))
     
     # ========== SEZIONI A SCHERMO INTERO ==========
     st.markdown("---")
@@ -1115,7 +1616,8 @@ elif sezione == "Pacchetti d'Onda":
         )
         
         applica_zoom(fig_sim, range_x_glob)
-        st.plotly_chart(fig_sim, use_container_width=True)
+        applica_stile(fig_sim, is_light_mode)
+        st.plotly_chart(fig_sim, use_container_width=True, config=get_download_config("pacchetto_simmetrico"))
     else:
         st.info("I grafici simmetrici sono visualizzati sopra nella vista unificata.")
     
@@ -1151,8 +1653,8 @@ elif sezione == "Pacchetti d'Onda":
             ),
             height=700
         )
-        
-        st.plotly_chart(fig_3d, use_container_width=True)
+        applica_stile(fig_3d, is_light_mode)
+        st.plotly_chart(fig_3d, use_container_width=True, config=get_download_config("pacchetto_3d"))
     
     # 📊 Analisi simmetria
     st.markdown("---")
@@ -1275,7 +1777,8 @@ elif sezione == "Spettro di Fourier":
                          dragmode='zoom', modebar_add=['resetScale2d'])
         
         applica_zoom(fig, range_x_glob)
-        st.plotly_chart(fig, use_container_width=True)
+        applica_stile(fig, is_light_mode)
+        st.plotly_chart(fig, use_container_width=True, config=get_download_config("spettro_fourier"))
         
         st.subheader("Statistiche dello Spettro")
         from scipy.signal import find_peaks
@@ -1539,7 +2042,8 @@ elif sezione == "Principio di Indeterminazione":
                        height=600, # Aumentata altezza
                        hovermode='x unified')
     applica_zoom(fig_x, range_x_glob)
-    st.plotly_chart(fig_x, use_container_width=True)
+    applica_stile(fig_x, is_light_mode)
+    st.plotly_chart(fig_x, use_container_width=True, config=get_download_config("indeterminazione_spazio"))
     
     # 🆕 Grafico temporale
     # CORREZIONE: Limita la durata per evitare ripetizioni periodiche
@@ -1575,7 +2079,8 @@ elif sezione == "Principio di Indeterminazione":
                        xaxis_title="t (ms)", yaxis_title="A(t)", 
                        height=600,
                        hovermode='x unified')
-    st.plotly_chart(fig_t, use_container_width=True)
+    applica_stile(fig_t, is_light_mode)
+    st.plotly_chart(fig_t, use_container_width=True, config=get_download_config("indeterminazione_tempo"))
     
     # 🆕 Grafico temporale SIMMETRICO (Doppio)
     st.markdown("#### Visualizzazione Temporale Simmetrica (Passato e Futuro)")
@@ -1600,7 +2105,57 @@ elif sezione == "Principio di Indeterminazione":
                        xaxis_title="t (ms)", yaxis_title="A(t)", 
                        height=600,
                        hovermode='x unified')
-    st.plotly_chart(fig_t_sim, use_container_width=True)
+    applica_stile(fig_t_sim, is_light_mode)
+    st.plotly_chart(fig_t_sim, use_container_width=True, config=get_download_config("indeterminazione_tempo_sim"))
+    
+    # 🆕 SPETTRO DI FREQUENZE (richiesto dallo script)
+    st.markdown("---")
+    st.markdown("#### Spettro di Frequenze")
+    st.markdown("""
+    Il grafico sottostante mostra le frequenze che compongono il pacchetto d'onda.
+    **Osserva**: se il pacchetto è **stretto** nel tempo, lo spettro è **largo** (molte frequenze diverse).
+    Se il pacchetto è **largo** nel tempo, lo spettro è **stretto** (frequenze molto simili tra loro).
+    """)
+    
+    # Calcola lo spettro (frequenze discrete usate per comporre il pacchetto)
+    freq_spectrum = np.linspace(f_min, f_max, n_onde)
+    amplitudes_spectrum = np.ones(n_onde) / n_onde  # Ampiezza uniforme 1/N
+    
+    fig_spectrum = go.Figure()
+    
+    # Usa bar chart per visualizzare le frequenze discrete
+    fig_spectrum.add_trace(go.Bar(
+        x=freq_spectrum,
+        y=amplitudes_spectrum,
+        marker_color='#e74c3c',
+        name='Ampiezza componenti',
+        width=(f_max - f_min) / n_onde * 0.8  # Larghezza barre proporzionale
+    ))
+    
+    # Aggiungi annotazioni per Δf
+    fig_spectrum.add_vline(x=f_min, line_dash="dash", line_color="blue", 
+                          annotation_text=f"f_min={f_min:.0f} Hz", annotation_position="top left")
+    fig_spectrum.add_vline(x=f_max, line_dash="dash", line_color="blue", 
+                          annotation_text=f"f_max={f_max:.0f} Hz", annotation_position="top right")
+    
+    fig_spectrum.update_layout(
+        title=f"Spettro di Frequenze: Δf = {delta_f:.1f} Hz (N = {n_onde} onde)",
+        xaxis_title="Frequenza (Hz)",
+        yaxis_title="Ampiezza relativa",
+        height=400,
+        bargap=0.1,
+        showlegend=False
+    )
+    applica_stile(fig_spectrum, is_light_mode)
+    st.plotly_chart(fig_spectrum, use_container_width=True, config=get_download_config("spettro_frequenze"))
+    
+    # Info box per collegare con lo script
+    styled_info_box(
+        f"<strong>Principio di Indeterminazione</strong>: Con Δf = {delta_f:.1f} Hz otteniamo Δt ≈ {delta_t_teorico*1000:.2f} ms. "
+        f"Il prodotto Δf·Δt = {delta_f * delta_t_teorico:.2f} è circa costante (≈ 1/π ≈ 0.32 per forme gaussiane).",
+        "⚛️",
+        "info"
+    )
     
     # 🔬 VALIDAZIONE METODO
     st.markdown("---")
@@ -1769,7 +2324,8 @@ elif sezione == "Analisi Multi-Pacchetto":
         fig_trend.add_hline(y=4*np.pi, line_dash="dash", line_color="red", annotation_text="4π = 12.566")
         fig_trend.update_layout(title="Andamento Δx·Δk", xaxis_title="Pacchetto #", 
                                yaxis_title="Δx·Δk", height=500)
-        st.plotly_chart(fig_trend, use_container_width=True)
+        applica_stile(fig_trend, is_light_mode)
+        st.plotly_chart(fig_trend, use_container_width=True, config=get_download_config("multi_pacchetto_trend"))
         
         csv = df.to_csv(index=False)
         st.download_button("Scarica CSV", csv, "analisi_multi_pacchetto.csv", "text/csv")
@@ -1838,7 +2394,8 @@ elif sezione == "Regressione Δx vs 1/Δk":
             title=f"Regressione: Δx = {slope:.2f}·(1/Δk) + {intercept:.2f} | R²={r_value**2:.4f}",
             xaxis_title="1/Δk (m/rad)", yaxis_title="Δx (m)", height=600
         )
-        st.plotly_chart(fig, use_container_width=True)
+        applica_stile(fig, is_light_mode)
+        st.plotly_chart(fig, use_container_width=True, config=get_download_config("regressione_dx_dk"))
         
         st.dataframe(df, use_container_width=True)
         
@@ -1922,7 +2479,8 @@ elif sezione == "Onde Stazionarie":
             height=500
         )
         applica_zoom(fig, range_x_glob)
-        st.plotly_chart(fig, use_container_width=True)
+        applica_stile(fig, is_light_mode)
+        st.plotly_chart(fig, use_container_width=True, config=get_download_config("onde_stazionarie"))
         
         st.markdown("#### Equazione d'Onda")
         st.latex(r"y(x,t) = 2A \sin\left(\frac{n\pi}{L}x\right) \cos(\omega_n t)")
@@ -2083,7 +2641,8 @@ elif sezione == "Animazione Propagazione":
             
             fig_anim.update_layout(height=700, hovermode='x')
             applica_zoom(fig_anim, range_x_glob)
-            st.plotly_chart(fig_anim, use_container_width=True)
+            applica_stile(fig_anim, is_light_mode)
+            st.plotly_chart(fig_anim, use_container_width=True, config=get_download_config("animazione_propagazione"))
             
             st.success(f"Animazione generata: {n_frame} frame, durata {durata_anim:.1f}s")
             
@@ -2229,7 +2788,8 @@ elif sezione == "Analisi Audio Microfono":
                                              name="Ampiezza"))
             fig_waveform.update_layout(height=300, margin=dict(l=0, r=0, t=30, b=0))
             applica_zoom(fig_waveform, range_x_glob)
-            st.plotly_chart(fig_waveform, use_container_width=True)
+            applica_stile(fig_waveform, is_light_mode)
+            st.plotly_chart(fig_waveform, use_container_width=True, config=get_download_config("audio_waveform"))
             
             # FFT e Analisi Spettrale
             st.markdown("---")
@@ -2256,7 +2816,8 @@ elif sezione == "Analisi Audio Microfono":
             fig_fft.add_trace(go.Scatter(x=freq_peaks, y=amp_peaks, mode='markers', marker=dict(size=8, color='green'), name="Picchi"))
             fig_fft.update_layout(height=400, xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza")
             applica_zoom(fig_fft, range_x_glob)
-            st.plotly_chart(fig_fft, use_container_width=True)
+            applica_stile(fig_fft, is_light_mode)
+            st.plotly_chart(fig_fft, use_container_width=True, config=get_download_config("audio_fft"))
             
             # Riconoscimento Note
             if len(top_freqs) > 0:
@@ -2280,7 +2841,8 @@ elif sezione == "Analisi Audio Microfono":
                 fig_spec = go.Figure(data=go.Heatmap(z=Sxx_db, x=t_spec, y=f_spec, colorscale='Viridis'))
                 fig_spec.update_layout(height=500, xaxis_title="Tempo (s)", yaxis_title="Frequenza (Hz)")
                 applica_zoom(fig_spec, range_x_glob)
-                st.plotly_chart(fig_spec, use_container_width=True)
+                applica_stile(fig_spec, is_light_mode)
+                st.plotly_chart(fig_spec, use_container_width=True, config=get_download_config("audio_spettrogramma"))
 
         except Exception as e:
             st.error(f"Errore durante l'analisi: {e}")
@@ -2451,7 +3013,8 @@ elif sezione == "Riconoscimento Battimenti":
                     xaxis=dict(range=[0, max(f2_rilevata * 1.5, 600)]),
                     height=400
                 )
-                st.plotly_chart(fig_fft_beat, use_container_width=True)
+                applica_stile(fig_fft_beat, is_light_mode)
+                st.plotly_chart(fig_fft_beat, use_container_width=True, config=get_download_config("riconoscimento_fft"))
                 
                 # ========== ESTRAZIONE INVILUPPO ==========
                 st.markdown("---")
@@ -2580,8 +3143,8 @@ elif sezione == "Riconoscimento Battimenti":
                 fig_wave_env.update_xaxes(title_text="Tempo (s)", row=2, col=1)
                 fig_wave_env.update_yaxes(title_text="Ampiezza", row=1, col=1)
                 fig_wave_env.update_yaxes(title_text="Ampiezza", row=2, col=1)
-                
-                st.plotly_chart(fig_wave_env, use_container_width=True)
+                applica_stile(fig_wave_env, is_light_mode)
+                st.plotly_chart(fig_wave_env, use_container_width=True, config=get_download_config("riconoscimento_inviluppo"))
                 
                 # Tabella riepilogativa
                 st.markdown("---")
@@ -2737,7 +3300,7 @@ elif sezione == "Confronto Scenari":
     fig_comp.update_yaxes(title_text="Ampiezza", gridcolor='rgba(128,128,128,0.2)', row=1, col=1)
     fig_comp.update_yaxes(title_text="Ampiezza", gridcolor='rgba(128,128,128,0.2)', row=2, col=1)
     
-    st.plotly_chart(fig_comp, use_container_width=True)
+    st.plotly_chart(fig_comp, use_container_width=True, config=get_download_config("confronto_scenari"))
     
     # Info box esplicativo
     styled_info_box(
@@ -2955,7 +3518,7 @@ elif sezione == "Analogia Quantistica":
         fig_psi.update_xaxes(title_text="Posizione x", gridcolor='rgba(128,128,128,0.2)')
         fig_psi.update_yaxes(gridcolor='rgba(128,128,128,0.2)')
         
-        st.plotly_chart(fig_psi, use_container_width=True)
+        st.plotly_chart(fig_psi, use_container_width=True, config=get_download_config("analogia_quantistica"))
     
     st.markdown("---")
     
@@ -3137,6 +3700,443 @@ elif sezione == "Modalità Mobile (Demo)":
             - **Principio di Indeterminazione**: Per fare un suono breve (localizzato nel tempo), servono molte frequenze diverse.
             - Un suono puro (una sola frequenza) durerebbe in eterno!
             """)
+
+# ========== CENTRO DOWNLOAD ==========
+elif sezione == "📥 Centro Download":
+    st.title("📥 Centro Download Grafici")
+    st.markdown("Scarica ogni grafico singolarmente in PNG ad alta risoluzione. Configura le dimensioni prima di scaricare.")
+    
+    # --- CONFIGURAZIONE GLOBALE ---
+    st.markdown("---")
+    st.subheader("🛠️ Configurazione Esportazione")
+    
+    col_cfg1, col_cfg2, col_cfg3, col_cfg4 = st.columns(4)
+    with col_cfg1:
+        dl_width = st.number_input("Larghezza (px)", value=1600, min_value=400, max_value=6000, step=100, key="dl_w",
+                                   help="Larghezza base del PNG. Verrà moltiplicata per la Scala.")
+    with col_cfg2:
+        dl_height = st.number_input("Altezza (px)", value=900, min_value=300, max_value=4000, step=100, key="dl_h",
+                                    help="Altezza base del PNG. Verrà moltiplicata per la Scala.")
+    with col_cfg3:
+        dl_scale = st.slider("Scala (moltiplicatore)", 1, 6, 4, key="dl_s",
+                              help="Moltiplicatore risoluzione. 4 = stampa qualità.")
+    with col_cfg4:
+        dl_lw = st.slider("Spessore linee (px)", 1.0, 8.0, 2.5, 0.5, key="dl_lw",
+                           help="Spessore delle linee nei grafici.")
+    
+    final_w = dl_width * dl_scale
+    final_h = dl_height * dl_scale
+    st.info(f"📐 Dimensione finale PNG: **{final_w} × {final_h} px** | Spessore linee: **{dl_lw} px**")
+    
+    def dl_config(filename):
+        """Configurazione download con dimensioni personalizzate."""
+        return {
+            'displaylogo': False,
+            'toImageButtonOptions': {
+                'format': 'png',
+                'filename': filename,
+                'height': dl_height,
+                'width': dl_width,
+                'scale': dl_scale
+            }
+        }
+    
+    st.markdown("---")
+    st.markdown("### 📷 Clicca l'icona **fotocamera** (📷) nella barra sopra ogni grafico per scaricare.")
+    
+    # --- PARAMETRI CONDIVISI ---
+    st.markdown("---")
+    st.subheader("⚙️ Parametri Grafici")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        st.markdown("**Battimenti**")
+        dl_f1 = st.number_input("f₁ (Hz)", value=440.0, min_value=1.0, max_value=2000.0, step=1.0, key="dl_f1")
+        dl_f2 = st.number_input("f₂ (Hz)", value=444.0, min_value=1.0, max_value=2000.0, step=1.0, key="dl_f2")
+        dl_A1 = st.number_input("A₁", value=1.0, min_value=0.1, max_value=2.0, step=0.1, key="dl_A1")
+        dl_A2 = st.number_input("A₂", value=1.0, min_value=0.1, max_value=2.0, step=0.1, key="dl_A2")
+    with col_p2:
+        st.markdown("**Pacchetti d'Onda / Indeterminazione**")
+        dl_fmin = st.number_input("f_min (Hz)", value=100.0, min_value=1.0, max_value=500.0, step=1.0, key="dl_fmin")
+        dl_fmax = st.number_input("f_max (Hz)", value=130.0, min_value=2.0, max_value=1000.0, step=1.0, key="dl_fmax")
+        dl_n_onde = st.number_input("N onde", value=50, min_value=5, max_value=200, step=5, key="dl_nonde")
+        dl_durata = st.number_input("Durata (s)", value=1.5, min_value=0.1, max_value=5.0, step=0.1, key="dl_dur")
+    
+    # Validazione
+    if dl_fmax <= dl_fmin:
+        dl_fmax = dl_fmin + 5.0
+        st.warning(f"f_max corretta a {dl_fmax:.1f} Hz (deve essere > f_min)")
+    
+    # ============================================================
+    # 1. BATTIMENTI - Grafici Singoli
+    # ============================================================
+    st.markdown("---")
+    st.header("1. Battimenti")
+    
+    # Calcoli battimenti
+    dl_f_batt = abs(dl_f1 - dl_f2)
+    dl_T_batt = 1/dl_f_batt if dl_f_batt > 0 else 5.0
+    dl_dur_batt = min(max(4 * dl_T_batt, 0.02), 10.0) if dl_f_batt > 0.01 else 1.0
+    
+    # Calcola il segnale su una finestra ESTESA (3x) per evitare artefatti Hilbert ai bordi
+    fs_batt = 20000
+    extra = dl_dur_batt  # Estendi di 1x su ogni lato
+    t_ext = np.linspace(-extra, dl_dur_batt + extra, int((dl_dur_batt + 2*extra) * fs_batt))
+    y1_ext = dl_A1 * np.cos(2 * np.pi * dl_f1 * t_ext)
+    y2_ext = dl_A2 * np.cos(2 * np.pi * dl_f2 * t_ext)
+    y_tot_ext = y1_ext + y2_ext
+    
+    # Inviluppo calcolato sulla finestra estesa
+    env_ext = np.abs(signal.hilbert(y_tot_ext))
+    
+    # Taglia alla finestra di visualizzazione [0, dl_dur_batt]
+    mask = (t_ext >= 0) & (t_ext <= dl_dur_batt)
+    t_b = t_ext[mask]
+    y1_b = y1_ext[mask]
+    y2_b = y2_ext[mask]
+    y_tot_b = y_tot_ext[mask]
+    env_b = env_ext[mask]
+    
+    # 1a. Onda 1
+    st.markdown(f"#### 1a. Onda 1 — f₁ = {dl_f1} Hz")
+    fig_o1 = go.Figure()
+    fig_o1.add_trace(go.Scatter(x=t_b, y=y1_b, line=dict(color='#2980b9', width=dl_lw), name=f"Onda 1 ({dl_f1} Hz)"))
+    fig_o1.update_layout(xaxis_title="Tempo (s)", yaxis_title="Ampiezza", height=400, hovermode='x unified')
+    applica_stile(fig_o1, is_light_mode)
+    st.plotly_chart(fig_o1, use_container_width=True, config=dl_config("battimenti_onda1"))
+    
+    # 1b. Onda 2
+    st.markdown(f"#### 1b. Onda 2 — f₂ = {dl_f2} Hz")
+    fig_o2 = go.Figure()
+    fig_o2.add_trace(go.Scatter(x=t_b, y=y2_b, line=dict(color='#e74c3c', width=dl_lw), name=f"Onda 2 ({dl_f2} Hz)"))
+    fig_o2.update_layout(xaxis_title="Tempo (s)", yaxis_title="Ampiezza", height=400, hovermode='x unified')
+    applica_stile(fig_o2, is_light_mode)
+    st.plotly_chart(fig_o2, use_container_width=True, config=dl_config("battimenti_onda2"))
+    
+    # 1c. Sovrapposizione con inviluppo
+    st.markdown(f"#### 1c. Sovrapposizione con Inviluppo — f_batt = {dl_f_batt:.2f} Hz")
+    fig_s = go.Figure()
+    fig_s.add_trace(go.Scatter(x=t_b, y=y_tot_b, line=dict(color='#8e44ad', width=dl_lw), name="Somma"))
+    fig_s.add_trace(go.Scatter(x=t_b, y=env_b, line=dict(color='#e67e22', width=dl_lw, dash='dash'), name="Inviluppo"))
+    fig_s.add_trace(go.Scatter(x=t_b, y=-env_b, line=dict(color='#e67e22', width=dl_lw, dash='dash'), showlegend=False))
+    fig_s.update_layout(xaxis_title="Tempo (s)", yaxis_title="Ampiezza", height=500, hovermode='x unified')
+    applica_stile(fig_s, is_light_mode)
+    st.plotly_chart(fig_s, use_container_width=True, config=dl_config("battimenti_sovrapposizione"))
+    
+    # 1d. Solo inviluppo
+    st.markdown("#### 1d. Inviluppo Isolato")
+    fig_env = go.Figure()
+    fig_env.add_trace(go.Scatter(x=t_b, y=env_b, fill='tozeroy', line=dict(color='#e67e22', width=dl_lw), name="Inviluppo"))
+    fig_env.update_layout(xaxis_title="Tempo (s)", yaxis_title="|Ampiezza|", height=400, hovermode='x unified')
+    applica_stile(fig_env, is_light_mode)
+    st.plotly_chart(fig_env, use_container_width=True, config=dl_config("battimenti_inviluppo"))
+    
+    # ============================================================
+    # 2. PACCHETTO D'ONDA - Grafici Singoli
+    # ============================================================
+    st.markdown("---")
+    st.header("2. Pacchetto d'Onda")
+    
+    # Calcoli pacchetto
+    t_p = np.linspace(0, dl_durata, int(dl_durata * 20000))
+    freq_p = np.linspace(dl_fmin, dl_fmax, dl_n_onde)
+    y_pkt = np.zeros_like(t_p)
+    for f in freq_p:
+        y_pkt += (1/dl_n_onde) * np.cos(2 * np.pi * f * t_p)
+    
+    pad_p = int(len(t_p) * 0.1)
+    y_pad_p = np.pad(y_pkt, (pad_p, pad_p), mode='reflect')
+    env_p = np.abs(signal.hilbert(y_pad_p))[pad_p:-pad_p]
+    int_p = env_p**2
+    
+    # 2a. Pacchetto con inviluppo
+    st.markdown(f"#### 2a. Pacchetto d'Onda — {dl_n_onde} onde ({dl_fmin}-{dl_fmax} Hz)")
+    fig_pkt = go.Figure()
+    fig_pkt.add_trace(go.Scatter(x=t_p, y=y_pkt, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"))
+    fig_pkt.add_trace(go.Scatter(x=t_p, y=env_p, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), name="Inviluppo +"))
+    fig_pkt.add_trace(go.Scatter(x=t_p, y=-env_p, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), showlegend=False))
+    fig_pkt.update_layout(xaxis_title="Tempo (s)", yaxis_title="Ampiezza", height=500, hovermode='x unified')
+    applica_stile(fig_pkt, is_light_mode)
+    st.plotly_chart(fig_pkt, use_container_width=True, config=dl_config("pacchetto_onda"))
+    
+    # 2b. Intensità
+    st.markdown("#### 2b. Intensità |A(t)|²")
+    fig_int = go.Figure()
+    fig_int.add_trace(go.Scatter(x=t_p, y=int_p, fill='tozeroy', line=dict(color='#e67e22', width=dl_lw), name="|A(t)|²"))
+    fig_int.update_layout(xaxis_title="Tempo (s)", yaxis_title="|A(t)|²", height=400, hovermode='x unified')
+    applica_stile(fig_int, is_light_mode)
+    st.plotly_chart(fig_int, use_container_width=True, config=dl_config("pacchetto_intensita"))
+    
+    # 2c. Pacchetto simmetrico
+    st.markdown("#### 2c. Pacchetto Simmetrico (t da -T a +T)")
+    t_sim_dl = np.linspace(-dl_durata, dl_durata, int(dl_durata * 2 * 20000))
+    y_pkt_sim = np.zeros_like(t_sim_dl)
+    for f in freq_p:
+        y_pkt_sim += (1/dl_n_onde) * np.cos(2 * np.pi * f * t_sim_dl)
+    env_sim = np.abs(signal.hilbert(y_pkt_sim))
+    
+    fig_sim_dl = go.Figure()
+    fig_sim_dl.add_trace(go.Scatter(x=t_sim_dl*1000, y=y_pkt_sim, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"))
+    fig_sim_dl.add_trace(go.Scatter(x=t_sim_dl*1000, y=env_sim, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), name="Inviluppo"))
+    fig_sim_dl.add_trace(go.Scatter(x=t_sim_dl*1000, y=-env_sim, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), showlegend=False))
+    fig_sim_dl.update_layout(xaxis_title="Tempo (ms)", yaxis_title="Ampiezza", height=500, hovermode='x unified')
+    applica_stile(fig_sim_dl, is_light_mode)
+    st.plotly_chart(fig_sim_dl, use_container_width=True, config=dl_config("pacchetto_simmetrico"))
+    
+    # 2d. Intensità simmetrica |A(t)|²
+    st.markdown("#### 2d. Intensità Simmetrica |A(t)|²")
+    int_sim = env_sim**2
+    fig_int_sim = go.Figure()
+    fig_int_sim.add_trace(go.Scatter(x=t_sim_dl*1000, y=int_sim, fill='tozeroy', line=dict(color='#e67e22', width=dl_lw), name="|A(t)|²"))
+    fig_int_sim.update_layout(xaxis_title="Tempo (ms)", yaxis_title="|A(t)|²", height=400, hovermode='x unified')
+    applica_stile(fig_int_sim, is_light_mode)
+    st.plotly_chart(fig_int_sim, use_container_width=True, config=dl_config("pacchetto_intensita_simmetrica"))
+    
+    # ============================================================
+    # 3. PRINCIPIO DI INDETERMINAZIONE - Grafici Singoli
+    # ============================================================
+    st.markdown("---")
+    st.header("3. Principio di Indeterminazione")
+    
+    # Calcoli indeterminazione
+    dl_lambda_min = V_SUONO / dl_fmax
+    dl_lambda_max = V_SUONO / dl_fmin
+    dl_k_min = 2 * np.pi / dl_lambda_max
+    dl_k_max = 2 * np.pi / dl_lambda_min
+    dl_delta_k = dl_k_max - dl_k_min
+    dl_delta_x = 4 * np.pi / dl_delta_k if dl_delta_k > 0 else 0
+    dl_delta_f = dl_fmax - dl_fmin
+    dl_delta_omega = 2 * np.pi * dl_delta_f
+    dl_delta_t = 4 * np.pi / dl_delta_omega if dl_delta_omega > 0 else 0
+    
+    # 3a. Dominio Spaziale
+    st.markdown(f"#### 3a. Dominio Spaziale — Δx·Δk = {dl_delta_x*dl_delta_k:.2f}")
+    range_x_ind = max(50.0, dl_delta_x * 2.0)
+    x_ind = np.linspace(-range_x_ind, range_x_ind, 10000)
+    k_vals = np.linspace(dl_k_min, dl_k_max, dl_n_onde)
+    y_spazio = np.zeros_like(x_ind)
+    for k in k_vals:
+        y_spazio += (1/dl_n_onde) * np.cos(k * x_ind)
+    env_spazio = np.abs(signal.hilbert(y_spazio))
+    
+    fig_spazio = go.Figure()
+    fig_spazio.add_trace(go.Scatter(x=x_ind, y=y_spazio, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"))
+    fig_spazio.add_trace(go.Scatter(x=x_ind, y=env_spazio, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), name="Inviluppo"))
+    fig_spazio.add_trace(go.Scatter(x=x_ind, y=-env_spazio, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), showlegend=False))
+    fig_spazio.update_layout(xaxis_title="Posizione x (m)", yaxis_title="Ampiezza", height=500, hovermode='x unified',
+                             title=f"Δx·Δk = {dl_delta_x*dl_delta_k:.2f} (target: 12.57)")
+    applica_stile(fig_spazio, is_light_mode)
+    st.plotly_chart(fig_spazio, use_container_width=True, config=dl_config("indeterminazione_spazio"))
+    
+    # 3b. Dominio Temporale
+    dl_T_rep = (dl_n_onde - 1) / dl_delta_f if dl_n_onde > 1 and dl_delta_f > 0 else dl_durata * 10
+    dl_dur_eff = min(dl_durata, dl_T_rep * 0.9)
+    t_ind = np.linspace(0, dl_dur_eff, int(dl_dur_eff * 20000))
+    y_tempo = np.zeros_like(t_ind)
+    for f in freq_p:
+        y_tempo += (1/dl_n_onde) * np.cos(2 * np.pi * f * t_ind)
+    env_tempo = np.abs(signal.hilbert(y_tempo))
+    
+    st.markdown(f"#### 3b. Dominio Temporale — Δω·Δt = {dl_delta_t*dl_delta_omega:.2f}")
+    fig_tempo = go.Figure()
+    fig_tempo.add_trace(go.Scatter(x=t_ind*1000, y=y_tempo, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"))
+    fig_tempo.add_trace(go.Scatter(x=t_ind*1000, y=env_tempo, line=dict(color='#e67e22', width=dl_lw, dash='dash'), name="Inviluppo"))
+    fig_tempo.add_trace(go.Scatter(x=t_ind*1000, y=-env_tempo, line=dict(color='#e67e22', width=dl_lw, dash='dash'), showlegend=False))
+    fig_tempo.update_layout(xaxis_title="t (ms)", yaxis_title="A(t)", height=500, hovermode='x unified',
+                            title=f"Δω·Δt = {dl_delta_t*dl_delta_omega:.2f} (target: 12.57)")
+    applica_stile(fig_tempo, is_light_mode)
+    st.plotly_chart(fig_tempo, use_container_width=True, config=dl_config("indeterminazione_tempo"))
+    
+    # 3c. Dominio Temporale Simmetrico
+    st.markdown("#### 3c. Dominio Temporale Simmetrico")
+    t_sim_ind = np.linspace(-dl_dur_eff, dl_dur_eff, int(dl_dur_eff * 2 * 20000))
+    y_tempo_sim = np.zeros_like(t_sim_ind)
+    for f in freq_p:
+        y_tempo_sim += (1/dl_n_onde) * np.cos(2 * np.pi * f * t_sim_ind)
+    env_tempo_sim = np.abs(signal.hilbert(y_tempo_sim))
+    
+    fig_tempo_sim = go.Figure()
+    fig_tempo_sim.add_trace(go.Scatter(x=t_sim_ind*1000, y=y_tempo_sim, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"))
+    fig_tempo_sim.add_trace(go.Scatter(x=t_sim_ind*1000, y=env_tempo_sim, line=dict(color='#e67e22', width=dl_lw, dash='dash'), name="Inviluppo"))
+    fig_tempo_sim.add_trace(go.Scatter(x=t_sim_ind*1000, y=-env_tempo_sim, line=dict(color='#e67e22', width=dl_lw, dash='dash'), showlegend=False))
+    fig_tempo_sim.add_vline(x=0, line_dash="dot", line_color="green", annotation_text="t=0")
+    fig_tempo_sim.update_layout(xaxis_title="t (ms)", yaxis_title="A(t)", height=500, hovermode='x unified',
+                                title="Visualizzazione Temporale Simmetrica")
+    applica_stile(fig_tempo_sim, is_light_mode)
+    st.plotly_chart(fig_tempo_sim, use_container_width=True, config=dl_config("indeterminazione_tempo_sim"))
+    
+    # 3d. Spettro di Frequenze
+    st.markdown("#### 3d. Spettro di Frequenze")
+    
+    # Controlli per fissare gli assi (per paragone)
+    fix_assi_spettro = st.checkbox("🔒 Fissa assi per paragone", value=False, key="dl_fix_spettro",
+                                    help="Fissa i range degli assi X e Y per confrontare grafici con parametri diversi.")
+    if fix_assi_spettro:
+        col_ax1, col_ax2, col_ax3, col_ax4 = st.columns(4)
+        with col_ax1:
+            sp_xmin = st.number_input("X min (Hz)", value=0.0, key="dl_sp_xmin")
+        with col_ax2:
+            sp_xmax = st.number_input("X max (Hz)", value=500.0, key="dl_sp_xmax")
+        with col_ax3:
+            sp_ymin = st.number_input("Y min", value=0.0, step=0.005, format="%.3f", key="dl_sp_ymin")
+        with col_ax4:
+            sp_ymax = st.number_input("Y max", value=0.05, step=0.005, format="%.3f", key="dl_sp_ymax")
+    
+    fig_spettro = go.Figure()
+    fig_spettro.add_trace(go.Bar(x=freq_p, y=np.ones(dl_n_onde)/dl_n_onde, 
+                                 marker_color='#3498db', name="Componenti"))
+    fig_spettro.update_layout(xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza relativa", height=400,
+                              title=f"Spettro: Δf = {dl_delta_f:.1f} Hz (N = {dl_n_onde} onde)", 
+                              showlegend=False, bargap=0.1)
+    
+    if fix_assi_spettro:
+        fig_spettro.update_xaxes(range=[sp_xmin, sp_xmax])
+        fig_spettro.update_yaxes(range=[sp_ymin, sp_ymax])
+    
+    applica_stile(fig_spettro, is_light_mode)
+    st.plotly_chart(fig_spettro, use_container_width=True, config=dl_config("spettro_frequenze"))
+    
+    # ============================================================
+    # 4. CONFRONTO SCENARI
+    # ============================================================
+    st.markdown("---")
+    st.header("4. Confronto Scenari")
+    
+    st.markdown("Due pacchetti con parametri diversi per confronto diretto.")
+    col_sc1, col_sc2 = st.columns(2)
+    with col_sc1:
+        st.markdown("**Scenario A (Stretto)**")
+        dl_fmin_a = st.number_input("f_min A (Hz)", value=100.0, key="dl_fmina")
+        dl_fmax_a = st.number_input("f_max A (Hz)", value=110.0, key="dl_fmaxa")
+        dl_n_a = st.number_input("N onde A", value=30, min_value=5, key="dl_na")
+    with col_sc2:
+        st.markdown("**Scenario B (Largo)**")
+        dl_fmin_b = st.number_input("f_min B (Hz)", value=80.0, key="dl_fminb")
+        dl_fmax_b = st.number_input("f_max B (Hz)", value=180.0, key="dl_fmaxb")
+        dl_n_b = st.number_input("N onde B", value=50, min_value=5, key="dl_nb")
+    
+    dl_delta_f_a = dl_fmax_a - dl_fmin_a
+    dl_delta_f_b = dl_fmax_b - dl_fmin_b
+    dl_delta_x_a = V_SUONO / (dl_delta_f_a) if dl_delta_f_a > 0 else 0
+    dl_delta_x_b = V_SUONO / (dl_delta_f_b) if dl_delta_f_b > 0 else 0
+    T_display_comp = max(5 / min(dl_delta_f_a, dl_delta_f_b) if min(dl_delta_f_a, dl_delta_f_b) > 0 else 0.5, 0.05)
+    T_display_comp = min(T_display_comp, 0.5)
+    t_comp = np.linspace(-T_display_comp, T_display_comp, 10000)
+    
+    freq_a = np.linspace(dl_fmin_a, dl_fmax_a, dl_n_a)
+    y_a = np.zeros_like(t_comp)
+    for f in freq_a:
+        y_a += (1/dl_n_a) * np.cos(2 * np.pi * f * t_comp)
+    
+    freq_b = np.linspace(dl_fmin_b, dl_fmax_b, dl_n_b)
+    y_b = np.zeros_like(t_comp)
+    for f in freq_b:
+        y_b += (1/dl_n_b) * np.cos(2 * np.pi * f * t_comp)
+    
+    # 4a. Scenario A singolo
+    st.markdown(f"#### 4a. Scenario A — Δf = {dl_delta_f_a:.1f} Hz")
+    fig_ca = go.Figure()
+    fig_ca.add_trace(go.Scatter(x=t_comp, y=y_a, line=dict(color='#3498db', width=dl_lw), 
+                                fill='tozeroy', fillcolor='rgba(52, 152, 219, 0.2)', name="Scenario A"))
+    fig_ca.add_vline(x=0, line_dash="dash", line_color="gray", opacity=0.5)
+    fig_ca.update_layout(xaxis_title="Tempo (s)", yaxis_title="Ampiezza", height=400, hovermode='x unified',
+                         title=f"Scenario A: Δf = {dl_delta_f_a:.1f} Hz, Δx ≈ {dl_delta_x_a:.3f} m")
+    applica_stile(fig_ca, is_light_mode)
+    st.plotly_chart(fig_ca, use_container_width=True, config=dl_config("confronto_scenario_A"))
+    
+    # 4b. Scenario B singolo
+    st.markdown(f"#### 4b. Scenario B — Δf = {dl_delta_f_b:.1f} Hz")
+    fig_cb = go.Figure()
+    fig_cb.add_trace(go.Scatter(x=t_comp, y=y_b, line=dict(color='#e74c3c', width=dl_lw),
+                                fill='tozeroy', fillcolor='rgba(231, 76, 60, 0.2)', name="Scenario B"))
+    fig_cb.add_vline(x=0, line_dash="dash", line_color="gray", opacity=0.5)
+    fig_cb.update_layout(xaxis_title="Tempo (s)", yaxis_title="Ampiezza", height=400, hovermode='x unified',
+                         title=f"Scenario B: Δf = {dl_delta_f_b:.1f} Hz, Δx ≈ {dl_delta_x_b:.3f} m")
+    applica_stile(fig_cb, is_light_mode)
+    st.plotly_chart(fig_cb, use_container_width=True, config=dl_config("confronto_scenario_B"))
+    
+    # ============================================================
+    # 5. ONDE STAZIONARIE
+    # ============================================================
+    st.markdown("---")
+    st.header("5. Onde Stazionarie")
+    
+    dl_L = st.number_input("Lunghezza corda (m)", value=1.0, min_value=0.1, max_value=5.0, step=0.1, key="dl_L")
+    dl_n_max = st.number_input("Armoniche da mostrare", value=5, min_value=1, max_value=10, step=1, key="dl_nmax")
+    
+    x_st = np.linspace(0, dl_L, 500)
+    for n_arm in range(1, dl_n_max + 1):
+        freq_arm = n_arm * V_SUONO / (2 * dl_L)
+        y_arm = np.sin(n_arm * np.pi * x_st / dl_L)
+        
+        st.markdown(f"#### 5{chr(96+n_arm)}. Modo n={n_arm} — f = {freq_arm:.1f} Hz")
+        fig_st = go.Figure()
+        fig_st.add_trace(go.Scatter(x=x_st, y=y_arm, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), name="Inviluppo"))
+        fig_st.add_trace(go.Scatter(x=x_st, y=-y_arm, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), showlegend=False))
+        fig_st.add_trace(go.Scatter(x=x_st, y=y_arm, fill='tonexty', fillcolor='rgba(0,0,255,0.1)', line=dict(width=0), showlegend=False))
+        
+        for i in range(n_arm + 1):
+            pos_x = i * dl_L / n_arm
+            fig_st.add_annotation(x=pos_x, y=0, text="N", showarrow=True, arrowhead=2, ax=0, ay=20)
+        
+        fig_st.update_layout(xaxis_title="Posizione x (m)", yaxis_title="Ampiezza",
+                            yaxis=dict(range=[-1.5, 1.5]), height=400,
+                            title=f"Modo Normale n={n_arm} (f={freq_arm:.1f} Hz)")
+        applica_stile(fig_st, is_light_mode)
+        st.plotly_chart(fig_st, use_container_width=True, config=dl_config(f"onda_stazionaria_n{n_arm}"))
+    
+    # ============================================================
+    # 6. PRESENTAZIONE - Grafici Singoli
+    # ============================================================
+    st.markdown("---")
+    st.header("6. Grafici Presentazione")
+    st.markdown("I grafici della sezione Modalità Presentazione, separati per singolo export.")
+    
+    # Battimenti presentazione (semplificato)
+    st.markdown("#### 6a. Battimenti Presentazione")
+    dl_f1_pres = 440.0
+    dl_f2_pres = 444.0
+    dl_dur_pres = 1.0
+    t_pres = np.linspace(0, dl_dur_pres, int(dl_dur_pres * 20000))
+    y1_pres = np.cos(2 * np.pi * dl_f1_pres * t_pres)
+    y2_pres = np.cos(2 * np.pi * dl_f2_pres * t_pres)
+    y_tot_pres = y1_pres + y2_pres
+    env_pres = np.abs(signal.hilbert(y_tot_pres))
+    
+    fig_p_batt = make_subplots(rows=3, cols=1, 
+                                subplot_titles=(f"Onda 1: {dl_f1_pres} Hz", f"Onda 2: {dl_f2_pres} Hz",
+                                              f"Sovrapposizione (f_batt = {abs(dl_f1_pres-dl_f2_pres):.0f} Hz)"),
+                                shared_xaxes=True, vertical_spacing=0.08)
+    fig_p_batt.add_trace(go.Scatter(x=t_pres, y=y1_pres, line=dict(color='#3498db', width=dl_lw), name="Onda 1"), row=1, col=1)
+    fig_p_batt.add_trace(go.Scatter(x=t_pres, y=y2_pres, line=dict(color='#e74c3c', width=dl_lw), name="Onda 2"), row=2, col=1)
+    fig_p_batt.add_trace(go.Scatter(x=t_pres, y=y_tot_pres, line=dict(color='#8e44ad', width=dl_lw), name="Somma"), row=3, col=1)
+    fig_p_batt.add_trace(go.Scatter(x=t_pres, y=env_pres, line=dict(color='#e67e22', width=dl_lw, dash='dash'), name="Inv."), row=3, col=1)
+    fig_p_batt.add_trace(go.Scatter(x=t_pres, y=-env_pres, showlegend=False, line=dict(color='#e67e22', width=dl_lw, dash='dash')), row=3, col=1)
+    fig_p_batt.update_xaxes(title_text="Tempo (s)", row=3, col=1)
+    fig_p_batt.update_layout(height=700, showlegend=True, hovermode='x unified')
+    applica_stile(fig_p_batt, is_light_mode)
+    st.plotly_chart(fig_p_batt, use_container_width=True, config=dl_config("pres_battimenti"))
+    
+    # Pacchetto presentazione
+    st.markdown("#### 6b. Pacchetto Presentazione")
+    dl_pres_fmin = 100.0
+    dl_pres_fmax = 130.0
+    dl_pres_n = 50
+    t_pres_p = np.linspace(-0.3, 0.3, 12000)
+    freq_pres = np.linspace(dl_pres_fmin, dl_pres_fmax, dl_pres_n)
+    y_pres_p = np.zeros_like(t_pres_p)
+    for f in freq_pres:
+        y_pres_p += (1/dl_pres_n) * np.cos(2 * np.pi * f * t_pres_p)
+    int_pres = np.abs(signal.hilbert(y_pres_p))**2
+    
+    fig_p_pkt = make_subplots(rows=2, cols=1, subplot_titles=("Pacchetto d'Onda", "Intensità |A(t)|²"),
+                              shared_xaxes=True, vertical_spacing=0.1)
+    fig_p_pkt.add_trace(go.Scatter(x=t_pres_p*1000, y=y_pres_p, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"), row=1, col=1)
+    fig_p_pkt.add_trace(go.Scatter(x=t_pres_p*1000, y=int_pres, fill='tozeroy', line=dict(color='#e67e22', width=dl_lw), name="|A(t)|²"), row=2, col=1)
+    fig_p_pkt.update_xaxes(title_text="Tempo (ms)", row=2, col=1)
+    fig_p_pkt.update_layout(height=650, hovermode='x unified')
+    applica_stile(fig_p_pkt, is_light_mode)
+    st.plotly_chart(fig_p_pkt, use_container_width=True, config=dl_config("pres_pacchetto"))
 
 st.markdown("---")
 
