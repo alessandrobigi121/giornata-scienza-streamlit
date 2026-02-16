@@ -3940,11 +3940,13 @@ elif sezione == "📥 Centro Download":
         fig.update_xaxes(title_font=dict(size=base_axis), tickfont=dict(size=base_tick))
         fig.update_yaxes(title_font=dict(size=base_axis), tickfont=dict(size=base_tick))
         
-        # Gestione titolo
+        # Gestione titolo e margini
         if not dl_show_title:
-            fig.update_layout(title=dict(text=""))
+            fig.update_layout(title=dict(text=""), margin=dict(t=20, l=60, r=40, b=60))
         elif dl_custom_title.strip():
-            fig.update_layout(title_text=dl_custom_title.strip())
+            fig.update_layout(title_text=dl_custom_title.strip(), margin=dict(t=80, l=60, r=40, b=60))
+        else:
+            fig.update_layout(margin=dict(t=80, l=60, r=40, b=60))
         
         # Forzatura assi manuale
         if dl_force_axes:
