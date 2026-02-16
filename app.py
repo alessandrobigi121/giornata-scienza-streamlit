@@ -3942,7 +3942,7 @@ elif sezione == "📥 Centro Download":
         
         # Gestione titolo
         if not dl_show_title:
-            fig.update_layout(title_text=None)
+            fig.update_layout(title=dict(text=""))
         elif dl_custom_title.strip():
             fig.update_layout(title_text=dl_custom_title.strip())
         
