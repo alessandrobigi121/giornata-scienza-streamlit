@@ -1,0 +1,220 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+% Box per le indicazioni di regia (cosa fare sull'app/scena)
+\newtcolorbox{regia}{
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    title=\textbf{REGIA / AZIONE},
+    fonttitle=\bfseries\small,
+    mapbox, % This was the error before, ensuring I don't use it or use valid options
+    enhanced, % improved version if tcolorbox library 'skins' is loaded, but let's stick to simple
+    fontupper=\small\itshape
+}
+
+% Redefining the box to be safe and simple like the fix in the previous step
+\renewtcolorbox{regia}{
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    title=\textbf{REGIA / AZIONE},
+    fonttitle=\bfseries\small,
+    fontupper=\small\itshape
+}
+
+\newtcolorbox{mathnote}{
+    colback=gray!5!white,
+    colframe=gray!50!black,
+    title=\textbf{Approfondimento Matematico},
+    fonttitle=\bfseries\small,
+    fontupper=\small
+}
+
+\title{\textbf{Script Avanzato: La Natura Ondulatoria della Realtà}\\
+\large Dai Battimenti Acustici al Principio di Heisenberg}
+\author{Alessandro Bigi}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \textbf{Target:} Pubblico con basi scientifiche/fisiche\\
+    \textbf{Focus:} Relazioni matematiche, Trasformata di Fourier, Dualismo Onda-Particella
+\end{center}
+
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduzione: La Fenomenologia dell'Interferenza (3 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Buongiorno. Il percorso che affronteremo oggi ha un obiettivo ambizioso: demistificare uno dei concetti più fraintesi della fisica moderna, il Principio di Indeterminazione di Heisenberg. 
+
+Spesso viene introdotto come un assioma, o peggio, come un limite tecnologico della misura. Oggi invece vorrei mostrarvi come questo principio sia una conseguenza \textit{matematicamente inevitabile} della descrizione ondulatoria della materia. E lo faremo partendo da un fenomeno classico, macroscopico e udibile: i battimenti acustici.
+
+\begin{regia}
+    Mostra i due Diapason o avvia l'App alla sezione "Battimenti".
+    Preset consigliato: \textbf{"Diapason Standard LA 440 Hz"}.
+\end{regia}
+
+Consideriamo due oscillatori armonici lineari. Due onde sonore, descrivibili come sinusoidi pure.
+Abbiamo una frequenza $f_1 = 440$ Hz e una $f_2 = 445$ Hz.
+Se ascoltiamo la sovrapposizione lineare di questi due segnali, percepiamo una modulazione periodica dell'intensità.
+
+\begin{regia}
+    Fai partire l'audio dei battimenti ("Genera battimenti audio").
+\end{regia}
+
+Questo è il fenomeno del battimento. Analizziamolo formalmente.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 1: Analisi Spettrale dei Battimenti (6 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Il Principio di Sovrapposizione afferma che la funzione d'onda risultante $\psi(t)$ è la somma algebrica delle componenti.
+Assumendo, per semplicità, uguale ampiezza $A$ e fase nulla:
+\[ y(t) = A \cos(\omega_1 t) + A \cos(\omega_2 t) \]
+dove $\omega = 2\pi f$.
+
+Fisicamente, stiamo sommando due fasori rotanti a velocità diverse. Matematicamente, possiamo applicare le formule di prostaferesi per trasformare questa somma in un prodotto.
+
+\begin{regia}
+    \textbf{App}: Mostra il grafico dove si vede la somma (viola) e l'inviluppo (arancione).
+\end{regia}
+
+Il risultato è notevole:
+\[ y(t) = \underbrace{2A \cos\left(\frac{\omega_1 - \omega_2}{2}t\right)}_{\text{Modulazione (Inviluppo)}} \cdot \underbrace{\cos\left(\frac{\omega_1 + \omega_2}{2}t\right)}_{\text{Portante}} \]
+
+Abbiamo separato il segnale in due componenti con scale temporali diverse:
+1. Una \textbf{onda portante} che oscilla alla frequenza media $\bar{\omega}$.
+2. Un \textbf{inviluppo} che modula l'ampiezza a una frequenza molto più bassa, $\Delta\omega/2$.
+
+Attenzione all'interpretazione fisica: l'orecchio (e il rivelatore quadratico) percepisce l'\textit{intensità}, che è proporzionale al quadrato dell'ampiezza.
+\[ I(t) \propto y^2(t) \propto \cos^2\left(\frac{\Delta\omega}{2}t\right) \]
+Poiché il coseno al quadrato ha frequenza doppia rispetto al coseno semplice, la frequenza udita del battimento è esattamente la differenza $\Delta f = |f_1 - f_2|$.
+
+\begin{regia}
+    \textbf{App}: Modifica $f_2$ portandola a 441 Hz.
+\end{regia}
+
+Riducendo il $\Delta f$ nello spazio delle frequenze, il periodo del battimento $T_{batt}$ nello spazio temporale si dilata.
+\[ T_{batt} = \frac{1}{\Delta f} \]
+Già qui notiamo il germe della reciprocità: $\Delta f$ piccolo implica $T$ grande. Una localizzazione precisa in frequenza (due picchi vicini) comporta una struttura temporale molto estesa.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 2: Sintesi di Fourier e Pacchetti d'Onda (6 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Estendiamo ora il concetto. I battimenti sono la sovrapposizione di due sole frequenze discrete. Cosa accade se passiamo a uno spettro continuo?
+Se sommiamo un numero infinito di onde piane con frequenze distribuite secondo una certa funzione peso $\phi(k)$, entriamo nel dominio dell'Analisi di Fourier.
+
+\begin{regia}
+    \textbf{App}: Vai a \textbf{"Pacchetti d'Onda"}.
+    Seleziona Preset: \textbf{"Pacchetto Standard"}.
+    Attiva: \textbf{"Mostra onde componenti"}.
+\end{regia}
+
+Costruiamo un \textbf{pacchetto d'onda}.
+Matematicamente, passiamo dalla sommatoria all'integrale:
+\[ \Psi(x,t) = \int_{-\infty}^{+\infty} \phi(k) e^{i(kx - \omega t)} dk \]
+Dove $\phi(k)$ è la distribuzione spettrale (le ampiezze delle varie componenti $k$).
+
+Osservate sull'App. Abbiamo una distribuzione di frequenze rettangolare (ampiezza costante tra $f_{min}$ e $f_{max}$).
+La teoria delle trasformate di Fourier ci dice che la trasformata di una funzione rettangolare ("Boxcar function") è una funzione \textbf{Sinc} ($\sin(x)/x$).
+
+Guardate la forma del pacchetto nel grafico: è effettivamente una funzione Sinc, con un lobo principale e lobi secondari che decadono.
+Ciò che abbiamo ottenuto è la \textbf{localizzazione}.
+Interferenza costruttiva al centro, distruttiva altrove.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 3: La Relazione di Reciprocità (5 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Ora arriviamo al punto cruciale: la relazione tra la larghezza della distribuzione spettrale ($\Delta k$) e la larghezza spaziale del pacchetto ($\Delta x$).
+
+\begin{regia}
+    \textbf{App}: Seleziona Preset \textbf{"Super-Localizzato"}.
+    Fai notare come lo spettro (banda blu) sia largo, e il pacchetto (onda) sia stretto.
+\end{regia}
+
+Per rendere il pacchetto spazialmente molto stretto ($\Delta x \to 0$), devo sommare contributi da un intervallo di frequenze ($\Delta k$) molto ampio.
+Perché? Perché per "uccidere" l'onda ovunque tranne che in un punto piccolissimo, ho bisogno di un'interferenza distruttiva estremamente violenta e rapida, possibile solo se ho onde di lunghezze d'onda molto diverse che si sfasano velocemente tra loro.
+
+\begin{regia}
+    \textbf{App}: Seleziona Preset \textbf{"Quasi-Monocromatico"}.
+\end{regia}
+
+Viceversa, se restringo $\Delta k$ per avere una frequenza pura, l'interferenza diventa debole e il pacchetto si allarga all'infinito. Nel limite di un singolo $\Delta k = 0$ (onda monocromatica), $\Delta x \to \infty$. L'onda è ovunque.
+
+Questo è un teorema matematico delle coppie di Fourier. Per qualsiasi funzione a quadrato sommabile, vale la relazione:
+\[ \Delta x \cdot \Delta k \geq \text{costante} \]
+Il valore della costante dipende dalla forma del pacchetto (Sinc, Gaussiano, Lorentziano), ma non può mai essere zero.
+Per un pacchetto Gaussiano, che rappresenta il caso di "minima incertezza", il prodotto vale esattamente $1/2$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 4: De Broglie e la Derivazione di Heisenberg (5 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Tutto questo è acustica, è teoria dei segnali. Come passiamo alla Meccanica Quantistica?
+Il ponte fu costruito da Louis de Broglie nel 1924.
+L'ipotesi rivoluzionaria fu associare a ogni particella materiale (con quantità di moto $p$) un'onda di materia con numero d'onda $k$.
+
+La relazione fondamentale è:
+\[ p = \hbar k \quad \text{(dove } \hbar = h/2\pi \text{)} \]
+
+Se accettiamo che la materia sia descritta da onde (funzioni d'onda $\Psi$), allora queste onde \textit{devono} obbedire alle proprietà matematiche che abbiamo appena visto sull'App.
+
+Prendiamo la disuguaglianza matematica di Fourier:
+\[ \Delta x \cdot \Delta k \geq \frac{1}{2} \]
+
+Moltiplichiamo entrambi i membri per la costante ridotta di Planck $\hbar$:
+\[ \Delta x \cdot (\hbar \Delta k) \geq \frac{\hbar}{2} \]
+
+Poiché $\Delta p = \hbar \Delta k$ (per la linearità della derivata), otteniamo immediatamente:
+\[ \Delta x \cdot \Delta p \geq \frac{\hbar}{2} \]
+
+\begin{regia}
+    \textbf{App}: Vai alla sezione \textbf{"Principio di Indeterminazione"}.
+    Mostra come il prodotto $\Delta x \cdot \Delta k$ sia invariante variando i parametri.
+\end{regia}
+
+Ecco derivato il Principio di Indeterminazione di Heisenberg.
+Non stiamo parlando di una perturbazione goffa causata da un fotone che colpisce un elettrone (la vecchia spiegazione "del microscopio gamma").
+
+Stiamo dicendo una cosa molto più profonda: una particella \textbf{non possiede} simultaneamente una posizione definita e una quantità di moto definita, perché un'onda \textbf{non può} essere simultaneamente localizzata nello spazio e monocromatica in frequenza. È ontologicamente impossibile.
+
+Se una particella "è qui" ($\Delta x$ piccolo), la sua descrizione ondulatoria richiede la sovrapposizione di infiniti stati di momento diverso. Quindi la sua quantità di moto $p$ è intrinsecamente indeterminata.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusione (3 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Concludendo, abbiamo visto come il Principio di Indeterminazione non sia un dogma calato dall'alto, ma una proprietà strutturale delle onde.
+Che si tratti di onde sonore nei battimenti, di impulsi radar, o di elettroni in un atomo, la matematica sottostante è la stessa: la Trasformata di Fourier.
+
+L'applicazione che abbiamo usato ci permette di visualizzare questa "lotta" tra localizzazione spaziale e precisione spettrale.
+La natura ondulatoria della materia ci impone questo limite fondamentale alla conoscibilità simultanea delle variabili coniugate. Non è ignoranza; è la natura stessa delle cose che, nel profondo, non sono "punti", ma "vibrazioni".
+
+Grazie per l'attenzione.
+
+\end{document}

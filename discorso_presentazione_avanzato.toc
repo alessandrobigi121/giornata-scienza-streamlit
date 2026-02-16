@@ -1,0 +1,8 @@
+\babel@toc {italian}{}\relax 
+\babel@toc {italian}{}\relax 
+\contentsline {section}{\numberline {1}Introduzione: La Fenomenologia dell'Interferenza (3 minuti)}{2}{section.1}%
+\contentsline {section}{\numberline {2}Parte 1: Analisi Spettrale dei Battimenti (6 minuti)}{2}{section.2}%
+\contentsline {section}{\numberline {3}Parte 2: Sintesi di Fourier e Pacchetti d'Onda (6 minuti)}{3}{section.3}%
+\contentsline {section}{\numberline {4}Parte 3: La Relazione di Reciprocità (5 minuti)}{4}{section.4}%
+\contentsline {section}{\numberline {5}Parte 4: De Broglie e la Derivazione di Heisenberg (5 minuti)}{5}{section.5}%
+\contentsline {section}{\numberline {6}Conclusione (3 minuti)}{6}{section.6}%

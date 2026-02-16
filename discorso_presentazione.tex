@@ -1,0 +1,255 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+% Box per le indicazioni di regia (cosa fare sull'app/scena)
+\newtcolorbox{regia}{
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    title=\textbf{REGIA / AZIONE},
+    fontupper=\small\itshape
+}
+
+\title{\textbf{Script Completo: Dai Battimenti a Heisenberg}\\
+\large Giornata della Scienza 2026}
+\author{Alessandro Bigi}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+    \textbf{Durata stimata:} 20 minuti circa\\
+    \textbf{Target:} Studenti (Liceo)\\
+    \textbf{Supporto:} App Streamlit + 2 Diapason (opzionali ma consigliati)
+\end{center}
+
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduzione: Il Mistero del Suono (3 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{regia}
+    Stai al centro della scena. Se hai i diapason, tienili pronti sul tavolo. 
+    Se non li hai, preparati ad avviare l'app sulla sezione "Battimenti".
+\end{regia}
+
+\textbf{SPEAKER:}
+Buongiorno a tutti. 
+
+Oggi voglio raccontarvi una storia. Una storia che inizia con qualcosa di molto semplice, qualcosa che le nostre orecchie possono sentire, e finisce con uno dei concetti più profondi e spesso fraintesi di tutta la fisica moderna: il Principio di Indeterminazione di Heisenberg.
+
+Spesso, quando sentiamo parlare di meccanica quantistica, pensiamo a qualcosa di magico, di strano, di impossibile da capire se non si è dei geni della matematica. Il Principio di Indeterminazione, in particolare, ci viene raccontato così: "Non puoi sapere dov'è una particella e quanto corre veloce allo stesso tempo". E sembra quasi un limite, un difetto della natura, o forse un difetto dei nostri strumenti di misura.
+
+Ma oggi vi dimostrerò che non è niente di tutto questo. Vi dimostrerò che il Principio di Indeterminazione non è una magia strana delle particelle subatomiche. È una conseguenza inevitabile, matematica, di un fatto molto semplice: le cose, nell'universo, si comportano come \textit{onde}.
+
+E per capirlo, non partiremo da elettroni invisibili. partiremo dal suono.
+
+\begin{regia}
+    Prendi il primo diapason (440 Hz).
+\end{regia}
+
+Questo è un diapason. Emette una nota purissima, un LA a 440 Hertz. Ascoltate.
+
+\begin{regia}
+    Fai suonare il diapason. Lascia un attimo di silenzio.
+    Poi prendi il secondo diapason (445 Hz).
+\end{regia}
+
+Questo è un altro diapason. Sembra uguale, vero? Ma in realtà è leggermente diverso. Emette un suono a 445 Hertz. La differenza è piccolissima ai nostri occhi, e anche alle nostre orecchie se li sentiamo separati.
+
+Ma cosa succede se li facciamo suonare insieme? Ascoltate bene.
+
+\begin{regia}
+    Fai suonare entrambi i diapason contemporaneamente e avvicinali al microfono o tienili in alto.
+    (Se non hai i diapason fisici, dì: "Immaginiamo di farli suonare insieme, o meglio, usiamo la nostra applicazione per simularlo fedelmente.")
+\end{regia}
+
+Lo sentite quel "Wah-wah-wah"? Il suono non è fermo. Pulsa. Va su e giù di intensità. 
+Questo fenomeno si chiama \textbf{battimento}. 
+
+Ed è proprio da questo "Wah-wah" che inizia il nostro viaggio verso la meccanica quantistica.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 1: Ascoltare la Matematica (5 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{regia}
+    Vai al computer. Apri l'App Streamlit.
+    Seleziona la sezione \textbf{"Battimenti"} dalla barra laterale.
+    Carica il Preset: \textbf{"Diapason Standard LA 440 Hz"}.
+\end{regia}
+
+\textbf{SPEAKER:}
+Vediamo cosa sta succedendo. Qui ho un'applicazione che simula esattamente quello che abbiamo appena sentito.
+
+Guardate lo schermo. 
+Nel primo grafico in alto vedete l'onda del primo diapason: è un'onda sinusoidale perfetta, blu. Oscilla 440 volte al secondo.
+Sotto, in rosso, c'è il secondo diapason. Oscilla 445 volte al secondo. Sembrano identiche, ma la rossa è leggermente più "veloce".
+
+Ora, la fisica ci dice una cosa fondamentale: il Principio di Sovrapposizione. Quando due suoni si incontrano nell'aria, si sommano. Semplicemente. Se uno spinge l'aria in avanti e l'altro la spinge indietro, si cancellano. Se entrambi spingono, si rinforzano.
+
+Guardate il grafico in basso, quello viola. Questa è la somma. 
+
+\begin{regia}
+    Indica col mouse il grafico della "Somma". Mostra come l'ampiezza cresce e decresce.
+    Premi il pulsante \textbf{"Genera battimenti audio"} per far sentire il suono dall'app.
+\end{regia}
+
+Vedete quella forma? Il suono non ha più la stessa ampiezza costante. Cresce, raggiunge un massimo, poi diminuisce fino quasi a sparire, e poi ricresce. Quella linea arancione tratteggiata che vedete si chiama \textbf{inviluppo}. È la forma del "Wah-wah".
+
+E la cosa incredibile è che possiamo prevedere esattamente quanto veloce sarà questo battimento. È pura matematica: la frequenza del battimento è la \textit{differenza} tra le due frequenze.
+445 meno 440 fa 5.
+Quindi sentiamo 5 pulsazioni al secondo.
+
+\begin{regia}
+    Modifica nell'app la frequenza f2 portandola a \textbf{441 Hz}.
+\end{regia}
+
+Se avvicino le frequenze, diciamo 440 e 441... la differenza è 1. Sentiamo una sola pulsazione al secondo. Il battimento rallenta.
+
+\begin{regia}
+    Fai suonare l'audio o osserva il grafico che si "allarga".
+\end{regia}
+
+Cosa abbiamo imparato fin qui? Una cosa semplice ma potente: \textbf{Sommando onde diverse, creiamo una struttura}. 
+Le onde singole sono noiose, sono uguali da sempre e per sempre. Ma sommandole, creiamo qualcosa che cambia nel tempo, qualcosa che ha una "forma".
+
+E qui vi faccio una domanda: se sommando 2 onde ottengo questo semplice battimento... cosa succede se ne sommo 50? O 100? Tutte con frequenze diverse?
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 2: Costruire un Pacchetto (5 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{regia}
+    Passa alla sezione \textbf{"Pacchetti d'Onda"} nell'App.
+    Seleziona il Preset: \textbf{"Pacchetto Standard"}.
+\end{regia}
+
+\textbf{SPEAKER:}
+Proviamo. Immaginiamo di avere un coro di 50 diapason, ognuno accordato su una frequenza leggermente diversa, uno dopo l'altro: 100 Hz, 101 Hz, 102 Hz... fino a 130 Hz.
+
+Che suono farebbero tutti insieme? Sarebbe solo un gran rumore?
+Guardiamo il risultato.
+
+\begin{regia}
+    Mostra il grafico del "Pacchetto d'Onda risultante".
+\end{regia}
+
+Incredibile, vero? Non è un rumore caotico. Tutte quelle onde, sommate insieme, si sono cancellate quasi ovunque... tranne che in un punto centrale.
+Hanno creato quello che in fisica chiamiamo un \textbf{Pacchetto d'Onda}.
+
+Guardatelo: è un "impulso". È un'onda che esiste solo per un breve istante, e poi sparisce. È localizzata.
+Qui c'è tanta energia, e fuori non ce n'è.
+
+\begin{regia}
+    Clicca su \textbf{"Mostra onde componenti singole"} per far vedere il groviglio di linee colorate sotto.
+\end{regia}
+
+Vedete sotto? Ognuna di quelle linee colorate è un'onda singola che va avanti all'infinito. Ma siccome hanno frequenze diverse, in certi punti vanno a tempo (e si sommano), in altri vanno in controtempo (e si cancellano).
+Il risultato è che l'onda sopravvive solo in quel piccolo pacchetto al centro.
+
+Tenete a mente questo passaggio perché è cruciale: \textbf{Per costruire un oggetto localizzato (che sta in un posto preciso), ho bisogno di sommare tante frequenze diverse.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 3: La Coperta Corta (5 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Ora arriviamo al cuore del problema. 
+Vogliamo fare un esperimento con la nostra app. Vogliamo creare un pacchetto d'onda "perfetto": un pacchetto piccolissimo, strettissimo, che duri un istante brevissimo. Vogliamo sapere \textit{esattamente} quando avviene il suono.
+
+\begin{regia}
+    Seleziona il Preset \textbf{"Super-Localizzato"}.
+    Indica il grafico temporale (l'onda è molto stretta).
+    Poi indica il grafico dello spettro/frequenze (la banda blu è molto larga).
+\end{regia}
+
+Ecco fatto. Abbiamo un pacchetto strettissimo (la "delta x" è piccola). Ma guardate cosa è successo alle frequenze. Per ottenerlo, ho dovuto usare tantissime frequenze diverse, da 100 a 200 Hz! La mia "banda" si è allargata enormemente.
+
+Proviamo il contrario. Diciamo: "Non mi importa della precisione nel tempo, voglio un suono puro, una nota precisissima".
+
+\begin{regia}
+    Seleziona il Preset \textbf{"Quasi-Monocromatico"}.
+    Indica il grafico: l'onda ora è lunghissima, non finisce più.
+    Ma la banda di frequenze è strettissima.
+\end{regia}
+
+Vedete? Ora ho poche frequenze vicine. Il "colore" del suono è puro. Ma il pacchetto si è "spalmato" ovunque. È diventato larghissimo. Non so più dire \textit{quando} c'è il suono, perché il suono è un po' ovunque.
+
+Questo, ragazzi, non è un difetto del computer. È una legge matematica ferrea. È come una coperta troppo corta: se la tiri per coprirti la testa (precisione nella frequenza), ti scopri i piedi (precisione nel tempo). Se copri i piedi, ti scopri la testa.
+
+Possiamo addirittura misurarlo.
+
+\begin{regia}
+    Spostati nella sezione \textbf{"Principio di Indeterminazione"}.
+    Mostra i numeri in alto.
+\end{regia}
+
+Se moltiplico la larghezza del pacchetto ($\Delta x$) per la larghezza delle frequenze ($\Delta k$), ottengo sempre lo stesso numero. 
+Guardate qui: circa 12.57.
+Provo a stringere il pacchetto? Il numero resta 12.57.
+Provo ad allargarlo? Resta 12.57.
+
+Non c'è scampo. Non posso avere contemporaneamente $\Delta x$ zero e $\Delta k$ zero. Il loro prodotto deve essere almeno un certo valore.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parte 4: Il Salto Quantistico (4 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+"Va bene prof", direte voi, "interessante per gli ingegneri del suono. Ma cosa c'entra con l'Universo?"
+
+C'entra tutto. Perché nel 1924, un giovane fisico francese di nome \textbf{Louis de Broglie} ebbe un'idea folle. Disse: "E se anche la materia... se anche gli elettroni, che noi pensiamo come palline, fossero in realtà delle onde?"
+
+Sembrava assurdo, ma gli esperimenti gli diedero ragione. Gli elettroni, i mattoni della materia, si comportano come onde.
+E de Broglie trovò la formula di traduzione tra il mondo delle particelle e il mondo delle onde.
+Disse:
+1. La lunghezza d'onda ($\lambda$) corrisponde alla \textbf{Quantità di Moto} ($p$), cioè alla velocità della particella.
+2. Il pacchetto d'onda corrisponde alla \textbf{Posizione} della particella.
+
+E allora... torniamo alla nostra "coperta corta".
+
+Se l'elettrone è un'onda:
+\begin{itemize}
+    \item Voler sapere \textbf{dove si trova l'elettrone} significa voler fare un pacchetto \textit{stretto} nello spazio ($\Delta x$ piccolo).
+    \item Ma abbiamo appena visto che per fare un pacchetto stretto, devo usare \textbf{tante frequenze} diverse ($\Delta k$ grande).
+    \item E tante frequenze, per de Broglie, significano \textbf{tante velocità diverse} ($\Delta p$ grande).
+\end{itemize}
+
+Quindi: se costringo l'elettrone in un punto preciso, lui perde una velocità precisa. La sua velocità diventa incerta, sfumata.
+Se invece voglio sapere esattamente la sua velocità (frequenza precisa), l'elettrone deve diventare un'onda lunghissima... e quindi non so più dove si trova! Si è spalmato in tutto lo spazio.
+
+Eccolo qui. Il \textbf{Principio di Indeterminazione di Heisenberg}:
+\[ \Delta x \cdot \Delta p \geq \frac{h}{4\pi} \]
+
+Non è che non abbiamo microscopi abbastanza potenti. È che una particella "ferma in un punto preciso" \textit{non esiste}, proprio come non esiste un'onda "che ha una sola frequenza e dura un solo istante". È una contraddizione in termini.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusione (3 minuti)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{SPEAKER:}
+Per concludere.
+Siamo partiti da due diapason che battevano insieme. Abbiamo visto che sommando onde creiamo pacchetti. Abbiamo scoperto che i pacchetti obbediscono a una legge di "coperta corta": o sei stretto nel tempo, o sei stretto nella frequenza.
+
+E infine abbiamo capito che, siccome la materia è ondulatoria, anche noi, gli atomi, le stelle, siamo soggetti a questa legge. 
+L'indeterminazione non è un limite alla nostra conoscenza. È la struttura stessa della realtà. È ciò che impedisce agli elettroni di collassare sul nucleo degli atomi. In un certo senso, è grazie a questa "imprecisione" fondamentale che la materia è stabile, che esiste la chimica, che esistiamo noi.
+
+Quindi la prossima volta che sentite un'orchestra accordare gli strumenti e sentite quei "battimenti", ricordatevi: state ascoltando lo stesso meccanismo che regge la struttura fondamentale dell'universo.
+
+Grazie.
+
+\end{document}

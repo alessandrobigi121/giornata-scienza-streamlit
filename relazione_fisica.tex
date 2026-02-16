@@ -1,0 +1,181 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+
+% Configurazione pagina
+\geometry{margin=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Giornata della Scienza 2026}
+\lhead{Fisica delle Onde}
+\cfoot{\thepage}
+
+% Colori personalizzati
+\definecolor{mainblue}{RGB}{0, 102, 204}
+
+\title{\textbf{\Huge \color{mainblue}Dai Battimenti al Principio di Indeterminazione}\\ \vspace{12pt} \large Un'analisi computazionale e teorica dei fenomeni ondulatori}
+\author{Alessandro Bigi \\ \small Liceo Leopardi Majorana - Laboratorio di Fisica}
+\date{Gennaio 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+    Questo documento accompagna la simulazione interattiva sviluppata per la Giornata della Scienza. Viene illustrato come il fenomeno dell'interferenza temporale (battimenti) costituisca la base per comprendere la localizzazione delle onde (pacchetti d'onda) e come questa conduca inevitabilmente alle relazioni di indeterminazione di Heisenberg, verificate sperimentalmente tramite l'analisi di Fourier e la sintesi di segnali digitali.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduzione}
+L'applicazione sviluppata permette di esplorare la natura ondulatoria della materia e del suono attraverso un approccio computazionale. Partendo dalla sovrapposizione di due sole onde (battimenti), si estende il concetto alla sovrapposizione di $N$ onde (pacchetti), dimostrando visivamente e matematicamente le proprietà fondamentali della propagazione ondulatoria.
+
+\section{I Battimenti: L'Interferenza nel Tempo}
+Il fenomeno dei battimenti si verifica quando due onde sinusoidali di frequenza molto vicina, $f_1$ e $f_2$, si sovrappongono nello stesso punto dello spazio.
+
+\subsection{Derivazione Matematica}
+Consideriamo due onde di uguale ampiezza $A$:
+\begin{equation}
+    y_1(t) = A \cos(\omega_1 t), \quad y_2(t) = A \cos(\omega_2 t)
+\end{equation}
+Per il principio di sovrapposizione, l'onda risultante è $y(t) = y_1(t) + y_2(t)$. Utilizzando le formule di prostaferesi:
+\begin{equation}
+    \cos \alpha + \cos \beta = 2 \cos \frac{\alpha - \beta}{2} \cos \frac{\alpha + \beta}{2}
+\end{equation}
+Otteniamo l'equazione implementata nel simulatore:
+\begin{equation}
+    y(t) = \underbrace{2A \cos\left(\frac{\omega_1 - \omega_2}{2}t\right)}_{\text{Inviluppo (Modulazione)}} \cdot \underbrace{\cos\left(\frac{\omega_1 + \omega_2}{2}t\right)}_{\text{Portante}}
+\end{equation}
+
+\subsection{Interpretazione Fisica}
+L'onda risultante oscilla alla frequenza media $\bar{f} = \frac{f_1+f_2}{2}$, ma la sua ampiezza non è costante. Essa varia nel tempo secondo un inviluppo che pulsa alla frequenza di battimento:
+\begin{equation}
+    f_{\text{batt}} = |f_1 - f_2|
+\end{equation}
+Questo rappresenta il primo passo verso la \textbf{localizzazione}: l'energia non è più distribuita uniformemente nel tempo, ma concentrata in "pacchetti" periodici.
+
+\section{Pacchetti d'Onda: Verso la Localizzazione}
+Per ottenere un singolo impulso localizzato (un pacchetto d'onda isolato), non bastano due frequenze. È necessario sommare un numero elevato $N$ di onde con frequenze distribuite in un intervallo continuo $[\omega_{\min}, \omega_{\max}]$.
+
+\subsection{Sintesi del Pacchetto}
+L'applicazione calcola la somma discreta:
+\begin{equation}
+    y(x,t) = \sum_{n=1}^{N} A_n \cos(k_n x - \omega_n t)
+\end{equation}
+Dove $k_n = \frac{2\pi f_n}{v}$ è il numero d'onda. Nel limite del continuo ($N \to \infty$), questa somma diventa un integrale di Fourier:
+\begin{equation}
+    y(x) = \int_{-\infty}^{+\infty} A(k) e^{ikx} dk
+\end{equation}
+
+\subsection{Forma dell'Inviluppo}
+Se lo spettro delle frequenze è uniforme (rettangolare) di larghezza $\Delta k$, come nel caso predefinito dell'app, la teoria di Fourier prevede che l'inviluppo spaziale sia una funzione \textbf{Sinc}:
+\begin{equation}
+    \text{Inviluppo}(x) \propto \text{sinc}\left(\frac{\Delta k \cdot x}{2}\right) = \frac{\sin(\Delta k \cdot x / 2)}{\Delta k \cdot x / 2}
+\end{equation}
+
+\section{Il Principio di Indeterminazione}
+Una delle caratteristiche fondamentali delle onde è che non possono essere arbitrariamente localizzate sia nello spazio ($x$) che nella frequenza ($k$) contemporaneamente.
+
+\subsection{Relazione Fondamentale}
+La larghezza del pacchetto nello spazio, $\Delta x$, è inversamente proporzionale alla larghezza della banda di frequenze utilizzata per crearlo, $\Delta k$.
+
+Nel simulatore, definiamo $\Delta x$ come la distanza tra i primi due zeri della funzione Sinc (il lobo principale). Dalla condizione $\frac{\Delta k \cdot x}{2} = \pm \pi$, otteniamo:
+\begin{equation}
+    x_{\text{zero}} = \pm \frac{2\pi}{\Delta k} \implies \Delta x = x_{\text{destra}} - x_{\text{sinistra}} = \frac{4\pi}{\Delta k}
+\end{equation}
+Da cui deriva la relazione verificata nella sezione "Principio di Indeterminazione" dell'app:
+\begin{tcolorbox}[colback=blue!5!white,colframe=mainblue,title=Relazione di Indeterminazione (Onde)]
+\begin{equation}
+    \Delta x \cdot \Delta k \approx 4\pi \approx 12.57
+\end{equation}
+\end{tcolorbox}
+
+\subsection{Collegamento con la Meccanica Quantistica}
+In meccanica quantistica, la quantità di moto $p$ è legata al numero d'onda $k$ dalla relazione di De Broglie $p = \hbar k$. Sostituendo nella relazione ondulatoria:
+\begin{equation}
+    \Delta x \cdot \frac{\Delta p}{\hbar} \sim \text{costante} \implies \Delta x \cdot \Delta p \ge \frac{\hbar}{2}
+\end{equation}
+L'app dimostra quindi che il Principio di Heisenberg non è una "magia" quantistica, ma una proprietà intrinseca di qualsiasi fenomeno ondulatorio (suono, luce, materia).
+
+\section{Analisi Spettrale e Fourier}
+La sezione "Spettro di Fourier" dell'applicazione utilizza l'algoritmo FFT (Fast Fourier Transform) per passare dal dominio del tempo al dominio delle frequenze.
+
+\begin{itemize}
+    \item \textbf{Dominio del Tempo}: Mostra $y(t)$, l'oscillazione reale.
+    \item \textbf{Dominio delle Frequenze}: Mostra $A(\omega)$, quanto "pesa" ogni frequenza.
+\end{itemize}
+
+Matematicamente, l'operazione svolta è:
+\begin{equation}
+    X_k = \sum_{n=0}^{N-1} x_n e^{-i 2\pi k n / N}
+\end{equation}
+Questo permette di visualizzare come un pacchetto stretto nel tempo corrisponda a uno spettro largo in frequenza, confermando visivamente il principio di indeterminazione.
+
+\section{Onde Stazionarie e Quantizzazione}
+Infine, l'app esplora il caso in cui l'onda è confinata in una regione di lunghezza $L$ (es. corda di chitarra). Le condizioni al contorno ($y(0)=0, y(L)=0$) impongono che:
+\begin{equation}
+    k_n L = n\pi \implies \lambda_n = \frac{2L}{n}, \quad n=1,2,3...
+\end{equation}
+Questo introduce il concetto di \textbf{quantizzazione}: solo specifiche frequenze (armoniche) sono permesse. Questo è l'analogo classico dei livelli energetici discreti in un atomo.
+
+\section{Verifica Sperimentale: Regressione Lineare}
+Un aspetto cruciale dell'approccio scientifico è la verifica quantitativa delle leggi teoriche. L'applicazione include un modulo di regressione lineare per analizzare la relazione tra $\Delta x$ e $\Delta k$.
+
+\subsection{Metodologia}
+Vengono generati $M$ pacchetti d'onda con larghezze di banda $\Delta k$ variabili. Per ciascun pacchetto, l'algoritmo misura la larghezza spaziale $\Delta x$ e riporta i dati in un grafico cartesiano dove:
+\begin{itemize}
+    \item Asse $X$: $1/\Delta k$
+    \item Asse $Y$: $\Delta x$
+\end{itemize}
+
+\subsection{Risultati Attesi}
+Dalla relazione $\Delta x \cdot \Delta k = 4\pi$, ci aspettiamo una relazione lineare:
+\begin{equation}
+    \Delta x = 4\pi \cdot \left(\frac{1}{\Delta k}\right)
+\end{equation}
+La pendenza della retta di regressione (best fit) dovrebbe quindi approssimare il valore $4\pi \approx 12.566$. Il coefficiente di determinazione $R^2$ fornisce una misura della bontà del fit, confermando la validità del modello ondulatorio.
+
+\section{Conclusione}
+Attraverso la simulazione numerica e la visualizzazione interattiva, abbiamo tracciato un percorso continuo che lega:
+\begin{enumerate}
+    \item I \textbf{battimenti} come forma elementare di modulazione.
+    \item I \textbf{pacchetti d'onda} come sovrapposizione coerente di molteplici frequenze.
+    \item Il \textbf{Principio di Indeterminazione} come conseguenza geometrica della trasformata di Fourier.
+\end{enumerate}
+Questo strumento didattico permette di "toccare con mano" concetti astratti, rendendo evidente l'unità della fisica ondulatoria.
+
+\vspace{2cm}
+\hrule
+\vspace{0.5cm}
+\noindent \textit{Codice e simulazioni realizzati in Python con le librerie NumPy, SciPy e Plotly.}
+
+\newpage
+\begin{thebibliography}{9}
+\bibitem{heisenberg}
+  W. Heisenberg,
+  \textit{Über den anschaulichen Inhalt der quantentheoretischen Kinematik und Mechanik},
+  Zeitschrift für Physik, 1927.
+
+\bibitem{halliday}
+  D. Halliday, R. Resnick, J. Walker,
+  \textit{Fondamenti di Fisica},
+  Casa Editrice Ambrosiana.
+
+\bibitem{scipy}
+  P. Virtanen et al.,
+  \textit{SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python},
+  Nature Methods, 2020.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,982 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{float}
+
+\geometry{margin=2.5cm}
+
+% Rimuove l'indentazione e aggiunge spazio tra paragrafi
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.8em}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codegreen},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{\textbf{Documentazione Tecnica del Codice}\\
+\large Giornata della Scienza - App Streamlit\\
+Liceo Leopardi Majorana}
+\author{Alessandro Bigi}
+\date{Gennaio 2025}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduzione}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Questo documento descrive in dettaglio il funzionamento del codice Python che implementa l'applicazione web per la Giornata della Scienza. L'applicazione è costruita con \textbf{Streamlit} e utilizza \textbf{NumPy}, \textbf{SciPy} e \textbf{Plotly} per le simulazioni fisiche e i grafici interattivi.
+
+\subsection{Librerie Utilizzate}
+
+\begin{lstlisting}[language=Python]
+import streamlit as st          # Framework web
+import numpy as np              # Calcoli numerici
+import plotly.graph_objects as go  # Grafici interattivi
+from plotly.subplots import make_subplots
+from scipy.fft import fft, fftfreq  # Trasformata di Fourier
+from scipy import signal        # Elaborazione segnali (Hilbert)
+from scipy.stats import linregress  # Regressione lineare
+import pandas as pd             # Gestione dati tabellari
+\end{lstlisting}
+
+\subsection{Costanti Fisiche}
+
+\begin{lstlisting}[language=Python]
+V_SUONO = 340          # Velocita del suono in aria (m/s) a 20C
+SAMPLE_RATE = 44100    # Frequenza di campionamento audio (Hz)
+DENSITA_ARIA = 1.2     # kg/m^3
+IMPEDENZA_ACUSTICA = 408  # Pa*s/m
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sezione Battimenti}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Teoria Fisica}
+
+I battimenti si verificano quando due onde con frequenze vicine $f_1$ e $f_2$ si sovrappongono. L'onda risultante è:
+
+\begin{equation}
+y(t) = A_1 \cos(\omega_1 t) + A_2 \cos(\omega_2 t)
+\end{equation}
+
+Usando la formula di prostaferesi (per $A_1 = A_2 = A$):
+
+\begin{equation}
+y(t) = 2A \cos\left(\frac{\omega_1 - \omega_2}{2}t\right) \cdot \cos\left(\frac{\omega_1 + \omega_2}{2}t\right)
+\end{equation}
+
+dove:
+\begin{itemize}
+    \item $\cos\left(\frac{\omega_1 + \omega_2}{2}t\right)$ = \textbf{onda portante} (oscillazione veloce)
+    \item $\cos\left(\frac{\omega_1 - \omega_2}{2}t\right)$ = \textbf{inviluppo} (modulazione lenta)
+\end{itemize}
+
+\subsection{Parametri Calcolati}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Parametro} & \textbf{Formula} & \textbf{Codice Python} \\
+\midrule
+Frequenza media & $f_{media} = \frac{f_1 + f_2}{2}$ & \texttt{f\_media = (f1 + f2) / 2} \\
+Frequenza battimento & $f_{batt} = |f_1 - f_2|$ & \texttt{f\_batt = abs(f1 - f2)} \\
+Periodo battimento & $T_{batt} = \frac{1}{f_{batt}}$ & \texttt{T\_batt = 1/f\_batt} \\
+Pulsazione & $\omega = 2\pi f$ & \texttt{omega1 = 2 * np.pi * f1} \\
+Lunghezza d'onda & $\lambda = \frac{v}{f}$ & \texttt{lambda1 = V\_SUONO / f1} \\
+Numero d'onda & $k = \frac{2\pi}{\lambda}$ & \texttt{k1 = 2 * np.pi / lambda1} \\
+\bottomrule
+\end{tabular}
+\caption{Formule e implementazione Python per i battimenti}
+\end{table}
+
+\subsection{Generazione delle Onde}
+
+Il codice genera le due onde e la loro somma:
+
+\begin{lstlisting}[language=Python]
+# Definizione dell'asse temporale
+# fs_plot = 20000 Hz per evitare aliasing con frequenze fino a 2000 Hz
+fs_plot = 20000
+t = np.linspace(0, durata, int(durata * fs_plot))
+
+# Generazione delle due onde (usando coseno)
+y1 = A1 * np.cos(2 * np.pi * f1 * t)
+y2 = A2 * np.cos(2 * np.pi * f2 * t)
+
+# Sovrapposizione (principio di sovrapposizione)
+y_tot = y1 + y2
+\end{lstlisting}
+
+\textbf{Spiegazione in linguaggio semplice:}
+
+Per simulare i battimenti, il programma deve prima creare le due onde sonore nel computer. Immaginiamo di voler disegnare su un foglio a quadretti come oscilla l'aria quando passa un'onda sonora: dobbiamo decidere quanti punti disegnare e a quali istanti di tempo corrispondono.
+
+Il programma crea una ``griglia temporale'' molto fitta: 20.000 punti per ogni secondo di simulazione. Questo numero \`e importante perch\'e, secondo il teorema di Nyquist della teoria dei segnali, per rappresentare correttamente un suono dobbiamo campionarlo almeno al doppio della sua frequenza massima. Siccome i suoni che simuliamo arrivano fino a circa 2000 Hz, usiamo 20.000 punti al secondo per stare tranquilli.
+
+Per ogni punto di questa griglia temporale, il programma calcola il valore dell'onda usando la formula del coseno: $y = A \cos(2\pi f t)$, dove $A$ \`e l'ampiezza (quanto \`e ``forte'' l'onda), $f$ \`e la frequenza (quante oscillazioni al secondo), e $t$ \`e l'istante di tempo.
+
+Infine, le due onde vengono sommate punto per punto. Questo \`e il \textbf{principio di sovrapposizione}: quando due onde si incontrano nello stesso punto, le loro ampiezze si sommano algebricamente. Se una \`e a +0.5 e l'altra a +0.3, il risultato \`e +0.8. Se una \`e a +0.5 e l'altra a $-$0.5, si annullano e il risultato \`e 0.
+
+Quando le due onde hanno frequenze leggermente diverse, a volte si sommano (interferenza costruttiva) e a volte si annullano (interferenza distruttiva), creando il caratteristico ``wah-wah'' dei battimenti.
+
+\subsection{Estrazione dell'Inviluppo (Trasformata di Hilbert)}
+
+L'inviluppo viene estratto usando la \textbf{trasformata di Hilbert}, che crea il segnale analitico:
+
+\begin{equation}
+z(t) = y(t) + i \cdot \mathcal{H}[y(t)]
+\end{equation}
+
+L'inviluppo è il modulo del segnale analitico: $A(t) = |z(t)|$
+
+\begin{lstlisting}[language=Python]
+from scipy import signal
+
+# Padding per ridurre gli artefatti ai bordi (effetto Gibbs)
+pad_len = int(len(t) * 0.1)
+y_padded = np.pad(y_tot, (pad_len, pad_len), mode='reflect')
+
+# Trasformata di Hilbert -> segnale analitico
+analytic_signal = signal.hilbert(y_padded)
+
+# Inviluppo = modulo del segnale analitico
+# Rimuoviamo il padding dopo il calcolo
+inviluppo_sup = np.abs(analytic_signal)[pad_len:-pad_len]
+inviluppo_inf = -inviluppo_sup  # Inviluppo inferiore (simmetrico)
+\end{lstlisting}
+
+\textbf{Spiegazione in linguaggio semplice:}
+
+Quando osserviamo un segnale con battimenti, notiamo che l'ampiezza (l'altezza delle oscillazioni) aumenta e diminuisce lentamente nel tempo. L'``inviluppo'' \`e proprio questa curva che racchiude le oscillazioni come una busta (dall'inglese ``envelope'').
+
+Per estrarre l'inviluppo, il programma usa una tecnica matematica chiamata \textbf{trasformata di Hilbert}. Senza entrare nei dettagli matematici complessi, possiamo pensarla cos\`i: immaginiamo di avere un segnale che oscilla su e gi\`u. La trasformata di Hilbert crea una versione ``sfasata'' di questo segnale, spostata di un quarto di periodo (90 gradi). Combinando il segnale originale con questa versione sfasata, otteniamo informazioni sull'ampiezza istantanea.
+
+C'\`e un problema tecnico: agli estremi del segnale (all'inizio e alla fine), questa trasformata pu\`o creare degli artefatti indesiderati, noti come ``effetto Gibbs'' (dal nome del fisico Josiah Willard Gibbs). Per evitarli, il programma aggiunge temporaneamente delle copie riflesse del segnale ai bordi, come se mettessimo degli specchi. Dopo aver calcolato la trasformata, rimuoviamo queste aggiunte.
+
+Il risultato finale \`e l'inviluppo: una curva morbida che segue i massimi del segnale oscillante. Nei battimenti, questa curva mostra chiaramente la modulazione lenta dell'ampiezza alla frequenza $f_{batt} = |f_1 - f_2|$.
+
+\subsection{Creazione del Grafico con Plotly}
+
+Il grafico usa \texttt{make\_subplots} per creare 3 pannelli sovrapposti:
+
+\begin{lstlisting}[language=Python]
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+# Crea figura con 3 righe, 1 colonna
+fig = make_subplots(
+    rows=3, cols=1,
+    subplot_titles=(
+        f"Onda 1: {f1} Hz",
+        f"Onda 2: {f2} Hz",
+        f"Sovrapposizione (f_batt = {f_batt:.2f} Hz)"
+    ),
+    vertical_spacing=0.1,
+    shared_xaxes=True  # Sincronizza zoom X tra pannelli
+)
+
+# Riga 1: Onda 1
+fig.add_trace(go.Scatter(x=t, y=y1, name="Onda 1",
+              line=dict(color='blue', width=1.5)), row=1, col=1)
+
+# Riga 2: Onda 2
+fig.add_trace(go.Scatter(x=t, y=y2, name="Onda 2",
+              line=dict(color='red', width=1.5)), row=2, col=1)
+
+# Riga 3: Somma + Inviluppo
+fig.add_trace(go.Scatter(x=t, y=y_tot, name="Somma",
+              line=dict(color='purple', width=2)), row=3, col=1)
+fig.add_trace(go.Scatter(x=t, y=inviluppo_sup, name="Inviluppo",
+              line=dict(color='orange', width=2, dash='dash')), row=3, col=1)
+fig.add_trace(go.Scatter(x=t, y=inviluppo_inf, showlegend=False,
+              line=dict(color='orange', width=2, dash='dash')), row=3, col=1)
+\end{lstlisting}
+
+\subsection{Generazione Audio WAV}
+
+L'audio viene generato creando un array NumPy e convertendolo in formato WAV:
+
+\begin{lstlisting}[language=Python]
+from scipy.io import wavfile
+import io
+
+def genera_audio(segnale, sample_rate=44100):
+    # Normalizza il segnale a [-1, 1]
+    if np.max(np.abs(segnale)) > 0:
+        segnale_norm = segnale / np.max(np.abs(segnale))
+    else:
+        segnale_norm = segnale
+    
+    # Converti in int16 (formato WAV standard)
+    segnale_int16 = np.int16(segnale_norm * 32767)
+    
+    # Scrivi in buffer BytesIO
+    buffer = io.BytesIO()
+    wavfile.write(buffer, sample_rate, segnale_int16)
+    buffer.seek(0)
+    return buffer.read()
+
+# Utilizzo
+t_audio = np.linspace(0, durata_audio, int(SAMPLE_RATE * durata_audio))
+y_audio = np.sin(2 * np.pi * f1 * t_audio) + np.sin(2 * np.pi * f2 * t_audio)
+audio_bytes = genera_audio(y_audio, SAMPLE_RATE)
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sezione Pacchetti d'Onda}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Teoria Fisica}
+
+Un pacchetto d'onda è la sovrapposizione di $N$ onde con frequenze distribuite tra $f_{min}$ e $f_{max}$:
+
+\begin{equation}
+y(t) = \sum_{i=1}^{N} \frac{A}{N} \cos(2\pi f_i t)
+\end{equation}
+
+dove $f_i = f_{min} + (i-1) \cdot \frac{\Delta f}{N-1}$ e $\Delta f = f_{max} - f_{min}$.
+
+Nel limite continuo ($N \to \infty$), con spettro uniforme, il risultato è una funzione \textbf{sinc}:
+
+\begin{equation}
+\psi(t) \propto \text{sinc}\left(\frac{\Delta \omega \cdot t}{2}\right) = \frac{\sin(\Delta \omega \cdot t / 2)}{\Delta \omega \cdot t / 2}
+\end{equation}
+
+\subsection{Generazione del Pacchetto}
+
+Il codice genera un pacchetto d'onda sommando $N$ onde cosinusoidali con frequenze equispaziate.
+
+\begin{lstlisting}[language=Python]
+# Parametri di input
+f_min = 100.0  # Frequenza minima (Hz)
+f_max = 130.0  # Frequenza massima (Hz)
+n_onde = 50    # Numero di onde da sommare
+ampiezza = 1.0 # Ampiezza massima
+durata = 1.5   # Durata visualizzazione (secondi)
+\end{lstlisting}
+
+\textbf{Spiegazione}: I parametri definiscono la banda di frequenze $[f_{min}, f_{max}]$ e il numero di componenti $N$.
+Più grande è $\Delta f = f_{max} - f_{min}$, più stretto sarà il pacchetto (principio di indeterminazione).
+
+\begin{lstlisting}[language=Python]
+# Asse temporale ad alta risoluzione (20000 punti/secondo)
+t = np.linspace(0, durata, int(durata * 20000))
+\end{lstlisting}
+
+\textbf{Spiegazione}: \texttt{np.linspace} crea un array di valori temporali equidistanti.
+La risoluzione di 20000 punti/secondo garantisce che anche frequenze fino a 10 kHz siano rappresentate correttamente (teorema di Nyquist: $f_s > 2 f_{max}$).
+
+\begin{lstlisting}[language=Python]
+# Array di frequenze equispaziate
+frequenze = np.linspace(f_min, f_max, n_onde)
+\end{lstlisting}
+
+\textbf{Spiegazione}: Crea $N$ frequenze distribuite uniformemente tra $f_{min}$ e $f_{max}$:
+\begin{equation}
+f_i = f_{min} + (i-1) \cdot \frac{f_{max} - f_{min}}{N-1}, \quad i = 1, 2, \ldots, N
+\end{equation}
+
+\begin{lstlisting}[language=Python]
+# Somma delle onde componenti
+y_pacchetto = np.zeros_like(t)  # Inizializza array vuoto
+for f in frequenze:
+    # Ogni onda ha ampiezza 1/N per normalizzare
+    y_comp = (ampiezza / n_onde) * np.cos(2 * np.pi * f * t)
+    y_pacchetto += y_comp
+\end{lstlisting}
+
+\textbf{Spiegazione}: Implementa la formula fisica:
+\begin{equation}
+y(t) = \sum_{i=1}^{N} \frac{A}{N} \cos(2\pi f_i t)
+\end{equation}
+
+\begin{itemize}
+    \item \texttt{np.zeros\_like(t)}: crea un array di zeri della stessa dimensione di \texttt{t}
+    \item \texttt{2 * np.pi * f * t}: calcola $\omega t = 2\pi f \cdot t$ per ogni punto temporale
+    \item \texttt{np.cos(...)}: calcola il coseno (vettorializzato su tutto l'array)
+    \item \texttt{ampiezza / n\_onde}: ogni onda contribuisce con ampiezza $A/N$ per evitare che la somma cresca con $N$
+\end{itemize}
+
+\subsection{Estrazione Inviluppo e Intensità}
+
+L'inviluppo viene estratto usando la \textbf{trasformata di Hilbert}.
+
+\begin{lstlisting}[language=Python]
+from scipy import signal
+
+# Padding per ridurre artefatti ai bordi
+pad_len = int(len(t) * 0.1)
+y_pad = np.pad(y_pacchetto, (pad_len, pad_len), mode='reflect')
+\end{lstlisting}
+
+\textbf{Spiegazione del padding}:
+\begin{itemize}
+    \item La trasformata di Hilbert assume che il segnale sia periodico
+    \item Ai bordi questo causa artefatti (effetto Gibbs)
+    \item \texttt{np.pad(..., mode='reflect')}: aggiunge copie riflesse del segnale ai bordi
+    \item Dopo il calcolo, rimuoviamo il padding
+\end{itemize}
+
+\begin{lstlisting}[language=Python]
+# Trasformata di Hilbert -> segnale analitico
+analytic_signal = signal.hilbert(y_pad)
+
+# Inviluppo = modulo del segnale analitico
+inviluppo = np.abs(analytic_signal)[pad_len:-pad_len]
+\end{lstlisting}
+
+\textbf{Spiegazione della trasformata di Hilbert}:
+
+La funzione \texttt{signal.hilbert()} calcola il \textbf{segnale analitico}:
+\begin{equation}
+z(t) = y(t) + i \cdot \mathcal{H}[y(t)]
+\end{equation}
+
+dove $\mathcal{H}$ è la trasformata di Hilbert (sfasa il segnale di 90$^\circ$).
+
+L'\textbf{inviluppo} è il modulo: $A(t) = |z(t)| = \sqrt{y^2 + \mathcal{H}[y]^2}$
+
+\begin{lstlisting}[language=Python]
+# Intensita = quadrato dell'inviluppo (figura di diffrazione)
+intensita = inviluppo**2
+\end{lstlisting}
+
+\textbf{Spiegazione}: L'intensità $I(t) = |A(t)|^2$ è proporzionale alla potenza del segnale.
+Per un pacchetto sinc, questa ha la forma:
+\begin{equation}
+I(t) \propto \text{sinc}^2\left(\frac{\Delta \omega \cdot t}{2}\right)
+\end{equation}
+
+È analoga alla \textbf{figura di diffrazione} da singola fenditura in ottica.
+
+\subsection{Figura di Diffrazione}
+
+L'intensità $I(t) = |A(t)|^2$ rappresenta la \textbf{figura di diffrazione} del pacchetto, analoga alla diffrazione da singola fenditura in ottica.
+
+\begin{equation}
+I(t) \propto \text{sinc}^2\left(\frac{\Delta \omega \cdot t}{2}\right)
+\end{equation}
+
+Il grafico mostra lobi laterali che decadono come $1/t^2$.
+
+\subsection{Caratteristiche Calcolate}
+
+\begin{lstlisting}[language=Python]
+# Frequenza centrale
+f_centrale = (f_min + f_max) / 2
+
+# Larghezza in frequenza
+delta_f = f_max - f_min
+
+# Pulsazione angolare
+delta_omega = 2 * np.pi * delta_f
+
+# Lunghezza d'onda centrale
+lambda_centrale = V_SUONO / f_centrale
+\end{lstlisting}
+
+\subsection{Problema della Periodicità}
+
+\textbf{ATTENZIONE}: Un pacchetto di $N$ onde con frequenze equispaziate si ripete periodicamente con periodo:
+
+\begin{equation}
+T_{ripetizione} = \frac{N - 1}{\Delta f}
+\end{equation}
+
+Per evitare di mostrare ripetizioni spurie, la durata visualizzata viene limitata:
+
+\begin{lstlisting}[language=Python]
+# Calcolo periodo di ripetizione
+delta_f = f_max - f_min
+if n_onde > 1 and delta_f > 0:
+    T_ripetizione = (n_onde - 1) / delta_f
+else:
+    T_ripetizione = durata * 10  # Nessun limite
+
+# Limita durata all'80% del periodo di ripetizione
+durata_effettiva = min(durata, T_ripetizione * 0.8)
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sezione Spettro di Fourier}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Teoria della Trasformata di Fourier}
+
+La \textbf{Trasformata di Fourier Discreta (DFT)} converte un segnale dal dominio temporale al dominio delle frequenze:
+
+\begin{equation}
+X_k = \sum_{n=0}^{N-1} x_n \cdot e^{-i 2\pi k n / N}
+\end{equation}
+
+dove:
+\begin{itemize}
+    \item $x_n$ = campione $n$-esimo del segnale
+    \item $X_k$ = componente di Fourier alla frequenza $f_k$
+    \item $f_k = \frac{k \cdot f_s}{N}$ = frequenza del bin $k$
+    \item $f_s$ = frequenza di campionamento
+    \item $N$ = numero di campioni
+\end{itemize}
+
+\subsection{Implementazione con SciPy}
+
+\begin{lstlisting}[language=Python]
+from scipy.fft import fft, fftfreq
+
+# Parametri
+fs = 44100  # Sample rate
+durata_fft = 2.0  # secondi
+t = np.linspace(0, durata_fft, int(fs * durata_fft))
+N = len(t)  # Numero di campioni
+
+# Genera il segnale (esempio: pacchetto)
+y = np.zeros_like(t)
+for f in np.linspace(f_min, f_max, n_onde):
+    y += (1/n_onde) * np.cos(2 * np.pi * f * t)
+
+# Calcola la FFT
+yf = fft(y)
+
+# Array delle frequenze (solo parte positiva)
+xf = fftfreq(N, 1/fs)[:N//2]
+
+# Potenza spettrale (normalizzata)
+potenza = 2.0/N * np.abs(yf[:N//2])
+\end{lstlisting}
+
+\textbf{Spiegazione in linguaggio semplice:}
+
+Questo blocco di codice implementa l'analisi spettrale, cio\`e la scomposizione di un suono nelle sue frequenze componenti. Vediamo cosa fa, passo dopo passo.
+
+Prima di tutto, il programma crea il segnale da analizzare. Nel nostro caso, sommiamo molte onde cosinusoidali con frequenze diverse per creare un ``pacchetto d'onda''. Questo \`e esattamente quello che faremmo in un laboratorio con un generatore di funzioni.
+
+Poi applichiamo la \textbf{trasformata di Fourier}. Dal punto di vista fisico, questa operazione risponde alla domanda: ``Quali frequenze compongono questo suono, e quanto \`e forte ciascuna?''. \'E come usare un prisma per scomporre la luce bianca nei colori dell'arcobaleno, ma per il suono invece che per la luce.
+
+Il risultato della FFT \`e un array di numeri complessi. Ogni numero corrisponde a una frequenza specifica. Prendiamo il modulo (valore assoluto) di questi numeri per ottenere l'ampiezza, cio\`e ``quanto'' di quella frequenza \`e presente nel segnale.
+
+La frequenza di campionamento (44100 Hz, lo standard dei CD audio) determina la precisione dell'analisi. Pi\`u campioni usiamo, pi\`u fine sar\`a la risoluzione in frequenza.
+
+\subsection{Parametri di Campionamento}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Parametro} & \textbf{Formula} & \textbf{Significato} \\
+\midrule
+Frequenza Nyquist & $f_{Nyquist} = \frac{f_s}{2}$ & Massima frequenza rappresentabile \\
+Risoluzione & $\Delta f = \frac{f_s}{N} = \frac{1}{T}$ & Minima distanza tra bins \\
+Numero bins & $N_{bins} = \frac{N}{2}$ & Frequenze positive \\
+\bottomrule
+\end{tabular}
+\caption{Parametri della FFT}
+\end{table}
+
+\subsection{Rilevamento Picchi}
+
+\begin{lstlisting}[language=Python]
+from scipy.signal import find_peaks
+
+# Trova i picchi nello spettro
+# height: minimo 10% del massimo
+# peaks contiene gli indici dei picchi
+peaks, properties = find_peaks(potenza, height=np.max(potenza)*0.1)
+
+# Frequenze corrispondenti ai picchi
+freq_picchi = xf[peaks]
+
+# Ampiezze dei picchi
+amp_picchi = potenza[peaks]
+
+# Picco principale
+idx_principale = np.argmax(amp_picchi)
+freq_principale = freq_picchi[idx_principale]
+\end{lstlisting}
+
+\textbf{Spiegazione in linguaggio semplice:}
+
+La trasformata di Fourier \`e uno strumento fondamentale che permette di ``scomporre'' un suono nelle sue frequenze costituenti. Immaginiamo di avere una registrazione audio di due diapason che suonano insieme: la trasformata di Fourier ci dice esattamente quali note stanno suonando e con quale intensit\`a.
+
+Il programma usa la libreria SciPy, che contiene funzioni matematiche gi\`a pronte. La funzione principale si chiama \texttt{fft}, che sta per ``Fast Fourier Transform'' (Trasformata di Fourier Veloce). Questa \`e una versione ottimizzata dell'algoritmo che riduce enormemente il tempo di calcolo rispetto alla formula diretta.
+
+Il risultato \`e un grafico chiamato ``spettro'': sull'asse orizzontale abbiamo le frequenze (in Hz), sull'asse verticale l'intensit\`a di ciascuna frequenza. Se il segnale originale conteneva due onde a 440 Hz e 445 Hz, vedremo due picchi esattamente a quelle frequenze.
+
+C'\`e un dettaglio importante: la FFT restituisce anche frequenze ``negative'', che sono un artefatto matematico. Per segnali reali (come il suono), prendiamo solo la met\`a positiva dello spettro. Moltiplichiamo anche per un fattore di normalizzazione ($2/N$) per compensare.
+
+Per trovare automaticamente le frequenze dominanti, il programma usa la funzione \texttt{find\_peaks}. Questa cerca i ``picchi'' nello spettro, cio\`e i punti dove l'ampiezza \`e maggiore dei punti vicini. Per evitare di trovare falsi picchi dovuti al rumore, accettiamo solo quelli con ampiezza superiore al 10\% del massimo.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sezione Principio di Indeterminazione}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Teoria}
+
+Il principio di indeterminazione di Heisenberg, applicato alle onde, afferma:
+
+\begin{equation}
+\Delta x \cdot \Delta k \geq \frac{1}{2} \quad \text{(forma RMS)}
+\end{equation}
+
+Per un pacchetto sinc (distribuzione uniforme di frequenze):
+
+\begin{equation}
+\Delta x \cdot \Delta k = 4\pi \approx 12.57 \quad \text{(primi zeri)}
+\end{equation}
+
+\subsection{Calcolo di $\Delta k$}
+
+\begin{lstlisting}[language=Python]
+# Numeri d'onda estremi
+k_min = 2 * np.pi * f_min / V_SUONO
+k_max = 2 * np.pi * f_max / V_SUONO
+
+# Larghezza in k
+delta_k = k_max - k_min
+
+# Alternativamente, da delta_f:
+delta_k = 2 * np.pi * delta_f / V_SUONO
+\end{lstlisting}
+
+\subsection{Calcolo di $\Delta x$ (Larghezza Spaziale)}
+
+La larghezza $\Delta x$ viene calcolata come distanza tra i primi minimi (zeri) dell'inviluppo:
+
+\begin{lstlisting}[language=Python]
+def calcola_larghezza_temporale(t, inviluppo, threshold=0.05):
+    """
+    Calcola la larghezza come distanza tra i primi minimi laterali.
+    """
+    max_env = np.max(inviluppo)
+    
+    # Trova il massimo centrale
+    idx_max = np.argmax(inviluppo)
+    
+    # Cerca il primo punto sotto soglia a sinistra del massimo
+    soglia = threshold * max_env
+    idx1 = idx_max
+    for i in range(idx_max, 0, -1):
+        if inviluppo[i] < soglia:
+            idx1 = i
+            break
+    
+    # Cerca il primo punto sotto soglia a destra del massimo
+    idx2 = idx_max
+    for i in range(idx_max, len(inviluppo)):
+        if inviluppo[i] < soglia:
+            idx2 = i
+            break
+    
+    # Larghezza
+    delta = abs(t[idx2] - t[idx1])
+    return delta, idx1, idx2
+\end{lstlisting}
+
+\subsection{Verifica Sperimentale}
+
+Il codice genera un pacchetto nello \textbf{spazio} (invece che nel tempo) e misura $\Delta x$:
+
+\begin{lstlisting}[language=Python]
+# Genera pacchetto spaziale
+x = np.linspace(-range_x, range_x, 10000)  # Asse spaziale
+k_values = np.linspace(k_min, k_max, n_onde)  # Numeri d'onda
+\end{lstlisting}
+
+\textbf{Spiegazione}: Invece di usare frequenze $f$ e tempo $t$, usiamo numeri d'onda $k$ e posizione $x$.
+La fisica è identica, ma lavoriamo nel dominio spaziale.
+
+\begin{lstlisting}[language=Python]
+y_pacchetto = np.zeros_like(x)
+for k in k_values:
+    y_pacchetto += (1/n_onde) * np.cos(k * x)
+\end{lstlisting}
+
+\textbf{Formula fisica implementata}:
+\begin{equation}
+\psi(x) = \sum_{i=1}^{N} \frac{1}{N} \cos(k_i \cdot x)
+\end{equation}
+
+Questo è equivalente alla formula temporale con $k \leftrightarrow \omega$ e $x \leftrightarrow t$.
+
+\begin{lstlisting}[language=Python]
+# Misura larghezza
+delta_x_mis, idx1, idx2 = calcola_larghezza_temporale(x, inviluppo)
+
+# Calcola prodotto e confronta con teoria
+prodotto = delta_x_mis * delta_k
+errore = abs(prodotto - 4*np.pi) / (4*np.pi) * 100
+\end{lstlisting}
+
+\textbf{Verifica del principio di indeterminazione}:
+Il prodotto $\Delta x \cdot \Delta k$ viene confrontato con il valore teorico $4\pi \approx 12.57$.
+
+\subsection{Validazione del Metodo}
+
+Questa sottosezione confronta diversi metodi per calcolare $\Delta x$ e verifica quale si avvicina meglio al valore teorico.
+
+\subsubsection{Metodo 1: Teorico (sinc)}
+
+Per uno spettro uniforme (box function in frequenza), la trasformata di Fourier dà un \textbf{sinc}:
+
+\begin{equation}
+\psi(x) \propto \text{sinc}\left(\frac{\Delta k \cdot x}{2}\right) = \frac{\sin(\Delta k \cdot x / 2)}{\Delta k \cdot x / 2}
+\end{equation}
+
+I primi zeri del sinc sono a $\Delta k \cdot x / 2 = \pm \pi$, quindi:
+\begin{equation}
+\Delta x_{teorico} = \frac{4\pi}{\Delta k}
+\end{equation}
+
+e il prodotto è esattamente:
+\begin{equation}
+\Delta x \cdot \Delta k = 4\pi \approx 12.566
+\end{equation}
+
+\begin{lstlisting}[language=Python]
+# Valore teorico
+delta_x_teorico = 4 * np.pi / delta_k
+delta_x_dk_teorico = 4 * np.pi  # = 12.566...
+\end{lstlisting}
+
+\subsubsection{Metodo 2: Lobi Laterali (soglia 5\%)}
+
+Questo metodo cerca i \textbf{primi minimi} dell'inviluppo (zeri del sinc) cercando dove l'ampiezza scende sotto una soglia.
+
+\begin{lstlisting}[language=Python]
+def calcola_larghezza_temporale(t, inviluppo, threshold=0.05):
+    """
+    Calcola Dx come distanza tra PRIMI MINIMI LATERALI.
+    threshold = 0.05 significa 5% del massimo.
+    """
+    max_env = np.max(inviluppo)
+    env_norm = inviluppo / max_env  # Normalizza a [0, 1]
+    
+    # Trova indice del massimo centrale
+    idx_centro = np.argmax(env_norm)
+    
+    # RICERCA PRIMO MINIMO A SINISTRA
+    idx_sx = None
+    for i in range(idx_centro - 10, 10, -1):
+        # Controlla se e' un minimo locale E sotto soglia
+        if (env_norm[i] < env_norm[i-1] and 
+            env_norm[i] < env_norm[i+1] and 
+            env_norm[i] < threshold):
+            idx_sx = i
+            break
+    
+    # RICERCA PRIMO MINIMO A DESTRA (analogo)
+    ...
+    
+    delta_x = abs(t[idx_dx] - t[idx_sx])
+    return delta_x
+\end{lstlisting}
+
+\textbf{Spiegazione dell'algoritmo}:
+\begin{itemize}
+    \item Partendo dal massimo centrale, cerca a sinistra e a destra
+    \item Un punto è un minimo locale se: \texttt{env[i] < env[i-1]} E \texttt{env[i] < env[i+1]}
+    \item Il minimo deve essere sotto la soglia (5\% del massimo) per essere un "vero" zero
+    \item La distanza tra i due minimi dà $\Delta x$
+\end{itemize}
+
+\subsubsection{Metodo 3: FWHM (Full Width at Half Maximum)}
+
+Se non si trovano minimi laterali, il codice usa il metodo FWHM come \textbf{fallback}:
+
+\begin{lstlisting}[language=Python]
+# FALLBACK: usa FWHM se non trova minimi
+if idx_sx is None or idx_dx is None:
+    half_max = 0.5
+    above_half = env_norm > half_max  # Punti sopra meta' massimo
+    
+    # Primo e ultimo punto sopra meta'
+    idx_sx = np.where(above_half)[0][0]
+    idx_dx = np.where(above_half)[0][-1]
+\end{lstlisting}
+
+\textbf{Formula FWHM}:
+\begin{equation}
+\Delta x_{FWHM} = \text{larghezza a metà altezza}
+\end{equation}
+
+Per un sinc, $\Delta x_{FWHM} \approx 0.6 \cdot \Delta x_{lobi}$, quindi:
+\begin{equation}
+\Delta x_{FWHM} \cdot \Delta k \approx 0.6 \times 4\pi \approx 7.5
+\end{equation}
+
+\subsubsection{Metodo 4: RMS (teorico gaussiano)}
+
+Per un pacchetto \textbf{gaussiano} (non usato nel codice, ma mostrato per confronto):
+
+\begin{equation}
+\psi(x) = e^{-x^2 / 2\sigma_x^2}
+\end{equation}
+
+La larghezza RMS è $\Delta x = \sigma_x$, e il prodotto minimo è:
+\begin{equation}
+\Delta x \cdot \Delta k = \frac{1}{2} \quad \text{(limite di Heisenberg)}
+\end{equation}
+
+Questo è il \textbf{minimo assoluto} possibile, raggiunto solo dal gaussiano.
+
+\subsubsection{Tabella di Validazione}
+
+Il codice genera una tabella comparativa:
+
+\begin{lstlisting}[language=Python]
+val_data = {
+    "Metodo": ["Teorico (sinc)", "Lobi laterali (5%)", 
+               "FWHM (stimato)", "RMS (teorico Gauss)"],
+    "Dx (m)": [delta_x_teorico, delta_x_lobi, 
+                delta_x_fwhm, "N/A"],
+    "Dx*Dk": ["12.566", delta_x_dk_lobi, 
+              delta_x_dk_fwhm, "0.500"],
+    "Errore %": ["0.00", errore_lobi, errore_fwhm, "N/A"]
+}
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Metodo} & \textbf{$\Delta x \cdot \Delta k$} & \textbf{Tipo} & \textbf{Note} \\
+\midrule
+Teorico (sinc) & $4\pi \approx 12.57$ & Analitico & Valore esatto per spettro uniforme \\
+Lobi laterali & $\approx 12.5$ & Numerico & Cerca i primi zeri \\
+FWHM & $\approx 7.5$ & Numerico & Larghezza a metà altezza \\
+RMS (Gauss) & $0.5$ & Teorico & Limite minimo di Heisenberg \\
+\bottomrule
+\end{tabular}
+\caption{Confronto metodi di misura di $\Delta x$}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sezione Riconoscimento Battimenti}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Obiettivo}
+
+Questa sezione permette di registrare audio dal vivo (es. due diapason) e rilevare automaticamente:
+\begin{itemize}
+    \item Le due frequenze $f_1$ e $f_2$
+    \item La frequenza di battimento teorica $f_{batt} = |f_1 - f_2|$
+    \item La frequenza di battimento misurata dall'inviluppo
+\end{itemize}
+
+\subsection{Registrazione Audio}
+
+\begin{lstlisting}[language=Python]
+from audio_recorder_streamlit import audio_recorder
+
+# Widget per registrazione
+audio_bytes = audio_recorder(
+    text="Clicca per registrare",
+    recording_color="#e74c3c",
+    neutral_color="#27ae60",
+    icon_name="microphone"
+)
+\end{lstlisting}
+
+\subsection{Analisi FFT per Rilevare le Frequenze}
+
+\begin{lstlisting}[language=Python]
+from scipy.io import wavfile
+from scipy.signal import find_peaks
+
+# Lettura audio
+sample_rate, audio_data = wavfile.read(io.BytesIO(audio_bytes))
+
+# Se stereo, prendi solo canale sinistro
+if len(audio_data.shape) == 2:
+    audio_data = audio_data[:, 0]
+
+# Normalizza
+audio_data = audio_data.astype(float)
+audio_data = audio_data / np.max(np.abs(audio_data))
+
+# FFT
+window_size = min(len(audio_data), 65536)
+yf = fft(audio_data[:window_size])
+xf = fftfreq(window_size, 1/sample_rate)[:window_size//2]
+potenza = 2.0/window_size * np.abs(yf[:window_size//2])
+
+# Filtra frequenze > 50 Hz per evitare rumore
+mask_freq = xf > 50
+potenza_filtered = np.where(mask_freq, potenza, 0)
+
+# Trova i 2 picchi principali
+peaks, _ = find_peaks(potenza_filtered, 
+                      height=np.max(potenza_filtered)*0.15)
+sorted_idx = np.argsort(potenza[peaks])[::-1]
+top_2_peaks = peaks[sorted_idx[:2]]
+
+f1_rilevata = min(xf[top_2_peaks])
+f2_rilevata = max(xf[top_2_peaks])
+f_batt_teorica = abs(f2_rilevata - f1_rilevata)
+\end{lstlisting}
+
+\subsection{Misura della Frequenza di Battimento dall'Inviluppo}
+
+\begin{lstlisting}[language=Python]
+from scipy.signal import hilbert
+from scipy.ndimage import uniform_filter1d
+
+# Estrai inviluppo
+analytic = hilbert(audio_data)
+inviluppo = np.abs(analytic)
+
+# Smoothing per ridurre rumore
+inviluppo_smooth = uniform_filter1d(inviluppo, 
+                                     size=int(sample_rate * 0.01))
+
+# FFT dell'inviluppo per misurare f_batt
+inviluppo_centered = inviluppo_smooth - np.mean(inviluppo_smooth)
+yf_env = fft(inviluppo_centered)
+xf_env = fftfreq(len(inviluppo), 1/sample_rate)[:len(inviluppo)//2]
+potenza_env = 2.0/len(inviluppo) * np.abs(yf_env[:len(inviluppo)//2])
+
+# Cerca picco nella banda 0.5-30 Hz (battimenti udibili)
+mask_env = (xf_env > 0.5) & (xf_env < 30)
+potenza_env_filtered = np.where(mask_env, potenza_env, 0)
+idx_peak = np.argmax(potenza_env_filtered)
+f_batt_misurata = xf_env[idx_peak]
+\end{lstlisting}
+
+\textbf{Spiegazione in linguaggio semplice:}
+
+Questa \`e la parte pi\`u ingegnosa dell'analisi dei battimenti. Invece di cercare direttamente la frequenza di battimento nel segnale audio (che sarebbe difficile perch\'e \`e ``nascosta'' dentro le oscillazioni veloci), estraiamo prima l'inviluppo e poi analizziamo quello.
+
+L'inviluppo, come abbiamo visto, \`e la curva che segue i massimi del segnale. Per i battimenti, questa curva oscilla lentamente su e gi\`u alla frequenza $f_{batt} = |f_1 - f_2|$. Per esempio, se i due diapason hanno frequenze di 440 Hz e 445 Hz, l'inviluppo osciller\`a a 5 Hz, cio\`e 5 volte al secondo.
+
+Dopo aver estratto l'inviluppo, il programma lo ``pulisce'' con un filtro chiamato ``media mobile''. Questo \`e come quando levigate una curva frastagliata tracciando una linea che passa attraverso i valori medi. Serve a ridurre il rumore senza perdere l'informazione importante.
+
+Poi sottraiamo il valore medio dall'inviluppo. Questo passaggio \`e importante: se non lo facessimo, la FFT vedrebbe un enorme picco a frequenza zero (la ``componente continua''), che oscurerebbe il picco che ci interessa.
+
+Infine, applichiamo la FFT all'inviluppo. Il picco pi\`u alto nello spettro risultante corrisponde alla frequenza di battimento. Cerchiamo solo nella banda 0.5--30 Hz, perch\'e i battimenti udibili rientrano in questo intervallo. Frequenze pi\`u basse potrebbero essere dovute a derive lente, frequenze pi\`u alte sarebbero gi\`a percepite come note separate.
+
+Il risultato finale \`e la frequenza di battimento \textbf{misurata sperimentalmente} dall'audio registrato, che possiamo confrontare con il valore teorico.
+
+\subsection{Confronto Teoria vs Misura}
+
+\begin{lstlisting}[language=Python]
+# Calcolo errore percentuale
+if f_batt_teorica > 0:
+    errore_perc = abs(f_batt_misurata - f_batt_teorica) / f_batt_teorica * 100
+else:
+    errore_perc = 0
+
+# Periodi
+T_batt_teorico = 1/f_batt_teorica if f_batt_teorica > 0 else 0
+T_batt_misurato = 1/f_batt_misurata if f_batt_misurata > 0 else 0
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Funzioni Utility}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Generazione Audio con Progress Bar}
+
+\begin{lstlisting}[language=Python]
+def genera_audio_con_progress(segnale, sample_rate=44100, progress_bar=None):
+    """Genera audio WAV con progress bar optional per file lunghi."""
+    if progress_bar:
+        progress_bar.progress(0.5, "Normalizzazione...")
+    
+    # Normalizza
+    if np.max(np.abs(segnale)) > 0:
+        segnale_norm = segnale / np.max(np.abs(segnale))
+    else:
+        segnale_norm = segnale
+    
+    if progress_bar:
+        progress_bar.progress(0.7, "Conversione int16...")
+    
+    segnale_int16 = np.int16(segnale_norm * 32767 * 0.95)
+    
+    if progress_bar:
+        progress_bar.progress(0.9, "Scrittura WAV...")
+    
+    buffer = io.BytesIO()
+    wavfile.write(buffer, sample_rate, segnale_int16)
+    buffer.seek(0)
+    
+    if progress_bar:
+        progress_bar.progress(1.0, "Completato!")
+    
+    return buffer.read()
+\end{lstlisting}
+
+\textbf{Spiegazione in linguaggio semplice:}
+
+Questa funzione ha il compito di trasformare i numeri calcolati dal programma in un vero file audio che possiamo ascoltare. Il processo ha diverse fasi.
+
+Prima di tutto, normalizziamo il segnale. Questo significa ridimensionarlo in modo che il valore massimo sia esattamente 1 (e il minimo $-$1). Perch\'e? Perch\'e se i valori fossero troppo grandi, l'audio risulterebbe ``saturato'' e distorto, come quando alziamo troppo il volume e il suono diventa sgradevole.
+
+Poi convertiamo i numeri in un formato che i computer usano per l'audio. I nostri calcoli usano numeri ``decimali'' (come 0.73542...), ma i file audio WAV usano numeri interi a 16 bit, cio\`e numeri interi tra $-$32768 e +32767. Moltiplichiamo i nostri valori normalizzati per 32767 e arrotondiamo. Il fattore 0.95 lascia un piccolo margine di sicurezza per evitare distorsioni.
+
+Invece di creare un file sul disco del computer, usiamo un ``buffer in memoria'': immaginiamo una specie di file virtuale che esiste solo nella RAM. Questo \`e molto pi\`u veloce e permette di riprodurre l'audio direttamente nel browser senza salvare nulla sul disco.
+
+Infine, per audio lunghi (ad esempio 30 secondi), mostriamo una barra di progresso cos\`i l'utente sa che il programma sta lavorando e non si \`e bloccato.
+
+\subsection{Applicazione Zoom Globale}
+
+\begin{lstlisting}[language=Python]
+def applica_zoom(fig, range_x, range_y=None):
+    """Applica range di zoom personalizzato a una figura Plotly."""
+    if range_x is not None:
+        fig.update_xaxes(range=range_x)
+    if range_y is not None:
+        fig.update_yaxes(range=range_y)
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusioni}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Questo documento ha descritto in dettaglio:
+
+\begin{enumerate}
+    \item \textbf{Battimenti}: Generazione onde, sovrapposizione, estrazione inviluppo con Hilbert
+    \item \textbf{Pacchetti d'onda}: Somma di N frequenze, inviluppo sinc, intensità/diffrazione
+    \item \textbf{Spettro di Fourier}: FFT discreta, rilevamento picchi, parametri campionamento
+    \item \textbf{Principio di indeterminazione}: Calcolo $\Delta x \cdot \Delta k$, verifica sperimentale
+    \item \textbf{Riconoscimento battimenti}: Analisi audio real-time, confronto teoria/misura
+\end{enumerate}
+
+Ogni formula matematica è stata collegata alla sua implementazione Python, permettendo una comprensione completa del funzionamento dell'applicazione.
+
+\end{document}
