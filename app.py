@@ -3883,15 +3883,34 @@ elif sezione == "📥 Centro Download":
         dl_lw = st.slider("Spessore linee (px)", 1.0, 8.0, 2.5, 0.5, key="dl_lw",
                            help="Spessore delle linee nei grafici.")
         st.markdown("---")
-        dl_custom_title = st.text_input("📝 Titolo personalizzato", value="", key="dl_custom_title",
-                                        help="Lascia vuoto per titolo automatico.")
+        dl_show_title = st.checkbox("🏷️ Mostra Titolo nel Grafico", value=False, key="dl_show_title",
+                                     help="Se disattivato, i grafici non avranno titolo.")
+        if dl_show_title:
+            dl_custom_title = st.text_input("📝 Titolo personalizzato", value="", key="dl_custom_title",
+                                            help="Lascia vuoto per titolo automatico.")
+        else:
+            dl_custom_title = ""
         dl_font_scale = st.slider("🔤 Scala Font", 0.5, 3.0, 1.0, 0.1, key="dl_font_scale",
                                    help="Moltiplicatore font (titoli, assi, legenda).")
+        st.markdown("---")
+        dl_force_axes = st.checkbox("📐 Forza Assi Manualmente", value=False, key="dl_force_axes",
+                                     help="Attiva per impostare manualmente i limiti degli assi.")
+        if dl_force_axes:
+            dl_xmin = st.number_input("X min", value=-50.0, step=1.0, key="dl_xmin")
+            dl_xmax = st.number_input("X max", value=50.0, step=1.0, key="dl_xmax")
+            dl_ymin = st.number_input("Y min", value=-1.5, step=0.1, key="dl_ymin")
+            dl_ymax = st.number_input("Y max", value=1.5, step=0.1, key="dl_ymax")
     
     final_w = dl_width * dl_scale
     final_h = dl_height * dl_scale
-    st.info(f"📐 PNG: **{final_w}×{final_h} px** | Linee: **{dl_lw} px** | Font: **{dl_font_scale:.1f}x**" +
-            (f" | Titolo: **{dl_custom_title}**" if dl_custom_title.strip() else ""))
+    status_parts = [f"📐 PNG: **{final_w}×{final_h} px**", f"Linee: **{dl_lw} px**", f"Font: **{dl_font_scale:.1f}x**"]
+    if dl_show_title:
+        status_parts.append(f"Titolo: **{'✏️ ' + dl_custom_title if dl_custom_title.strip() else 'Auto'}**")
+    else:
+        status_parts.append("Titolo: **OFF**")
+    if dl_force_axes:
+        status_parts.append(f"Assi: **[{dl_xmin},{dl_xmax}]×[{dl_ymin},{dl_ymax}]**")
+    st.info(" | ".join(status_parts))
     
     def dl_config(filename):
         """Configurazione download con dimensioni personalizzate."""
@@ -3907,7 +3926,7 @@ elif sezione == "📥 Centro Download":
         }
     
     def dl_applica_font(fig):
-        """Applica scala font e titolo personalizzato a un grafico per il download."""
+        """Applica scala font, titolo e assi personalizzati a un grafico per il download."""
         base_title = int(16 * dl_font_scale)
         base_axis = int(13 * dl_font_scale)
         base_tick = int(11 * dl_font_scale)
@@ -3921,9 +3940,16 @@ elif sezione == "📥 Centro Download":
         fig.update_xaxes(title_font=dict(size=base_axis), tickfont=dict(size=base_tick))
         fig.update_yaxes(title_font=dict(size=base_axis), tickfont=dict(size=base_tick))
         
-        # Titolo personalizzato
-        if dl_custom_title.strip():
+        # Gestione titolo
+        if not dl_show_title:
+            fig.update_layout(title_text=None)
+        elif dl_custom_title.strip():
             fig.update_layout(title_text=dl_custom_title.strip())
+        
+        # Forzatura assi manuale
+        if dl_force_axes:
+            fig.update_xaxes(range=[dl_xmin, dl_xmax])
+            fig.update_yaxes(range=[dl_ymin, dl_ymax])
         
         return fig
     
