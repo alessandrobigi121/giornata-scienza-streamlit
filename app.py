@@ -488,12 +488,12 @@ st.sidebar.markdown("""
 st.sidebar.markdown("### 📍 Navigazione")
 sezione = st.sidebar.radio(
     "Scegli una sezione:",
-    ["🚀 Modalità Presentazione", "Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
+    ["Battimenti", "Pacchetti d'Onda", "Spettro di Fourier", 
      "Principio di Indeterminazione", "Analisi Multi-Pacchetto", 
      "Regressione Δx vs 1/Δk", "Onde Stazionarie", "Animazione Propagazione",
      "Analisi Audio Microfono", "Riconoscimento Battimenti", "Confronto Scenari", 
      "Analogia Quantistica", "Quiz Interattivo", "Modalità Mobile (Demo)",
-     "📥 Centro Download"]
+     "📥 Centro Download", "🚀 Modalità Presentazione"]
 )
 
 mostra_parametri_acustici()  # Mostra parametri fisici
@@ -556,23 +556,6 @@ if sezione == "🚀 Modalità Presentazione":
     if 'pres_collapse_x' not in st.session_state:
         st.session_state.pres_collapse_x = 0.0
 
-    # ========== SLIDE 0: INTRODUZIONE ==========
-    styled_header(
-        "🔬", 
-        "Introduzione: L'esperimento della doppia fenditura",
-        "L'esperimento che descrive meglio tutti i misteri della meccanica quantistica",
-        "#e74c3c"
-    )
-    
-    st.markdown("""
-    L'esperimento della doppia fenditura con tutte le sue varianti è l'esperimento che descrive meglio 
-    tutti i misteri della meccanica quantistica come il **dualismo onda-particella**, 
-    il **principio di indeterminazione** ecc.
-    
-    Consideriamo il suono prodotto da un diapason. Immaginiamo che questo suono sia la nostra particella. 
-    Ma attenzione, si tratta solo di un'**analogia**, perché il suono è una vibrazione fisica dell'aria, 
-    mentre l'elettrone è descritto da una grandezza matematica astratta chiamata **Funzione d'Onda** (Ψ).
-    """)
 
     # ========== SLIDE 1: BATTIMENTI ==========
     st.markdown("---")
@@ -605,7 +588,7 @@ if sezione == "🚀 Modalità Presentazione":
     f1_pres = 440.0
     f2_same = 440.0
     f2_beat = 445.0
-    durata_pres = 1.0
+    durata_pres = 0.05
     fs_plot = 20000
     t_pres = np.linspace(0, durata_pres, int(durata_pres * fs_plot))
     
@@ -627,7 +610,7 @@ if sezione == "🚀 Modalità Presentazione":
         
         fig_wave = make_subplots(rows=2, cols=1, 
                                  subplot_titles=("Onda Pura: 440 Hz", "Spettro di Frequenze"),
-                                 vertical_spacing=0.15, row_heights=[0.65, 0.35])
+                                 vertical_spacing=0.25, row_heights=[0.65, 0.35])
         fig_wave.add_trace(go.Scatter(x=t_pres, y=y1, line=dict(color='#3498db', width=2), 
                                       name="Onda 1 (440 Hz)"), row=1, col=1)
         # Spettro: un solo picco
@@ -641,12 +624,6 @@ if sezione == "🚀 Modalità Presentazione":
         applica_stile(fig_wave, is_light_mode)
         st.plotly_chart(fig_wave, use_container_width=True, config=get_download_config("pres_onda_pura"))
         
-        styled_info_box(
-            "Questa onda non finisce mai. Se l'elettrone fosse descritto da questa onda pura, "
-            "sapremmo esattamente la sua energia, ma la sua <strong>posizione sarebbe completamente indeterminata</strong>.",
-            "💡", "info"
-        )
-        
     elif step == 2:
         # 2 onde identiche → interferenza costruttiva
         y1 = np.cos(2 * np.pi * f1_pres * t_pres)
@@ -655,7 +632,7 @@ if sezione == "🚀 Modalità Presentazione":
         
         fig_same = make_subplots(rows=2, cols=1, 
                                   subplot_titles=("Somma di 2 Onde Identiche (440 Hz + 440 Hz)", "Spettro di Frequenze"),
-                                  vertical_spacing=0.15, row_heights=[0.65, 0.35])
+                                  vertical_spacing=0.25, row_heights=[0.65, 0.35])
         fig_same.add_trace(go.Scatter(x=t_pres, y=y_sum, line=dict(color='#8e44ad', width=2), 
                                        name="Somma (2A)"), row=1, col=1)
         # Spettro: ancora un solo picco (sovrapposti)
@@ -669,32 +646,31 @@ if sezione == "🚀 Modalità Presentazione":
         applica_stile(fig_same, is_light_mode)
         st.plotly_chart(fig_same, use_container_width=True, config=get_download_config("pres_due_identiche"))
         
-        styled_info_box(
-            "Il suono è solo più forte. Le due onde sono identiche, si sommano e basta. "
-            "Non è cambiato nulla nella struttura del suono. <strong>L'onda è ancora infinita.</strong>",
-            "🔊", "warning"
-        )
-        
     elif step == 3:
         # Battimenti! f1=440, f2=445
-        y1 = np.cos(2 * np.pi * f1_pres * t_pres)
-        y2 = np.cos(2 * np.pi * f2_beat * t_pres)
+        # Calcola durata per mostrare ~4 battimenti
+        f_batt_pres = abs(f1_pres - f2_beat)
+        durata_beat = 4.0 / f_batt_pres if f_batt_pres > 0 else 1.0
+        t_beat = np.linspace(0, durata_beat, int(durata_beat * fs_plot))
+        
+        y1 = np.cos(2 * np.pi * f1_pres * t_beat)
+        y2 = np.cos(2 * np.pi * f2_beat * t_beat)
         y_beat = y1 + y2
         
         # Inviluppo con padding
-        pad_len = int(len(t_pres) * 0.1)
+        pad_len = int(len(t_beat) * 0.1)
         y_padded = np.pad(y_beat, (pad_len, pad_len), mode='reflect')
         env_full = np.abs(signal.hilbert(y_padded))
         env = env_full[pad_len:-pad_len]
         
         fig_beats = make_subplots(rows=2, cols=1, 
-                                   subplot_titles=("Battimenti: 440 Hz + 445 Hz → f_batt = 5 Hz", "Spettro di Frequenze"),
-                                   vertical_spacing=0.15, row_heights=[0.65, 0.35])
-        fig_beats.add_trace(go.Scatter(x=t_pres, y=y_beat, line=dict(color='#8e44ad', width=1.5), 
+                                   subplot_titles=(f"Battimenti: 440 Hz + 445 Hz → f_batt = {f_batt_pres:.0f} Hz", "Spettro di Frequenze"),
+                                   vertical_spacing=0.25, row_heights=[0.65, 0.35])
+        fig_beats.add_trace(go.Scatter(x=t_beat, y=y_beat, line=dict(color='#8e44ad', width=1.5), 
                                         name="Somma"), row=1, col=1)
-        fig_beats.add_trace(go.Scatter(x=t_pres, y=env, line=dict(color='#e67e22', width=2.5, dash='dash'), 
+        fig_beats.add_trace(go.Scatter(x=t_beat, y=env, line=dict(color='#e67e22', width=2.5, dash='dash'), 
                                         name="Inviluppo"), row=1, col=1)
-        fig_beats.add_trace(go.Scatter(x=t_pres, y=-env, showlegend=False,
+        fig_beats.add_trace(go.Scatter(x=t_beat, y=-env, showlegend=False,
                                         line=dict(color='#e67e22', width=2.5, dash='dash')), row=1, col=1)
         # Spettro: DUE picchi
         fig_beats.add_trace(go.Bar(x=[440, 445], y=[1.0, 1.0], 
@@ -708,15 +684,11 @@ if sezione == "🚀 Modalità Presentazione":
         applica_stile(fig_beats, is_light_mode)
         st.plotly_chart(fig_beats, use_container_width=True, config=get_download_config("pres_battimenti"))
         
-        # Formula inviluppo
-        st.latex(r"y(t) = \underbrace{2A \cos\left(\frac{\omega_1 - \omega_2}{2}t\right)}_{\text{Inviluppo (Modulazione)}} \cdot \underbrace{\cos\left(\frac{\omega_1 + \omega_2}{2}t\right)}_{\text{Portante (Nota)}}")
+        # Formula Principio di Sovrapposizione
+        st.latex(r"y(t) = A\cos(\omega_1 t) + A\cos(\omega_2 t)")
         
-        styled_info_box(
-            "<strong>Osservazione:</strong> il battimento c'è, ma poi si ripete! "
-            "Se descrivesse un elettrone, significherebbe che ha alta probabilità di essere qui, "
-            "ma anche lì, e anche laggiù. <strong>Non lo abbiamo ancora isolato.</strong>",
-            "🤔", "warning"
-        )
+        # Formula Prosthaphaeresis (inviluppo)
+        st.latex(r"y(t) = \underbrace{2A \cos\left(\frac{\omega_1 - \omega_2}{2}t\right)}_{\text{Inviluppo (Modulazione)}} \cdot \underbrace{\cos\left(\frac{\omega_1 + \omega_2}{2}t\right)}_{\text{Portante (Nota)}}")
         
         # Audio
         st.markdown("#### 🔊 Ascolta i Battimenti")
@@ -799,37 +771,41 @@ if sezione == "🚀 Modalità Presentazione":
     applica_stile(fig_pkt, is_light_mode)
     st.plotly_chart(fig_pkt, use_container_width=True, config=get_download_config("pres_pacchetto"))
     
-    if n_w >= 5:
-        styled_info_box(
-            f"Con <strong>N = {n_w}</strong> onde, le 'code' laterali si abbassano e il picco "
-            "centrale cresce. Le onde si cancellano a vicenda dappertutto tranne che in <strong>un solo punto</strong>. "
-            "Questo è un <strong>Pacchetto d'Onda</strong>!",
-            "🎯", "success"
-        )
-    
     # ========== ANIMAZIONE GARA DI CORSA ==========
     st.markdown("---")
-    st.markdown("#### 🏃 Animazione: La Gara di Corsa")
-    styled_info_box(
-        "Come una gara di corsa: alla partenza tutti i corridori sono allineati (onde in fase). "
-        "Ma poiché ognuno corre a velocità diversa (frequenza diversa), il gruppo si sfalda. "
-        "Fuori dal centro, le onde non vanno più a «tempo» e si cancellano a vicenda.",
-        "🏁", "tip"
-    )
+    st.markdown("#### 🏃 Animazione: Dispersione delle Onde")
     
-    n_anim = min(n_w, 15)
-    phase_shift = st.slider("⏱️ Tempo (sfasamento)", 0.0, 1.0, 0.0, 0.01, key="pres_race_phase",
-                            help="Sposta per vedere come le onde si sfasano nel tempo")
+    # Session state per animazione
+    if 'pres_race_playing' not in st.session_state:
+        st.session_state.pres_race_playing = False
+    if 'pres_race_phase' not in st.session_state:
+        st.session_state.pres_race_phase = 0.0
     
-    freqs_anim = np.linspace(f_min_pk, f_max_pk, n_anim)
-    t_anim = np.linspace(-0.05, 0.05, 2000)
+    anim_cols = st.columns(3)
+    with anim_cols[0]:
+        if st.button("▶️ Play", key="pres_race_play", use_container_width=True):
+            st.session_state.pres_race_playing = True
+            st.session_state.pres_race_phase = 0.0
+    with anim_cols[1]:
+        if st.button("⏸️ Pausa", key="pres_race_pause", use_container_width=True):
+            st.session_state.pres_race_playing = False
+    with anim_cols[2]:
+        if st.button("🔄 Reset", key="pres_race_reset", use_container_width=True):
+            st.session_state.pres_race_playing = False
+            st.session_state.pres_race_phase = 0.0
+    
+    phase_shift = st.session_state.pres_race_phase
+    
+    # Parametri fissi per animazione gara: 10 onde da 100 a 400 Hz
+    n_anim = 10
+    freqs_anim = np.linspace(100, 400, n_anim)
+    t_anim = np.linspace(-0.002, 0.002, 2000)  # window ±2 ms
     
     fig_race = go.Figure()
     y_race_sum = np.zeros_like(t_anim)
     
-
     for i, f in enumerate(freqs_anim):
-        phase = 2 * np.pi * f * phase_shift * 0.01  # fase dipende dalla frequenza
+        phase = 2 * np.pi * f * phase_shift * 0.01
         y_i = (1.0 / n_anim) * np.cos(2 * np.pi * f * t_anim + phase)
         y_race_sum += y_i
         hue = i / max(n_anim, 1)
@@ -841,12 +817,63 @@ if sezione == "🚀 Modalità Presentazione":
     fig_race.add_trace(go.Scatter(x=t_anim*1000, y=y_race_sum, 
                                    line=dict(color='white', width=3), name="SOMMA"))
     
-    fig_race.update_xaxes(title_text="Tempo (ms)", range=[-50, 50])
+    fig_race.update_xaxes(title_text="Tempo (ms)", range=[-2, 2])
     fig_race.update_yaxes(title_text="Ampiezza", range=[-1.2, 1.2])
     fig_race.update_layout(height=450, hovermode='x unified',
                            legend=dict(font=dict(size=9)))
     applica_stile(fig_race, is_light_mode)
     st.plotly_chart(fig_race, use_container_width=True, config=get_download_config("pres_gara"))
+    
+    # ---- ANIMAZIONE STICKMAN (vista dall'alto) ----
+    st.markdown("##### 🏁 La Gara dei Corridori")
+    
+    fig_stick = go.Figure()
+    
+    # Linea di partenza
+    fig_stick.add_shape(type="line", x0=0, x1=0, y0=-0.5, y1=n_anim - 0.5,
+                        line=dict(color="rgba(255,255,255,0.5)", width=2, dash="dash"))
+    fig_stick.add_annotation(x=0, y=n_anim, text="PARTENZA", showarrow=False,
+                             font=dict(size=12, color="rgba(255,255,255,0.7)"))
+    
+    for i, f in enumerate(freqs_anim):
+        # Posizione = velocità * tempo. Velocità prop. a frequenza (analogia).
+        speed = f / 100.0  # normalizzato: f=100→v=1, f=400→v=4
+        pos_x = speed * phase_shift * 5.0  # scaling per visibilità
+        
+        hue = i / max(n_anim, 1)
+        r, g, b = colorsys.hsv_to_rgb(hue, 0.8, 0.9)
+        color_str = f"rgb({int(r*255)},{int(g*255)},{int(b*255)})"
+        
+        fig_stick.add_trace(go.Scatter(
+            x=[pos_x], y=[i],
+            mode='markers+text',
+            marker=dict(size=18, color=color_str, symbol='triangle-right'),
+            text=[f"🏃"],
+            textposition="top center",
+            textfont=dict(size=14),
+            name=f"f={f:.0f} Hz",
+            showlegend=False
+        ))
+    
+    max_x = max(4.0 * phase_shift * 5.0 + 1, 2)
+    fig_stick.update_layout(
+        height=300,
+        xaxis=dict(title="Posizione (u.a.)", range=[-1, max_x]),
+        yaxis=dict(title="Corridore", showticklabels=False, range=[-1, n_anim + 0.5]),
+        margin=dict(l=40, r=20, t=30, b=40),
+    )
+    applica_stile(fig_stick, is_light_mode)
+    st.plotly_chart(fig_stick, use_container_width=True, config=get_download_config("pres_stickman"))
+    
+    # Auto-advance animation
+    if st.session_state.pres_race_playing:
+        import time
+        time.sleep(0.08)
+        st.session_state.pres_race_phase += 0.02
+        if st.session_state.pres_race_phase > 1.0:
+            st.session_state.pres_race_playing = False
+        else:
+            st.rerun()
     # ========== SLIDE 3: PROBABILITÀ E MISURA ==========
     st.markdown("---")
     styled_header(
@@ -857,6 +884,23 @@ if sezione == "🚀 Modalità Presentazione":
     )
     
     # Probabilità |Ψ|²
+    # --- Pacchetto d'Onda Standard: N=50 onde (100-200 Hz) ---
+    n_prob = 50
+    f_min_prob, f_max_prob = 100.0, 200.0
+    durata_prob = 0.1     # s, finestra ±100 ms
+    t_prob = np.linspace(-durata_prob, durata_prob, 6000)
+    freqs_prob = np.linspace(f_min_prob, f_max_prob, n_prob)
+    
+    y_prob = np.zeros_like(t_prob)
+    for f in freqs_prob:
+        y_prob += (1.0 / n_prob) * np.cos(2 * np.pi * f * t_prob)
+    
+    # Inviluppo via Hilbert
+    pad_prob = int(len(t_prob) * 0.1)
+    y_pad_prob = np.pad(y_prob, (pad_prob, pad_prob), mode='reflect')
+    env_prob = np.abs(signal.hilbert(y_pad_prob))[pad_prob:-pad_prob]
+    t_prob_ms = t_prob * 1000  # in ms
+    
     prob_cols = st.columns(2)
     with prob_cols[0]:
         if st.button("📊 Mostra Probabilità |Ψ|²", key="pres_toggle_prob", use_container_width=True):
@@ -864,56 +908,131 @@ if sezione == "🚀 Modalità Presentazione":
             st.session_state.pres_collapsed = False
     with prob_cols[1]:
         if st.button("⚡ MISURA", key="pres_misura", use_container_width=True):
-            st.session_state.pres_collapsed = True
             # Scegli posizione casuale pesata dalla probabilità
-            prob_dist = env_pk**2
+            prob_dist = env_prob**2
             prob_dist = prob_dist / (np.sum(prob_dist) + 1e-10)
-            idx_collapse = np.random.choice(len(t_pk), p=prob_dist)
-            st.session_state.pres_collapse_x = t_pk[idx_collapse] * 1000  # in ms
+            idx_collapse = np.random.choice(len(t_prob), p=prob_dist)
+            st.session_state.pres_collapse_x = t_prob_ms[idx_collapse]
             st.session_state.pres_show_prob = True
-    
-    fig_prob = go.Figure()
+            st.session_state.pres_collapsed = True
     
     if st.session_state.pres_collapsed:
-        # Mostra collasso: spike nel punto di misura
+        # ---- ANIMAZIONE NATIVA PLOTLY (client-side) ----
         collapse_x = st.session_state.pres_collapse_x
+        t_ms = t_prob_ms
         
-        # Pacchetto originale sbiadito
-        fig_prob.add_trace(go.Scatter(x=t_pk*1000, y=y_packet, 
-                                      line=dict(color='rgba(100,100,100,0.2)', width=1), 
-                                      name="Ψ (pre-misura)"))
+        n_frames = 25
+        sigma_start = 30.0   # ms, larghezza iniziale ~pacchetto intero
+        sigma_end = 0.8       # ms
         
-        # Spike di collasso
-        fig_prob.add_trace(go.Scatter(
-            x=[collapse_x, collapse_x], y=[0, 1.0],
-            mode='lines+markers', 
-            line=dict(color='#e74c3c', width=4),
-            marker=dict(size=[0, 15], color='#e74c3c', symbol='circle'),
-            name="PARTICELLA RILEVATA!"
+        # Frame 0: stato iniziale (pacchetto intero)
+        fig_collapse = go.Figure()
+        
+        # Trace 0: Ψ originale (sbiadito, immutabile)
+        fig_collapse.add_trace(go.Scatter(
+            x=t_ms, y=y_prob,
+            line=dict(color='rgba(100,100,100,0.15)', width=1),
+            name="Ψ originale"
+        ))
+        # Trace 1: Ψ collapsing
+        fig_collapse.add_trace(go.Scatter(
+            x=t_ms, y=y_prob,
+            line=dict(color='#8e44ad', width=2),
+            name="Ψ (collasso)"
+        ))
+        # Trace 2: |Ψ|² collapsing (filled)
+        prob_init = env_prob**2
+        prob_init = prob_init / (np.max(prob_init) + 1e-10)
+        fig_collapse.add_trace(go.Scatter(
+            x=t_ms, y=prob_init,
+            fill='tozeroy',
+            fillcolor='rgba(231, 76, 60, 0.3)',
+            line=dict(color='#e74c3c', width=2),
+            name="|Ψ|²"
         ))
         
-        fig_prob.add_annotation(x=collapse_x, y=1.1, text="⚡ QUI!",
-                               font=dict(size=18, color='#e74c3c'), showarrow=False)
+        # Pre-compute all frames
+        frames = []
+        for i in range(n_frames):
+            progress = i / (n_frames - 1)
+            # Exponential decay for sigma (feels more natural)
+            sigma = sigma_start * (sigma_end / sigma_start) ** progress
+            
+            gauss = np.exp(-0.5 * ((t_ms - collapse_x) / sigma)**2)
+            y_c = y_prob * gauss
+            env_c = env_prob * gauss
+            prob_c = env_c**2
+            prob_c = prob_c / (np.max(prob_c) + 1e-10) if np.max(prob_c) > 0 else prob_c
+            
+            frame_data = [
+                go.Scatter(x=t_ms, y=y_prob,
+                           line=dict(color='rgba(100,100,100,0.15)', width=1)),
+                go.Scatter(x=t_ms, y=y_c,
+                           line=dict(color='#8e44ad', width=2)),
+                go.Scatter(x=t_ms, y=prob_c,
+                           fill='tozeroy',
+                           fillcolor='rgba(231, 76, 60, 0.3)',
+                           line=dict(color='#e74c3c', width=2)),
+            ]
+            frames.append(go.Frame(data=frame_data, name=str(i)))
         
-        fig_prob.update_layout(height=450, xaxis_title="Posizione (ms)", yaxis_title="Ampiezza",
-                               yaxis=dict(range=[-1.2, 1.5]))
-        applica_stile(fig_prob, is_light_mode)
-        st.plotly_chart(fig_prob, use_container_width=True, config=get_download_config("pres_collasso"))
+        fig_collapse.frames = frames
         
-        styled_info_box(
-            "L'atto di misurare ha costretto la particella a <strong>«scegliere» una posizione</strong>, "
-            "facendo collassare la sua funzione d'onda. Prima di quel momento, la sua natura era delocalizzata.",
-            "⚡", "warning"
+        # Animation controls
+        fig_collapse.update_layout(
+            height=480,
+            xaxis_title="Posizione (ms)",
+            yaxis_title="Ampiezza",
+            yaxis=dict(range=[-1.2, 1.5]),
+            updatemenus=[dict(
+                type="buttons",
+                showactive=False,
+                x=0.05, y=1.15,
+                xanchor="left",
+                buttons=[
+                    dict(
+                        label="▶ Collasso!",
+                        method="animate",
+                        args=[None, {
+                            "frame": {"duration": 60, "redraw": True},
+                            "fromcurrent": False,
+                            "transition": {"duration": 40, "easing": "cubic-in-out"},
+                            "mode": "immediate",
+                        }]
+                    ),
+                    dict(
+                        label="⏸",
+                        method="animate",
+                        args=[[None], {
+                            "frame": {"duration": 0, "redraw": False},
+                            "mode": "immediate",
+                            "transition": {"duration": 0}
+                        }]
+                    ),
+                ]
+            )],
         )
         
+        # Collapse point indicator
+        fig_collapse.add_vline(
+            x=collapse_x, line_width=1, line_dash="dot", line_color="yellow",
+            annotation_text="⚡ Misura", annotation_position="top",
+            annotation=dict(font=dict(size=14, color="yellow"))
+        )
+        
+        applica_stile(fig_collapse, is_light_mode)
+        st.plotly_chart(fig_collapse, use_container_width=True, config=get_download_config("pres_collasso"))
+        
+        st.caption("Premi **▶ Collasso!** per vedere la funzione d'onda collassare nel punto di misura.")
+        
     elif st.session_state.pres_show_prob:
-        # Mostra pacchetto + probabilità
-        fig_prob.add_trace(go.Scatter(x=t_pk*1000, y=y_packet, 
+        # Mostra pacchetto + probabilità (statico)
+        fig_prob = go.Figure()
+        fig_prob.add_trace(go.Scatter(x=t_prob_ms, y=y_prob, 
                                       line=dict(color='#2c3e50', width=2), name="Ψ(x)"))
-        # Densità di probabilità come area colorata
-        prob_curve = env_pk**2
+        prob_curve = env_prob**2
         prob_curve = prob_curve / (np.max(prob_curve) + 1e-10)
-        fig_prob.add_trace(go.Scatter(x=t_pk*1000, y=prob_curve, fill='tozeroy',
+        fig_prob.add_trace(go.Scatter(x=t_prob_ms, y=prob_curve, fill='tozeroy',
                                       fillcolor='rgba(231, 76, 60, 0.3)',
                                       line=dict(color='#e74c3c', width=2.5), 
                                       name="|Ψ|² (Probabilità)"))
@@ -922,14 +1041,9 @@ if sezione == "🚀 Modalità Presentazione":
                                yaxis=dict(range=[-1.2, 1.5]))
         applica_stile(fig_prob, is_light_mode)
         st.plotly_chart(fig_prob, use_container_width=True, config=get_download_config("pres_probabilita"))
-        
-        styled_info_box(
-            "Dove la curva rossa è alta, è molto probabile che l'elettrone si manifesti quando misurato. "
-            "Dove è piatta, è altamente improbabile trovarlo. Premi <strong>MISURA</strong> per simulare un'osservazione!",
-            "🎲", "tip"
-        )
     else:
-        fig_prob.add_trace(go.Scatter(x=t_pk*1000, y=y_packet, 
+        fig_prob = go.Figure()
+        fig_prob.add_trace(go.Scatter(x=t_prob_ms, y=y_prob, 
                                       line=dict(color='#2c3e50', width=2), name="Ψ(x)"))
         fig_prob.update_layout(height=450, xaxis_title="Posizione (ms)", yaxis_title="Ampiezza",
                                yaxis=dict(range=[-1.2, 1.5]))
@@ -959,6 +1073,21 @@ if sezione == "🚀 Modalità Presentazione":
     else:
         f_min_ind, f_max_ind, n_ind = 100.0, 130.0, 50
     
+    # Mostra informazioni del preset selezionato
+    st.markdown(f"""
+    <div style="
+        border: 1px solid rgba(128,128,128,0.3);
+        padding: 1rem 1.5rem; border-radius: 10px; margin: 0.5rem 0 1rem 0;
+        background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(128,128,128,0.05));
+    ">
+        <strong>📋 Parametri:</strong> &nbsp;
+        f<sub>min</sub> = {f_min_ind:.0f} Hz &nbsp;|&nbsp;
+        f<sub>max</sub> = {f_max_ind:.0f} Hz &nbsp;|&nbsp;
+        Δf = {f_max_ind - f_min_ind:.0f} Hz &nbsp;|&nbsp;
+        N = {n_ind} onde
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Calcoli fisici
     lambda_min_ind = V_SUONO / f_max_ind
     lambda_max_ind = V_SUONO / f_min_ind
@@ -973,7 +1102,7 @@ if sezione == "🚀 Modalità Presentazione":
     col_ind1, col_ind2 = st.columns(2)
     
     with col_ind1:
-        st.markdown("#### 📐 Dominio Spaziale (Δx)")
+        st.markdown("#### 📐 Dominio Spaziale")
         durata_ind = 0.3
         t_ind = np.linspace(-durata_ind, durata_ind, int(durata_ind * 2 * 20000))
         omega_vals = 2 * np.pi * np.linspace(f_min_ind, f_max_ind, n_ind)
@@ -993,7 +1122,7 @@ if sezione == "🚀 Modalità Presentazione":
         st.plotly_chart(fig_space, use_container_width=True, config=get_download_config("pres_spazio"))
     
     with col_ind2:
-        st.markdown("#### 📊 Spettro di Frequenze (Δk)")
+        st.markdown("#### 📊 Spettro di Frequenze")
         freq_spec = np.linspace(f_min_ind, f_max_ind, n_ind)
         amp_spec = np.ones(n_ind) / n_ind
         
@@ -1006,16 +1135,26 @@ if sezione == "🚀 Modalità Presentazione":
         applica_stile(fig_freq, is_light_mode)
         st.plotly_chart(fig_freq, use_container_width=True, config=get_download_config("pres_spettro"))
     
-    # Prodotto costante
-    prodotto_xk = delta_x_teorico_ind * delta_k_ind
+    # ---- CALCOLI DETTAGLIATI ----
+    st.markdown("#### 📝 Calcoli")
     
+    calc_col1, calc_col2, calc_col3 = st.columns(3)
+    with calc_col1:
+        st.latex(rf"\Delta k = k_{{max}} - k_{{min}} = {delta_k_ind:.4f} \;\text{{rad/m}}")
+    with calc_col2:
+        st.latex(rf"\Delta x = \frac{{4\pi}}{{\Delta k}} = \frac{{{4*np.pi:.2f}}}{{{delta_k_ind:.4f}}} = {delta_x_teorico_ind:.4f} \;\text{{m}}")
+    with calc_col3:
+        prodotto_xk = delta_x_teorico_ind * delta_k_ind
+        st.latex(rf"\Delta x \cdot \Delta k = {prodotto_xk:.2f} = 4\pi")
+    
+    # ---- BANNER ARANCIONE ----
     st.markdown(f"""
     <div style="
         background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         padding: 1.5rem 2rem; border-radius: 15px; text-align: center; margin: 1rem 0;
     ">
         <span style="color: white; font-size: 1.8rem; font-weight: 700;">
-            Δx · Δk = {prodotto_xk:.2f} ≈ 4π = {4*np.pi:.2f}
+            Δx · Δk = {prodotto_xk:.2f} = 4π = {4*np.pi:.2f}
         </span>
         <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1rem;">
             Non importa quanto ci proviamo, quel numero non scenderà mai sotto 4π!
@@ -1024,6 +1163,99 @@ if sezione == "🚀 Modalità Presentazione":
     """, unsafe_allow_html=True)
     
     st.latex(r"\Delta x \cdot \Delta k \geq 4\pi")
+    
+    # ---- SLIDER ESPLORATIVO + TABELLA DINAMICA ----
+    st.markdown("---")
+    st.markdown("#### 🔬 Verifica: cambia Δf e osserva che il prodotto resta costante")
+    
+    delta_f_slider = st.slider(
+        "Δf (Hz) = f_max − f_min", 
+        1.0, 200.0, 30.0, 1.0, 
+        key="pres_deltaf_slider",
+        help="Muovi per cambiare la larghezza di banda e osserva come Δx e Δk cambiano ma il prodotto Δx·Δk resta sempre 4π."
+    )
+    
+    # Calcola per ogni configurazione
+    configs = {
+        "Standard (preset)": {"f_min": 100.0, "f_max": 130.0, "N": 50},
+        "Super-Localizzato (preset)": {"f_min": 100.0, "f_max": 200.0, "N": 80},
+        "Quasi-Monocromatico (preset)": {"f_min": 100.0, "f_max": 105.0, "N": 30},
+        f"Slider (Δf = {delta_f_slider:.0f} Hz)": {"f_min": 100.0, "f_max": 100.0 + delta_f_slider, "N": 50},
+    }
+    
+    table_data = []
+    for nome, cfg in configs.items():
+        lmin = V_SUONO / cfg["f_max"]
+        lmax = V_SUONO / cfg["f_min"]
+        kmin_t = 2 * np.pi / lmax
+        kmax_t = 2 * np.pi / lmin
+        dk = kmax_t - kmin_t
+        dx = 4 * np.pi / dk if dk > 0 else 0
+        prod = dx * dk
+        table_data.append({
+            "Configurazione": nome,
+            "f_min (Hz)": f"{cfg['f_min']:.0f}",
+            "f_max (Hz)": f"{cfg['f_max']:.0f}",
+            "Δf (Hz)": f"{cfg['f_max'] - cfg['f_min']:.0f}",
+            "Δk (rad/m)": f"{dk:.4f}",
+            "Δx (m)": f"{dx:.4f}",
+            "Δx · Δk": f"{prod:.2f}",
+        })
+    
+    df_table = pd.DataFrame(table_data)
+    st.dataframe(df_table, use_container_width=True, hide_index=True)
+    
+    st.markdown(f"""
+    <div style="
+        text-align: center; padding: 0.8rem; margin: 0.5rem 0;
+        border: 2px solid #f39c12; border-radius: 10px;
+    ">
+        <span style="font-size: 1.2rem; font-weight: 600;">
+            ✅ In ogni configurazione: Δx · Δk = 4π ≈ {4*np.pi:.2f} — sempre costante!
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ---- GRAFICI DINAMICI PER IL VALORE DELLO SLIDER ----
+    f_min_dyn = 100.0
+    f_max_dyn = 100.0 + delta_f_slider
+    n_dyn = 50
+    
+    dyn_col1, dyn_col2 = st.columns(2)
+    
+    with dyn_col1:
+        st.markdown(f"##### Pacchetto (Δf = {delta_f_slider:.0f} Hz)")
+        durata_dyn = 0.3
+        t_dyn = np.linspace(-durata_dyn, durata_dyn, int(durata_dyn * 2 * 20000))
+        omega_dyn = 2 * np.pi * np.linspace(f_min_dyn, f_max_dyn, n_dyn)
+        y_dyn = np.zeros_like(t_dyn)
+        for om in omega_dyn:
+            y_dyn += (1/n_dyn) * np.cos(om * t_dyn)
+        env_dyn = np.abs(signal.hilbert(y_dyn))
+        
+        fig_dyn_space = go.Figure()
+        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=y_dyn, line=dict(color='#8e44ad', width=2), name="Pacchetto"))
+        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=env_dyn, line=dict(color='#e67e22', width=2, dash='dash'), name="Inviluppo"))
+        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=-env_dyn, showlegend=False,
+                                            line=dict(color='#e67e22', width=2, dash='dash')))
+        fig_dyn_space.update_layout(height=350, xaxis_title="t (ms)", yaxis_title="A(t)",
+                                    xaxis=dict(range=[-300, 300]), yaxis=dict(range=[-1.2, 1.2]))
+        applica_stile(fig_dyn_space, is_light_mode)
+        st.plotly_chart(fig_dyn_space, use_container_width=True, config=get_download_config("pres_dyn_space"))
+    
+    with dyn_col2:
+        st.markdown(f"##### Spettro ({f_min_dyn:.0f} – {f_max_dyn:.0f} Hz)")
+        freq_dyn = np.linspace(f_min_dyn, f_max_dyn, n_dyn)
+        amp_dyn = np.ones(n_dyn) / n_dyn
+        
+        fig_dyn_freq = go.Figure()
+        fig_dyn_freq.add_trace(go.Bar(x=freq_dyn, y=amp_dyn, marker_color='#e74c3c',
+                                       width=(f_max_dyn - f_min_dyn) / n_dyn * 0.8 if delta_f_slider > 1 else 1))
+        fig_dyn_freq.update_layout(height=350, xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza",
+                                   showlegend=False,
+                                   xaxis=dict(range=[0, 350]), yaxis=dict(range=[0, 0.05]))
+        applica_stile(fig_dyn_freq, is_light_mode)
+        st.plotly_chart(fig_dyn_freq, use_container_width=True, config=get_download_config("pres_dyn_freq"))
 
     # ========== SLIDE 5: CONCLUSIONI ==========
     st.markdown("---")
