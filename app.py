@@ -224,13 +224,6 @@ def get_download_config(filename="grafico_fisica"):
         }
     }
 
-def applica_stile(fig, is_light_mode):
-    """Imposta sfondo trasparente per il grafico (per export PNG)."""
-    fig.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
-    )
-    return fig
 
 
 # ============ GESTIONE TEMI (DARK/LIGHT) ============
@@ -874,6 +867,254 @@ if sezione == "🚀 Modalità Presentazione":
             st.session_state.pres_race_playing = False
         else:
             st.rerun()
+    # ========== SLIDE 4: COMPROMESSO INEVITABILE ==========
+    st.markdown("---")
+    styled_header(
+        "⚖️", 
+        "Parte 4: Il Compromesso Inevitabile",
+        "La coperta troppo corta: Δx · Δk ≥ 4π",
+        "#f39c12"
+    )
+    
+    scenario_pres = st.radio(
+        "Seleziona scenario:",
+        ["Pacchetto Standard", "Super-Localizzato (Δk grande)", "Quasi-Monocromatico (Δk piccolo)"],
+        key="pres_scenario_ind",
+        horizontal=True
+    )
+    
+    if "Super-Localizzato" in scenario_pres:
+        f_min_ind, f_max_ind, n_ind = 100.0, 200.0, 80
+    elif "Quasi-Monocromatico" in scenario_pres:
+        f_min_ind, f_max_ind, n_ind = 100.0, 105.0, 30
+    else:
+        f_min_ind, f_max_ind, n_ind = 100.0, 130.0, 50
+    
+    # Mostra informazioni del preset selezionato
+    st.markdown(f"""
+    <div style="
+        border: 1px solid rgba(128,128,128,0.3);
+        padding: 1rem 1.5rem; border-radius: 10px; margin: 0.5rem 0 1rem 0;
+        background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(128,128,128,0.05));
+    ">
+        <strong>📋 Parametri:</strong> &nbsp;
+        f<sub>min</sub> = {f_min_ind:.0f} Hz &nbsp;|&nbsp;
+        f<sub>max</sub> = {f_max_ind:.0f} Hz &nbsp;|&nbsp;
+        Δf = {f_max_ind - f_min_ind:.0f} Hz &nbsp;|&nbsp;
+        N = {n_ind} onde
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Calcoli fisici
+    lambda_min_ind = V_SUONO / f_max_ind
+    lambda_max_ind = V_SUONO / f_min_ind
+    k_min_ind = 2 * np.pi / lambda_max_ind
+    k_max_ind = 2 * np.pi / lambda_min_ind
+    delta_k_ind = k_max_ind - k_min_ind
+    delta_f_ind = f_max_ind - f_min_ind
+    delta_omega_ind = 2 * np.pi * delta_f_ind
+    
+    col_ind1, col_ind2 = st.columns(2)
+    
+    with col_ind1:
+        st.markdown("#### 📐 Dominio Spaziale")
+        # Costruisci il pacchetto d'onda nel dominio spaziale (x)
+        k_vals_ind = np.linspace(k_min_ind, k_max_ind, n_ind)
+        range_x_ind = max(50.0, 4 * np.pi / delta_k_ind * 2.0) if delta_k_ind > 0 else 50.0
+        x_ind = np.linspace(-range_x_ind, range_x_ind, 20000)
+        y_ind = np.zeros_like(x_ind)
+        for k in k_vals_ind:
+            y_ind += (1/n_ind) * np.cos(k * x_ind)
+        env_ind = np.abs(signal.hilbert(y_ind))
+        
+        # Misura Δx dall'inviluppo (larghezza lobo principale)
+        delta_x_misurato, idx_sx_ind, idx_dx_ind = calcola_larghezza_temporale(x_ind, env_ind)
+        
+        fig_space = go.Figure()
+        fig_space.add_trace(go.Scatter(x=x_ind, y=y_ind, line=dict(color='#8e44ad', width=2), name="Pacchetto"))
+        fig_space.add_trace(go.Scatter(x=x_ind, y=env_ind, line=dict(color='#e67e22', width=2, dash='dash'), name="Inviluppo"))
+        fig_space.add_trace(go.Scatter(x=x_ind, y=-env_ind, showlegend=False,
+                                        line=dict(color='#e67e22', width=2, dash='dash')))
+        # Aggiungi linee verticali per mostrare dove Δx è misurato
+        if delta_x_misurato > 0:
+            fig_space.add_vline(x=x_ind[idx_sx_ind], line_dash="dot", line_color="#2ecc71", line_width=2)
+            fig_space.add_vline(x=x_ind[idx_dx_ind], line_dash="dot", line_color="#2ecc71", line_width=2,
+                               annotation_text=f"Δx = {delta_x_misurato:.2f} m",
+                               annotation_position="top right",
+                               annotation_font_color="#2ecc71",
+                               annotation_font_size=12)
+        fig_space.update_layout(height=400, xaxis_title="Posizione x (m)", yaxis_title="A(x)",
+                                yaxis=dict(range=[-1.2, 1.2]))
+        applica_stile(fig_space, is_light_mode)
+        st.plotly_chart(fig_space, use_container_width=True, config=get_download_config("pres_spazio"))
+    
+    with col_ind2:
+        st.markdown("#### 📊 Spettro di Frequenze")
+        freq_spec = np.linspace(f_min_ind, f_max_ind, n_ind)
+        amp_spec = np.ones(n_ind) / n_ind
+        
+        fig_freq = go.Figure()
+        fig_freq.add_trace(go.Bar(x=freq_spec, y=amp_spec, marker_color='#e74c3c',
+                                   width=(f_max_ind - f_min_ind) / n_ind * 0.8))
+        fig_freq.update_layout(height=400, xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza",
+                               showlegend=False,
+                               xaxis=dict(range=[0, 250]), yaxis=dict(range=[0, 0.05]))
+        applica_stile(fig_freq, is_light_mode)
+        st.plotly_chart(fig_freq, use_container_width=True, config=get_download_config("pres_spettro"))
+    
+    # ---- CALCOLI DETTAGLIATI ----
+    st.markdown("#### 📝 Calcoli")
+    
+    prodotto_xk = delta_x_misurato * delta_k_ind
+    
+    calc_col1, calc_col2, calc_col3 = st.columns(3)
+    with calc_col1:
+        st.latex(rf"\Delta k = k_{{max}} - k_{{min}} = {delta_k_ind:.4f} \;\text{{rad/m}}")
+    with calc_col2:
+        st.latex(rf"\Delta x = \text{{misurato dal grafico}} = {delta_x_misurato:.4f} \;\text{{m}}")
+    with calc_col3:
+        st.latex(rf"\Delta x \cdot \Delta k = {delta_x_misurato:.4f} \times {delta_k_ind:.4f} = {prodotto_xk:.2f}")
+    
+    # ---- BANNER ARANCIONE ----
+    st.markdown(f"""
+    <div style="
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        padding: 1.5rem 2rem; border-radius: 15px; text-align: center; margin: 1rem 0;
+    ">
+        <span style="color: white; font-size: 1.8rem; font-weight: 700;">
+            Δx · Δk = {prodotto_xk:.2f} ≈ 4π = {4*np.pi:.2f}
+        </span>
+        <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1rem;">
+            Δx misurato direttamente dal grafico — il prodotto è sempre ≈ 4π!
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.latex(r"\Delta x \cdot \Delta k \geq 4\pi")
+    
+    # ---- SLIDER ESPLORATIVO + TABELLA DINAMICA ----
+    st.markdown("---")
+    st.markdown("#### 🔬 Verifica: cambia Δf e osserva che il prodotto resta costante")
+    
+    delta_f_slider = st.slider(
+        "Δf (Hz) = f_max − f_min", 
+        1.0, 200.0, 30.0, 1.0, 
+        key="pres_deltaf_slider",
+        help="Muovi per cambiare la larghezza di banda e osserva come Δx e Δk cambiano ma il prodotto Δx·Δk resta sempre 4π."
+    )
+    
+    # Calcola per ogni configurazione
+    configs = {
+        "Standard (preset)": {"f_min": 100.0, "f_max": 130.0, "N": 50},
+        "Super-Localizzato (preset)": {"f_min": 100.0, "f_max": 200.0, "N": 80},
+        "Quasi-Monocromatico (preset)": {"f_min": 100.0, "f_max": 105.0, "N": 30},
+        f"Slider (Δf = {delta_f_slider:.0f} Hz)": {"f_min": 100.0, "f_max": 100.0 + delta_f_slider, "N": 50},
+    }
+    
+    table_data = []
+    for nome, cfg in configs.items():
+        lmin = V_SUONO / cfg["f_max"]
+        lmax = V_SUONO / cfg["f_min"]
+        kmin_t = 2 * np.pi / lmax
+        kmax_t = 2 * np.pi / lmin
+        dk = kmax_t - kmin_t
+        # Misura Δx dal pacchetto spaziale
+        if dk > 0:
+            range_x_t = max(50.0, 4 * np.pi / dk * 2.0)
+            x_t = np.linspace(-range_x_t, range_x_t, 10000)
+            k_arr = np.linspace(kmin_t, kmax_t, cfg["N"])
+            y_t = np.zeros_like(x_t)
+            for k in k_arr:
+                y_t += (1/cfg["N"]) * np.cos(k * x_t)
+            env_t = np.abs(signal.hilbert(y_t))
+            dx, _, _ = calcola_larghezza_temporale(x_t, env_t)
+        else:
+            dx = 0
+        prod = dx * dk
+        table_data.append({
+            "Configurazione": nome,
+            "f_min (Hz)": f"{cfg['f_min']:.0f}",
+            "f_max (Hz)": f"{cfg['f_max']:.0f}",
+            "Δf (Hz)": f"{cfg['f_max'] - cfg['f_min']:.0f}",
+            "Δk (rad/m)": f"{dk:.4f}",
+            "Δx (m) [misurato]": f"{dx:.4f}",
+            "Δx · Δk": f"{prod:.2f}",
+        })
+    
+    df_table = pd.DataFrame(table_data)
+    st.dataframe(df_table, use_container_width=True, hide_index=True)
+    
+    st.markdown(f"""
+    <div style="
+        text-align: center; padding: 0.8rem; margin: 0.5rem 0;
+        border: 2px solid #f39c12; border-radius: 10px;
+    ">
+        <span style="font-size: 1.2rem; font-weight: 600;">
+            ✅ Δx misurato dal grafico — il prodotto Δx · Δk ≈ 4π ≈ {4*np.pi:.2f} — sempre!
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ---- GRAFICI DINAMICI PER IL VALORE DELLO SLIDER ----
+    f_min_dyn = 100.0
+    f_max_dyn = 100.0 + delta_f_slider
+    n_dyn = 50
+    
+    dyn_col1, dyn_col2 = st.columns(2)
+    
+    with dyn_col1:
+        st.markdown(f"##### Pacchetto (Δf = {delta_f_slider:.0f} Hz)")
+        durata_dyn = 0.3
+        t_dyn = np.linspace(-durata_dyn, durata_dyn, int(durata_dyn * 2 * 20000))
+        omega_dyn = 2 * np.pi * np.linspace(f_min_dyn, f_max_dyn, n_dyn)
+        y_dyn = np.zeros_like(t_dyn)
+        for om in omega_dyn:
+            y_dyn += (1/n_dyn) * np.cos(om * t_dyn)
+        env_dyn = np.abs(signal.hilbert(y_dyn))
+        
+        fig_dyn_space = go.Figure()
+        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=y_dyn, line=dict(color='#8e44ad', width=2), name="Pacchetto"))
+        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=env_dyn, line=dict(color='#e67e22', width=2, dash='dash'), name="Inviluppo"))
+        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=-env_dyn, showlegend=False,
+                                            line=dict(color='#e67e22', width=2, dash='dash')))
+        fig_dyn_space.update_layout(height=350, xaxis_title="t (ms)", yaxis_title="A(t)",
+                                    xaxis=dict(range=[-300, 300]), yaxis=dict(range=[-1.2, 1.2]))
+        applica_stile(fig_dyn_space, is_light_mode)
+        st.plotly_chart(fig_dyn_space, use_container_width=True, config=get_download_config("pres_dyn_space"))
+    
+    with dyn_col2:
+        st.markdown(f"##### Spettro ({f_min_dyn:.0f} – {f_max_dyn:.0f} Hz)")
+        freq_dyn = np.linspace(f_min_dyn, f_max_dyn, n_dyn)
+        amp_dyn = np.ones(n_dyn) / n_dyn
+        
+        fig_dyn_freq = go.Figure()
+        fig_dyn_freq.add_trace(go.Bar(x=freq_dyn, y=amp_dyn, marker_color='#e74c3c',
+                                       width=(f_max_dyn - f_min_dyn) / n_dyn * 0.8 if delta_f_slider > 1 else 1))
+        fig_dyn_freq.update_layout(height=350, xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza",
+                                   showlegend=False,
+                                   xaxis=dict(range=[0, 350]), yaxis=dict(range=[0, 0.05]))
+        applica_stile(fig_dyn_freq, is_light_mode)
+        st.plotly_chart(fig_dyn_freq, use_container_width=True, config=get_download_config("pres_dyn_freq"))
+
+    # ========== SLIDE 5: CONCLUSIONI ==========
+    st.markdown("---")
+    styled_header(
+        "🎓", 
+        "Parte 5: Da de Broglie a Heisenberg",
+        "Il principio di indeterminazione",
+        "#1abc9c"
+    )
+    
+    st.markdown("""
+    **Louis de Broglie** (1924) legò la frequenza di un elettrone alla sua quantità di moto:
+    """)
+    st.latex(r"p = \hbar k")
+    
+    st.markdown("L'incertezza sulla frequenza (Δk) si trasforma in incertezza sulla quantità di moto (Δp):")
+    st.latex(r"\Delta x \cdot \Delta k \geq \frac{1}{2}")
+    st.latex(r"\Delta x \cdot (\hbar \Delta k) \geq \frac{\hbar}{2}")
+    st.latex(r"\boxed{\Delta x \cdot \Delta p \geq \frac{\hbar}{2}}")
+
     # ========== SLIDE 3: PROBABILITÀ E MISURA ==========
     st.markdown("---")
     styled_header(
@@ -1050,231 +1291,6 @@ if sezione == "🚀 Modalità Presentazione":
         applica_stile(fig_prob, is_light_mode)
         st.plotly_chart(fig_prob, use_container_width=True, config=get_download_config("pres_pacchetto_prob"))
 
-    # ========== SLIDE 4: COMPROMESSO INEVITABILE ==========
-    st.markdown("---")
-    styled_header(
-        "⚖️", 
-        "Parte 4: Il Compromesso Inevitabile",
-        "La coperta troppo corta: Δx · Δk ≥ 4π",
-        "#f39c12"
-    )
-    
-    scenario_pres = st.radio(
-        "Seleziona scenario:",
-        ["Pacchetto Standard", "Super-Localizzato (Δk grande)", "Quasi-Monocromatico (Δk piccolo)"],
-        key="pres_scenario_ind",
-        horizontal=True
-    )
-    
-    if "Super-Localizzato" in scenario_pres:
-        f_min_ind, f_max_ind, n_ind = 100.0, 200.0, 80
-    elif "Quasi-Monocromatico" in scenario_pres:
-        f_min_ind, f_max_ind, n_ind = 100.0, 105.0, 30
-    else:
-        f_min_ind, f_max_ind, n_ind = 100.0, 130.0, 50
-    
-    # Mostra informazioni del preset selezionato
-    st.markdown(f"""
-    <div style="
-        border: 1px solid rgba(128,128,128,0.3);
-        padding: 1rem 1.5rem; border-radius: 10px; margin: 0.5rem 0 1rem 0;
-        background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(128,128,128,0.05));
-    ">
-        <strong>📋 Parametri:</strong> &nbsp;
-        f<sub>min</sub> = {f_min_ind:.0f} Hz &nbsp;|&nbsp;
-        f<sub>max</sub> = {f_max_ind:.0f} Hz &nbsp;|&nbsp;
-        Δf = {f_max_ind - f_min_ind:.0f} Hz &nbsp;|&nbsp;
-        N = {n_ind} onde
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Calcoli fisici
-    lambda_min_ind = V_SUONO / f_max_ind
-    lambda_max_ind = V_SUONO / f_min_ind
-    k_min_ind = 2 * np.pi / lambda_max_ind
-    k_max_ind = 2 * np.pi / lambda_min_ind
-    delta_k_ind = k_max_ind - k_min_ind
-    delta_x_teorico_ind = 4 * np.pi / delta_k_ind if delta_k_ind > 0 else 0
-    delta_f_ind = f_max_ind - f_min_ind
-    delta_omega_ind = 2 * np.pi * delta_f_ind
-    delta_t_teorico_ind = 4 * np.pi / delta_omega_ind if delta_omega_ind > 0 else 0
-    
-    col_ind1, col_ind2 = st.columns(2)
-    
-    with col_ind1:
-        st.markdown("#### 📐 Dominio Spaziale")
-        durata_ind = 0.3
-        t_ind = np.linspace(-durata_ind, durata_ind, int(durata_ind * 2 * 20000))
-        omega_vals = 2 * np.pi * np.linspace(f_min_ind, f_max_ind, n_ind)
-        y_ind = np.zeros_like(t_ind)
-        for omega in omega_vals:
-            y_ind += (1/n_ind) * np.cos(omega * t_ind)
-        env_ind = np.abs(signal.hilbert(y_ind))
-        
-        fig_space = go.Figure()
-        fig_space.add_trace(go.Scatter(x=t_ind*1000, y=y_ind, line=dict(color='#8e44ad', width=2), name="Pacchetto"))
-        fig_space.add_trace(go.Scatter(x=t_ind*1000, y=env_ind, line=dict(color='#e67e22', width=2, dash='dash'), name="Inviluppo"))
-        fig_space.add_trace(go.Scatter(x=t_ind*1000, y=-env_ind, showlegend=False,
-                                        line=dict(color='#e67e22', width=2, dash='dash')))
-        fig_space.update_layout(height=400, xaxis_title="t (ms)", yaxis_title="A(t)",
-                                xaxis=dict(range=[-300, 300]), yaxis=dict(range=[-1.2, 1.2]))
-        applica_stile(fig_space, is_light_mode)
-        st.plotly_chart(fig_space, use_container_width=True, config=get_download_config("pres_spazio"))
-    
-    with col_ind2:
-        st.markdown("#### 📊 Spettro di Frequenze")
-        freq_spec = np.linspace(f_min_ind, f_max_ind, n_ind)
-        amp_spec = np.ones(n_ind) / n_ind
-        
-        fig_freq = go.Figure()
-        fig_freq.add_trace(go.Bar(x=freq_spec, y=amp_spec, marker_color='#e74c3c',
-                                   width=(f_max_ind - f_min_ind) / n_ind * 0.8))
-        fig_freq.update_layout(height=400, xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza",
-                               showlegend=False,
-                               xaxis=dict(range=[0, 250]), yaxis=dict(range=[0, 0.05]))
-        applica_stile(fig_freq, is_light_mode)
-        st.plotly_chart(fig_freq, use_container_width=True, config=get_download_config("pres_spettro"))
-    
-    # ---- CALCOLI DETTAGLIATI ----
-    st.markdown("#### 📝 Calcoli")
-    
-    calc_col1, calc_col2, calc_col3 = st.columns(3)
-    with calc_col1:
-        st.latex(rf"\Delta k = k_{{max}} - k_{{min}} = {delta_k_ind:.4f} \;\text{{rad/m}}")
-    with calc_col2:
-        st.latex(rf"\Delta x = \frac{{4\pi}}{{\Delta k}} = \frac{{{4*np.pi:.2f}}}{{{delta_k_ind:.4f}}} = {delta_x_teorico_ind:.4f} \;\text{{m}}")
-    with calc_col3:
-        prodotto_xk = delta_x_teorico_ind * delta_k_ind
-        st.latex(rf"\Delta x \cdot \Delta k = {prodotto_xk:.2f} = 4\pi")
-    
-    # ---- BANNER ARANCIONE ----
-    st.markdown(f"""
-    <div style="
-        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-        padding: 1.5rem 2rem; border-radius: 15px; text-align: center; margin: 1rem 0;
-    ">
-        <span style="color: white; font-size: 1.8rem; font-weight: 700;">
-            Δx · Δk = {prodotto_xk:.2f} = 4π = {4*np.pi:.2f}
-        </span>
-        <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1rem;">
-            Non importa quanto ci proviamo, quel numero non scenderà mai sotto 4π!
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.latex(r"\Delta x \cdot \Delta k \geq 4\pi")
-    
-    # ---- SLIDER ESPLORATIVO + TABELLA DINAMICA ----
-    st.markdown("---")
-    st.markdown("#### 🔬 Verifica: cambia Δf e osserva che il prodotto resta costante")
-    
-    delta_f_slider = st.slider(
-        "Δf (Hz) = f_max − f_min", 
-        1.0, 200.0, 30.0, 1.0, 
-        key="pres_deltaf_slider",
-        help="Muovi per cambiare la larghezza di banda e osserva come Δx e Δk cambiano ma il prodotto Δx·Δk resta sempre 4π."
-    )
-    
-    # Calcola per ogni configurazione
-    configs = {
-        "Standard (preset)": {"f_min": 100.0, "f_max": 130.0, "N": 50},
-        "Super-Localizzato (preset)": {"f_min": 100.0, "f_max": 200.0, "N": 80},
-        "Quasi-Monocromatico (preset)": {"f_min": 100.0, "f_max": 105.0, "N": 30},
-        f"Slider (Δf = {delta_f_slider:.0f} Hz)": {"f_min": 100.0, "f_max": 100.0 + delta_f_slider, "N": 50},
-    }
-    
-    table_data = []
-    for nome, cfg in configs.items():
-        lmin = V_SUONO / cfg["f_max"]
-        lmax = V_SUONO / cfg["f_min"]
-        kmin_t = 2 * np.pi / lmax
-        kmax_t = 2 * np.pi / lmin
-        dk = kmax_t - kmin_t
-        dx = 4 * np.pi / dk if dk > 0 else 0
-        prod = dx * dk
-        table_data.append({
-            "Configurazione": nome,
-            "f_min (Hz)": f"{cfg['f_min']:.0f}",
-            "f_max (Hz)": f"{cfg['f_max']:.0f}",
-            "Δf (Hz)": f"{cfg['f_max'] - cfg['f_min']:.0f}",
-            "Δk (rad/m)": f"{dk:.4f}",
-            "Δx (m)": f"{dx:.4f}",
-            "Δx · Δk": f"{prod:.2f}",
-        })
-    
-    df_table = pd.DataFrame(table_data)
-    st.dataframe(df_table, use_container_width=True, hide_index=True)
-    
-    st.markdown(f"""
-    <div style="
-        text-align: center; padding: 0.8rem; margin: 0.5rem 0;
-        border: 2px solid #f39c12; border-radius: 10px;
-    ">
-        <span style="font-size: 1.2rem; font-weight: 600;">
-            ✅ In ogni configurazione: Δx · Δk = 4π ≈ {4*np.pi:.2f} — sempre costante!
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # ---- GRAFICI DINAMICI PER IL VALORE DELLO SLIDER ----
-    f_min_dyn = 100.0
-    f_max_dyn = 100.0 + delta_f_slider
-    n_dyn = 50
-    
-    dyn_col1, dyn_col2 = st.columns(2)
-    
-    with dyn_col1:
-        st.markdown(f"##### Pacchetto (Δf = {delta_f_slider:.0f} Hz)")
-        durata_dyn = 0.3
-        t_dyn = np.linspace(-durata_dyn, durata_dyn, int(durata_dyn * 2 * 20000))
-        omega_dyn = 2 * np.pi * np.linspace(f_min_dyn, f_max_dyn, n_dyn)
-        y_dyn = np.zeros_like(t_dyn)
-        for om in omega_dyn:
-            y_dyn += (1/n_dyn) * np.cos(om * t_dyn)
-        env_dyn = np.abs(signal.hilbert(y_dyn))
-        
-        fig_dyn_space = go.Figure()
-        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=y_dyn, line=dict(color='#8e44ad', width=2), name="Pacchetto"))
-        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=env_dyn, line=dict(color='#e67e22', width=2, dash='dash'), name="Inviluppo"))
-        fig_dyn_space.add_trace(go.Scatter(x=t_dyn*1000, y=-env_dyn, showlegend=False,
-                                            line=dict(color='#e67e22', width=2, dash='dash')))
-        fig_dyn_space.update_layout(height=350, xaxis_title="t (ms)", yaxis_title="A(t)",
-                                    xaxis=dict(range=[-300, 300]), yaxis=dict(range=[-1.2, 1.2]))
-        applica_stile(fig_dyn_space, is_light_mode)
-        st.plotly_chart(fig_dyn_space, use_container_width=True, config=get_download_config("pres_dyn_space"))
-    
-    with dyn_col2:
-        st.markdown(f"##### Spettro ({f_min_dyn:.0f} – {f_max_dyn:.0f} Hz)")
-        freq_dyn = np.linspace(f_min_dyn, f_max_dyn, n_dyn)
-        amp_dyn = np.ones(n_dyn) / n_dyn
-        
-        fig_dyn_freq = go.Figure()
-        fig_dyn_freq.add_trace(go.Bar(x=freq_dyn, y=amp_dyn, marker_color='#e74c3c',
-                                       width=(f_max_dyn - f_min_dyn) / n_dyn * 0.8 if delta_f_slider > 1 else 1))
-        fig_dyn_freq.update_layout(height=350, xaxis_title="Frequenza (Hz)", yaxis_title="Ampiezza",
-                                   showlegend=False,
-                                   xaxis=dict(range=[0, 350]), yaxis=dict(range=[0, 0.05]))
-        applica_stile(fig_dyn_freq, is_light_mode)
-        st.plotly_chart(fig_dyn_freq, use_container_width=True, config=get_download_config("pres_dyn_freq"))
-
-    # ========== SLIDE 5: CONCLUSIONI ==========
-    st.markdown("---")
-    styled_header(
-        "🎓", 
-        "Parte 5: Da de Broglie a Heisenberg",
-        "Il principio di indeterminazione",
-        "#1abc9c"
-    )
-    
-    st.markdown("""
-    **Louis de Broglie** (1924) legò la frequenza di un elettrone alla sua quantità di moto:
-    """)
-    st.latex(r"p = \hbar k")
-    
-    st.markdown("L'incertezza sulla frequenza (Δk) si trasforma in incertezza sulla quantità di moto (Δp):")
-    st.latex(r"\Delta x \cdot \Delta k \geq \frac{1}{2}")
-    st.latex(r"\Delta x \cdot (\hbar \Delta k) \geq \frac{\hbar}{2}")
-    st.latex(r"\boxed{\Delta x \cdot \Delta p \geq \frac{\hbar}{2}}")
     
     st.markdown("""
     <div style="
@@ -1546,7 +1562,6 @@ if sezione == "Battimenti":
         st.plotly_chart(fig, use_container_width=True, config=get_download_config("battimenti_tempo"))
 
     st.markdown("---")
-    st.markdown("---")
     st.header("Valori Teorici Completi")
     
     
@@ -1723,21 +1738,7 @@ elif sezione == "Pacchetti d'Onda":
             durata = 1.5    # Default
             st.info(f"**{preset_pkt}**\n\n{preset['descrizione']}")
         else:
-            # Funzione di sincronizzazione per i pacchetti
-            def sync_pkt(param_base):
-                # Determina quale widget ha scatenato l'evento
-                # Se param_base è 'pkt_fmin', controlliamo 'pkt_fmin_s' e 'pkt_fmin_i'
-                val_s = st.session_state.get(f"{param_base}_s")
-                val_i = st.session_state.get(f"{param_base}_i")
-                
-                # Trova il valore nuovo (non sappiamo quale dei due è cambiato, ma possiamo assumerlo o uniformarli)
-                # Per semplicità, uniformiamo basandoci su quello che esiste nello stato
-                # Streamlit aggiorna lo stato PRIMA della callback, quindi il widget toccato ha il valore nuovo.
-                # Tuttavia, per evitare complessità, usiamo una logica diretta:
-                # Se la callback è chiamata dallo slider, aggiorniamo l'input.
-                
-                # Nota: Qui usiamo una logica semplificata. Se cambiamo f_min, dobbiamo controllare f_max.
-                pass 
+
 
             # Inizializza session state per pacchetti se non esiste
             if 'pkt_fmin_s' not in st.session_state: st.session_state.pkt_fmin_s = 100.0
@@ -1958,7 +1959,6 @@ elif sezione == "Pacchetti d'Onda":
         st.download_button("Scarica CSV", csv, "pacchetto_parametri.csv", "text/csv")
     
     # 🆕 ========== VISUALIZZAZIONE SIMMETRICA COMPLETA (SCHERMO INTERO) ==========
-    st.markdown("---")
     st.markdown("---")
     st.header("Visualizzazione Simmetrica Completa")
     st.markdown("""
@@ -2193,7 +2193,6 @@ elif sezione == "Spettro di Fourier":
             if len(freq_picchi) >= 2:
                 st.metric("Larghezza banda", f"{freq_picchi[-1] - freq_picchi[0]:.2f} Hz")
     
-    st.markdown("---")
     st.markdown("---")
     st.header("Valori Teorici Completi - Spettro di Fourier")
     st.markdown("*Parametri di campionamento e analisi FFT*")
@@ -3580,8 +3579,6 @@ elif sezione == "Riconoscimento Battimenti":
                 
         except Exception as e:
             st.error(f"Errore durante l'analisi: {e}")
-            import traceback
-            st.code(traceback.format_exc())
 
 
 elif sezione == "Confronto Scenari":
@@ -4413,32 +4410,31 @@ elif sezione == "📥 Centro Download":
     dl_k_min = 2 * np.pi / dl_lambda_max
     dl_k_max = 2 * np.pi / dl_lambda_min
     dl_delta_k = dl_k_max - dl_k_min
-    dl_delta_x = 4 * np.pi / dl_delta_k if dl_delta_k > 0 else 0
     dl_delta_f = dl_fmax - dl_fmin
     dl_delta_omega = 2 * np.pi * dl_delta_f
-    dl_delta_t = 4 * np.pi / dl_delta_omega if dl_delta_omega > 0 else 0
     
-    # 3a. Dominio Spaziale
-    st.markdown(f"#### 3a. Dominio Spaziale — Δx·Δk = {dl_delta_x*dl_delta_k:.2f}")
-    range_x_ind = max(50.0, dl_delta_x * 2.0)
+    # 3a. Dominio Spaziale — misura Δx dall'inviluppo
+    range_x_ind = max(50.0, 4 * np.pi / dl_delta_k * 2.0) if dl_delta_k > 0 else 50.0
     x_ind = np.linspace(-range_x_ind, range_x_ind, 10000)
     k_vals = np.linspace(dl_k_min, dl_k_max, dl_n_onde)
     y_spazio = np.zeros_like(x_ind)
     for k in k_vals:
         y_spazio += (1/dl_n_onde) * np.cos(k * x_ind)
     env_spazio = np.abs(signal.hilbert(y_spazio))
+    dl_delta_x, dl_idx_sx, dl_idx_dx = calcola_larghezza_temporale(x_ind, env_spazio)
     
+    st.markdown(f"#### 3a. Dominio Spaziale — Δx·Δk = {dl_delta_x*dl_delta_k:.2f}")
     fig_spazio = go.Figure()
     fig_spazio.add_trace(go.Scatter(x=x_ind, y=y_spazio, line=dict(color='#2c3e50', width=dl_lw), name="Pacchetto"))
     fig_spazio.add_trace(go.Scatter(x=x_ind, y=env_spazio, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), name="Inviluppo"))
     fig_spazio.add_trace(go.Scatter(x=x_ind, y=-env_spazio, line=dict(color='#e74c3c', width=dl_lw, dash='dash'), showlegend=False))
     fig_spazio.update_layout(xaxis_title="Posizione x (m)", yaxis_title="Ampiezza", height=500, hovermode='x unified',
-                             title=f"Δx·Δk = {dl_delta_x*dl_delta_k:.2f} (target: 12.57)")
+                             title=f"Δx·Δk = {dl_delta_x*dl_delta_k:.2f} (misurato, target: 12.57)")
     applica_stile(fig_spazio, is_light_mode)
     dl_applica_font(fig_spazio)
     st.plotly_chart(fig_spazio, use_container_width=True, config=dl_config("indeterminazione_spazio"))
     
-    # 3b. Dominio Temporale
+    # 3b. Dominio Temporale — misura Δt dall'inviluppo
     dl_T_rep = (dl_n_onde - 1) / dl_delta_f if dl_n_onde > 1 and dl_delta_f > 0 else dl_durata * 10
     dl_dur_eff = min(dl_durata, dl_T_rep * 0.9)
     t_ind = np.linspace(0, dl_dur_eff, int(dl_dur_eff * 20000))
@@ -4446,6 +4442,7 @@ elif sezione == "📥 Centro Download":
     for f in freq_p:
         y_tempo += (1/dl_n_onde) * np.cos(2 * np.pi * f * t_ind)
     env_tempo = np.abs(signal.hilbert(y_tempo))
+    dl_delta_t, _, _ = calcola_larghezza_temporale(t_ind, env_tempo)
     
     st.markdown(f"#### 3b. Dominio Temporale — Δω·Δt = {dl_delta_t*dl_delta_omega:.2f}")
     fig_tempo = go.Figure()
@@ -4453,7 +4450,7 @@ elif sezione == "📥 Centro Download":
     fig_tempo.add_trace(go.Scatter(x=t_ind*1000, y=env_tempo, line=dict(color='#e67e22', width=dl_lw, dash='dash'), name="Inviluppo"))
     fig_tempo.add_trace(go.Scatter(x=t_ind*1000, y=-env_tempo, line=dict(color='#e67e22', width=dl_lw, dash='dash'), showlegend=False))
     fig_tempo.update_layout(xaxis_title="t (ms)", yaxis_title="A(t)", height=500, hovermode='x unified',
-                            title=f"Δω·Δt = {dl_delta_t*dl_delta_omega:.2f} (target: 12.57)")
+                            title=f"Δω·Δt = {dl_delta_t*dl_delta_omega:.2f} (misurato, target: 12.57)")
     applica_stile(fig_tempo, is_light_mode)
     dl_applica_font(fig_tempo)
     st.plotly_chart(fig_tempo, use_container_width=True, config=dl_config("indeterminazione_tempo"))
